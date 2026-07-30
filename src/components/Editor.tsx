@@ -33,6 +33,7 @@ export function Editor() {
   );
   const [isUploading, setIsUploading] = useState(false);
   const [isRendering, setIsRendering] = useState(false);
+  const [renderProgress, setRenderProgress] = useState(0);
   const [renderedUrl, setRenderedUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -67,10 +68,39 @@ export function Editor() {
     [],
   );
 
+  const pollJobStatus = useCallback((jobId: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const poll = async () => {
+        try {
+          const response = await fetch(`/api/render/${jobId}`);
+          if (!response.ok) {
+            throw new Error("Job-Status konnte nicht abgefragt werden.");
+          }
+          const data = await response.json();
+          setRenderProgress(data.progress ?? 0);
+
+          if (data.status === "DONE") {
+            resolve(data.url as string);
+            return;
+          }
+          if (data.status === "FAILED") {
+            reject(new Error(data.error || "Rendern fehlgeschlagen."));
+            return;
+          }
+          setTimeout(poll, 1000);
+        } catch (err) {
+          reject(err);
+        }
+      };
+      poll();
+    });
+  }, []);
+
   const handleRender = useCallback(async () => {
     if (!audioFile) return;
     setError(null);
     setRenderedUrl(null);
+    setRenderProgress(0);
 
     try {
       let audioKey = audioKeyRef.current;
@@ -107,15 +137,16 @@ export function Editor() {
         throw new Error(data?.error || "Rendern fehlgeschlagen.");
       }
 
-      const renderData = await renderResponse.json();
-      setRenderedUrl(renderData.url as string);
+      const { jobId } = await renderResponse.json();
+      const url = await pollJobStatus(jobId);
+      setRenderedUrl(url);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unbekannter Fehler.");
     } finally {
       setIsUploading(false);
       setIsRendering(false);
     }
-  }, [audioFile, settings]);
+  }, [audioFile, settings, pollJobStatus]);
 
   const isBusy = isUploading || isRendering;
 
@@ -236,9 +267,18 @@ export function Editor() {
               {isUploading
                 ? "Wird hochgeladen..."
                 : isRendering
-                  ? "Wird gerendert..."
+                  ? `Wird gerendert... ${Math.round(renderProgress * 100)}%`
                   : "Video rendern"}
             </button>
+
+            {isRendering && (
+              <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-800">
+                <div
+                  className="h-full bg-white transition-[width] duration-300"
+                  style={{ width: `${Math.round(renderProgress * 100)}%` }}
+                />
+              </div>
+            )}
 
             {error && <p className="text-red-400">{error}</p>}
 

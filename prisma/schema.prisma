@@ -54,9 +54,17 @@ model Project {
 }
 
 model RenderJob {
-  id           String       @id @default(cuid())
-  projectId    String
-  project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  id        String   @id @default(cuid())
+  // Nullable: anonymous (not-logged-in) renders aren't attached to a saved
+  // Project. Once a user is logged in and projects are persisted, jobs can
+  // be linked for history/quota purposes.
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  // Denormalized so a job is fully self-contained even without a Project.
+  audioKey String
+  settings Json
+
   status       RenderStatus @default(QUEUED)
   progress     Float        @default(0)
   // Path to the finished MP4, relative to the local storage root, once DONE.
