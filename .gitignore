@@ -49,3 +49,7 @@ next-env.d.ts
 
 # local file storage (uploads, render outputs) - swapped for R2 in production
 /storage/
+
+# pre-built Remotion bundle used by the server-side render API route
+# (regenerate with `pnpm remotion:bundle`)
+/.remotion-bundle/

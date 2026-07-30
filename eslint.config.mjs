@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Generated/pre-built output, not hand-written source:
+    ".remotion-bundle/**",
+    "src/generated/**",
   ]),
 ]);
 
