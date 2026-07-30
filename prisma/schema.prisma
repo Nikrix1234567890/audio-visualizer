@@ -1,0 +1,67 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Tier {
+  FREE
+  PREMIUM
+}
+
+enum RenderStatus {
+  QUEUED
+  RENDERING
+  DONE
+  FAILED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  tier         Tier     @default(FREE)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  projects Project[]
+}
+
+model Project {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  // Path to the uploaded audio file, relative to the local storage root
+  // (see src/lib/storage.ts). Swappable for an R2 object key later.
+  audioPath String
+  // Visualizer configuration (colors, layout, bar count, camera, etc.)
+  // stored as JSON so the schema doesn't need to change every time we add
+  // a new visualizer setting.
+  settings  Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  renderJobs RenderJob[]
+}
+
+model RenderJob {
+  id           String       @id @default(cuid())
+  projectId    String
+  project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  status       RenderStatus @default(QUEUED)
+  progress     Float        @default(0)
+  // Path to the finished MP4, relative to the local storage root, once DONE.
+  outputPath   String?
+  errorMessage String?
+  createdAt    DateTime     @default(now())
+  completedAt  DateTime?
+}
