@@ -10,7 +10,7 @@ export async function GET(
   const job = await prisma.renderJob.findUnique({ where: { id: jobId } });
 
   if (!job) {
-    return NextResponse.json({ error: "Job nicht gefunden." }, { status: 404 });
+    return NextResponse.json({ error: "Job not found." }, { status: 404 });
   }
 
   return NextResponse.json({

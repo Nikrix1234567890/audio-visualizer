@@ -1,26 +1,56 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Chassis / panel neutrals */
+  --chassis-black: #0a0a0d;
+  --panel-graphite: #16161b;
+  --panel-graphite-raised: #1f1f26;
+  --hairline-steel: #2b2b33;
+  --cream-ink: #f2ede2;
+  --steel-label: #8b8a92;
+
+  /* The one committed accent - see DESIGN.md "Lit/Unlit Rule" */
+  --patch-amber: #ff8a3d;
+  --patch-amber-dim: #7a4420;
+
+  --background: var(--chassis-black);
+  --foreground: var(--cream-ink);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-chassis: var(--chassis-black);
+  --color-panel: var(--panel-graphite);
+  --color-panel-raised: var(--panel-graphite-raised);
+  --color-hairline: var(--hairline-steel);
+  --color-cream: var(--cream-ink);
+  --color-steel: var(--steel-label);
+  --color-amber: var(--patch-amber);
+  --color-amber-dim: var(--patch-amber-dim);
+
+  --font-sans: var(--font-space-grotesk);
+  --font-mono: var(--font-plex-mono);
+
+  --shadow-control-raised: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 2px 6px rgba(0, 0, 0, 0.4);
+  --shadow-scope-recessed: inset 0 2px 12px rgba(0, 0, 0, 0.6);
+  --shadow-glow-active: 0 0 16px rgba(255, 138, 61, 0.45);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Fine film-grain / panel texture: very subtle, never a photographic texture
+   (see DESIGN.md "no skeuomorphic photorealism"). */
+.chassis-grain {
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    rgba(255, 255, 255, 0.035) 1px,
+    transparent 0
+  );
+  background-size: 3px 3px;
 }

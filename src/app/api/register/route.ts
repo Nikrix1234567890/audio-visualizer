@@ -12,14 +12,14 @@ export async function POST(request: Request) {
 
   if (!email || !email.includes("@")) {
     return NextResponse.json(
-      { error: "Bitte eine gültige E-Mail-Adresse angeben." },
+      { error: "Please enter a valid email address." },
       { status: 400 },
     );
   }
 
   if (!password || password.length < 8) {
     return NextResponse.json(
-      { error: "Das Passwort muss mindestens 8 Zeichen lang sein." },
+      { error: "Password must be at least 8 characters long." },
       { status: 400 },
     );
   }
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
     return NextResponse.json(
-      { error: "Für diese E-Mail-Adresse existiert bereits ein Konto." },
+      { error: "An account with this email already exists." },
       { status: 409 },
     );
   }

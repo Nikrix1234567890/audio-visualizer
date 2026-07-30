@@ -27,12 +27,12 @@ export async function GET(
   try {
     exists = fileExists(key);
   } catch {
-    return NextResponse.json({ error: "Ungültiger Pfad." }, { status: 400 });
+    return NextResponse.json({ error: "Invalid path." }, { status: 400 });
   }
 
   if (!exists) {
     return NextResponse.json(
-      { error: "Datei nicht gefunden." },
+      { error: "File not found." },
       { status: 404 },
     );
   }

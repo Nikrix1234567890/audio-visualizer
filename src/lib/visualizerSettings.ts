@@ -1,9 +1,22 @@
 import {
+  DEFAULT_RESOLUTION,
   DEFAULT_VISUALIZER_SETTINGS,
+  RESOLUTIONS,
+  SCENES,
+  type ResolutionKey,
+  type SceneId,
   type VisualizerSettings,
 } from "../../remotion/types";
 
 export const ALLOWED_BAR_COUNTS = [16, 32, 64, 128];
+const ALLOWED_SCENES = SCENES.map((s) => s.id);
+const ALLOWED_RESOLUTIONS = Object.keys(RESOLUTIONS) as ResolutionKey[];
+
+export function sanitizeResolution(input: unknown): ResolutionKey {
+  return ALLOWED_RESOLUTIONS.includes(input as ResolutionKey)
+    ? (input as ResolutionKey)
+    : DEFAULT_RESOLUTION;
+}
 
 function clampNumber(
   value: unknown,
@@ -22,8 +35,12 @@ export function sanitizeSettings(input: unknown): VisualizerSettings {
   const barCount = ALLOWED_BAR_COUNTS.includes(raw.barCount as number)
     ? (raw.barCount as number)
     : DEFAULT_VISUALIZER_SETTINGS.barCount;
+  const scene = ALLOWED_SCENES.includes(raw.scene as SceneId)
+    ? (raw.scene as SceneId)
+    : DEFAULT_VISUALIZER_SETTINGS.scene;
 
   return {
+    scene,
     barCount,
     radius: clampNumber(raw.radius, DEFAULT_VISUALIZER_SETTINGS.radius, 1, 10),
     barWidth: clampNumber(

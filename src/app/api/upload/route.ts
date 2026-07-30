@@ -23,21 +23,21 @@ export async function POST(request: Request) {
 
   if (!file || !(file instanceof File)) {
     return NextResponse.json(
-      { error: "Keine Audiodatei im Feld 'audio' gefunden." },
+      { error: "No audio file found in the 'audio' field." },
       { status: 400 },
     );
   }
 
   if (file.size === 0) {
     return NextResponse.json(
-      { error: "Die hochgeladene Datei ist leer." },
+      { error: "The uploaded file is empty." },
       { status: 400 },
     );
   }
 
   if (file.size > MAX_FILE_SIZE_BYTES) {
     return NextResponse.json(
-      { error: "Die Datei ist zu groß (Limit: 100 MB)." },
+      { error: "The file is too large (limit: 100 MB)." },
       { status: 413 },
     );
   }
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
   if (!ALLOWED_EXTENSIONS.has(extension)) {
     return NextResponse.json(
       {
-        error: `Dateityp "${extension}" wird nicht unterstützt. Erlaubt: ${Array.from(
+        error: `File type "${extension}" is not supported. Allowed: ${Array.from(
           ALLOWED_EXTENSIONS,
         ).join(", ")}`,
       },

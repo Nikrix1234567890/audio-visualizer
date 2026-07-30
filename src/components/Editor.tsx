@@ -4,9 +4,16 @@ import { Player } from "@remotion/player";
 import { useCallback, useRef, useState } from "react";
 import { AudioVisualizer3D } from "../../remotion/compositions/AudioVisualizer3D";
 import {
+  DEFAULT_RESOLUTION,
   DEFAULT_VISUALIZER_SETTINGS,
+  RESOLUTIONS,
+  SCENES,
+  type ResolutionKey,
   type VisualizerSettings,
 } from "../../remotion/types";
+import { Knob } from "@/components/ui/Knob";
+import { Panel } from "@/components/ui/Panel";
+import { SegmentedSelector } from "@/components/ui/SegmentedSelector";
 
 const FPS = 30;
 const BAR_COUNT_OPTIONS = [16, 32, 64, 128];
@@ -17,7 +24,7 @@ function probeAudioDuration(url: string): Promise<number> {
     audio.preload = "metadata";
     audio.onloadedmetadata = () => resolve(audio.duration);
     audio.onerror = () =>
-      reject(new Error("Audiodatei konnte nicht gelesen werden."));
+      reject(new Error("Could not read this audio file."));
     audio.src = url;
   });
 }
@@ -31,6 +38,8 @@ export function Editor() {
   const [settings, setSettings] = useState<VisualizerSettings>(
     DEFAULT_VISUALIZER_SETTINGS,
   );
+  const [resolution, setResolution] =
+    useState<ResolutionKey>(DEFAULT_RESOLUTION);
   const [isUploading, setIsUploading] = useState(false);
   const [isRendering, setIsRendering] = useState(false);
   const [renderProgress, setRenderProgress] = useState(0);
@@ -55,14 +64,17 @@ export function Editor() {
         setAudioUrl(blobUrl);
         setDurationInFrames(Math.max(1, Math.ceil(duration * FPS)));
       } catch {
-        setError("Die Datei konnte nicht als Audio gelesen werden.");
+        setError("This file could not be read as audio.");
       }
     },
     [],
   );
 
   const updateSetting = useCallback(
-    <K extends keyof VisualizerSettings>(key: K, value: VisualizerSettings[K]) => {
+    <K extends keyof VisualizerSettings>(
+      key: K,
+      value: VisualizerSettings[K],
+    ) => {
       setSettings((prev) => ({ ...prev, [key]: value }));
     },
     [],
@@ -74,7 +86,7 @@ export function Editor() {
         try {
           const response = await fetch(`/api/render/${jobId}`);
           if (!response.ok) {
-            throw new Error("Job-Status konnte nicht abgefragt werden.");
+            throw new Error("Could not check the render job status.");
           }
           const data = await response.json();
           setRenderProgress(data.progress ?? 0);
@@ -84,7 +96,7 @@ export function Editor() {
             return;
           }
           if (data.status === "FAILED") {
-            reject(new Error(data.error || "Rendern fehlgeschlagen."));
+            reject(new Error(data.error || "Render failed."));
             return;
           }
           setTimeout(poll, 1000);
@@ -117,7 +129,7 @@ export function Editor() {
 
         if (!uploadResponse.ok) {
           const data = await uploadResponse.json().catch(() => null);
-          throw new Error(data?.error || "Upload fehlgeschlagen.");
+          throw new Error(data?.error || "Upload failed.");
         }
 
         const uploadData = await uploadResponse.json();
@@ -129,54 +141,45 @@ export function Editor() {
       const renderResponse = await fetch("/api/render", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ audioKey, settings }),
+        body: JSON.stringify({ audioKey, settings, resolution }),
       });
 
       if (!renderResponse.ok) {
         const data = await renderResponse.json().catch(() => null);
-        throw new Error(data?.error || "Rendern fehlgeschlagen.");
+        throw new Error(data?.error || "Render failed.");
       }
 
       const { jobId } = await renderResponse.json();
       const url = await pollJobStatus(jobId);
       setRenderedUrl(url);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unbekannter Fehler.");
+      setError(err instanceof Error ? err.message : "Unknown error.");
     } finally {
       setIsUploading(false);
       setIsRendering(false);
     }
-  }, [audioFile, settings, pollJobStatus]);
+  }, [audioFile, settings, resolution, pollJobStatus]);
 
   const isBusy = isUploading || isRendering;
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-6 py-10 text-zinc-50">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-6 py-8">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Eigenes Audio in einen 3D-Visualizer verwandeln
+        <h1 className="font-sans text-2xl font-semibold tracking-tight text-cream">
+          Audio Visualizer
         </h1>
-        <p className="mt-1 text-sm text-zinc-400">
-          Song hochladen, Vorschau live anpassen, als MP4 rendern &mdash;
-          direkt hier im Browser.
+        <p className="mt-1 text-sm text-steel">
+          Patch in a track, dial in the look, print it to video.
         </p>
       </div>
 
-      <label className="flex w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-zinc-700 bg-zinc-900/50 px-6 py-10 text-center hover:border-zinc-500">
-        <span className="text-sm text-zinc-300">
-          {audioFile ? audioFile.name : "Audiodatei auswählen (WAV, MP3, ...)"}
-        </span>
-        <span className="text-xs text-zinc-500">Klicken oder Datei hierher ziehen</span>
-        <input
-          type="file"
-          accept="audio/*,.wav,.mp3,.m4a,.aac,.ogg,.flac"
-          className="hidden"
-          onChange={handleFileChange}
-        />
-      </label>
-
-      {audioUrl && durationInFrames && (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
+      {/* SCOPE */}
+      <div className="relative rounded-[10px] border border-hairline bg-panel p-2 shadow-[inset_0_2px_12px_rgba(0,0,0,0.6)]">
+        <Rivet className="left-2 top-2" />
+        <Rivet className="right-2 top-2" />
+        <Rivet className="bottom-2 left-2" />
+        <Rivet className="bottom-2 right-2" />
+        {audioUrl && durationInFrames ? (
           <Player
             component={AudioVisualizer3D}
             inputProps={{ audioSrc: audioUrl, ...settings }}
@@ -184,151 +187,244 @@ export function Editor() {
             compositionWidth={1280}
             compositionHeight={720}
             fps={FPS}
-            style={{ width: "100%" }}
+            style={{ width: "100%", borderRadius: 6, overflow: "hidden" }}
             controls
             loop
             clickToPlay
             acknowledgeRemotionLicense
           />
-
-          <div className="flex flex-col gap-4 text-sm">
-            <label className="flex flex-col gap-1">
-              Balkenanzahl
-              <select
-                value={settings.barCount}
-                onChange={(e) =>
-                  updateSetting("barCount", Number(e.target.value))
-                }
-                className="rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1"
-              >
-                {BAR_COUNT_OPTIONS.map((n) => (
-                  <option key={n} value={n}>
-                    {n}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <SliderField
-              label="Radius"
-              value={settings.radius}
-              min={1}
-              max={10}
-              step={0.1}
-              onChange={(v) => updateSetting("radius", v)}
+        ) : (
+          <div className="flex aspect-video w-full items-center justify-center rounded-md bg-chassis">
+            <InputJack
+              hasFile={Boolean(audioFile)}
+              fileName={audioFile?.name}
+              onFileChange={handleFileChange}
             />
-            <SliderField
-              label="Balkenbreite"
-              value={settings.barWidth}
-              min={0.05}
-              max={1}
-              step={0.01}
-              onChange={(v) => updateSetting("barWidth", v)}
-            />
-            <SliderField
-              label="Höhen-Skalierung"
-              value={settings.heightScale}
-              min={1}
-              max={10}
-              step={0.1}
-              onChange={(v) => updateSetting("heightScale", v)}
-            />
-            <SliderField
-              label="Farbton Start"
-              value={settings.hueStart}
-              min={0}
-              max={360}
-              step={1}
-              onChange={(v) => updateSetting("hueStart", v)}
-            />
-            <SliderField
-              label="Farbton Ende"
-              value={settings.hueEnd}
-              min={0}
-              max={720}
-              step={1}
-              onChange={(v) => updateSetting("hueEnd", v)}
-            />
-            <SliderField
-              label="Kamera-Geschwindigkeit"
-              value={settings.cameraSpeed}
-              min={0}
-              max={2}
-              step={0.01}
-              onChange={(v) => updateSetting("cameraSpeed", v)}
-            />
-
-            <button
-              type="button"
-              onClick={handleRender}
-              disabled={isBusy}
-              className="mt-2 rounded-md bg-white px-4 py-2 font-medium text-zinc-950 hover:bg-zinc-200 disabled:opacity-50"
-            >
-              {isUploading
-                ? "Wird hochgeladen..."
-                : isRendering
-                  ? `Wird gerendert... ${Math.round(renderProgress * 100)}%`
-                  : "Video rendern"}
-            </button>
-
-            {isRendering && (
-              <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-800">
-                <div
-                  className="h-full bg-white transition-[width] duration-300"
-                  style={{ width: `${Math.round(renderProgress * 100)}%` }}
-                />
-              </div>
-            )}
-
-            {error && <p className="text-red-400">{error}</p>}
-
-            {renderedUrl && (
-              <div className="flex flex-col gap-2 rounded-md border border-zinc-700 p-3">
-                <p className="text-zinc-300">Fertig!</p>
-                <a
-                  href={renderedUrl}
-                  download
-                  className="text-white underline"
-                >
-                  Video herunterladen
-                </a>
-              </div>
-            )}
           </div>
+        )}
+      </div>
+
+      {audioUrl && (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <Panel label="Input">
+            <InputJack
+              hasFile={Boolean(audioFile)}
+              fileName={audioFile?.name}
+              onFileChange={handleFileChange}
+              compact
+            />
+          </Panel>
+
+          <Panel label="Scene">
+            <div className="flex h-full flex-col items-start justify-center gap-2">
+              <SegmentedSelector
+                options={SCENES.map((s) => ({ value: s.id, label: s.label }))}
+                value={settings.scene}
+                onChange={(v) => updateSetting("scene", v)}
+              />
+            </div>
+          </Panel>
+
+          <Panel label="Shape">
+            <div className="flex flex-wrap justify-around gap-3">
+              <SegmentedSelector
+                options={BAR_COUNT_OPTIONS.map((n) => ({
+                  value: n,
+                  label: String(n),
+                }))}
+                value={settings.barCount}
+                onChange={(v) => updateSetting("barCount", v)}
+              />
+              <Knob
+                label="Radius"
+                value={settings.radius}
+                min={1}
+                max={10}
+                step={0.1}
+                onChange={(v) => updateSetting("radius", v)}
+                formatValue={(v) => v.toFixed(1)}
+              />
+              <Knob
+                label="Width"
+                value={settings.barWidth}
+                min={0.05}
+                max={1}
+                step={0.01}
+                onChange={(v) => updateSetting("barWidth", v)}
+                formatValue={(v) => v.toFixed(2)}
+              />
+              <Knob
+                label="Height"
+                value={settings.heightScale}
+                min={1}
+                max={10}
+                step={0.1}
+                onChange={(v) => updateSetting("heightScale", v)}
+                formatValue={(v) => v.toFixed(1)}
+              />
+            </div>
+          </Panel>
+
+          <Panel label="Color">
+            <div className="flex justify-around gap-3">
+              <Knob
+                label="Hue Start"
+                value={settings.hueStart}
+                min={0}
+                max={360}
+                step={1}
+                onChange={(v) => updateSetting("hueStart", v)}
+                formatValue={(v) => `${Math.round(v)}°`}
+              />
+              <Knob
+                label="Hue End"
+                value={settings.hueEnd}
+                min={0}
+                max={720}
+                step={1}
+                onChange={(v) => updateSetting("hueEnd", v)}
+                formatValue={(v) => `${Math.round(v)}°`}
+              />
+            </div>
+          </Panel>
+
+          <Panel label="Motion">
+            <div className="flex justify-around gap-3">
+              <Knob
+                label="Camera"
+                value={settings.cameraSpeed}
+                min={0}
+                max={2}
+                step={0.01}
+                onChange={(v) => updateSetting("cameraSpeed", v)}
+                formatValue={(v) => `${v.toFixed(2)}x`}
+              />
+            </div>
+          </Panel>
+
+          <Panel label="Output" className="sm:col-span-2 lg:col-span-3">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <SegmentedSelector
+                options={Object.entries(RESOLUTIONS).map(([key, r]) => ({
+                  value: key as ResolutionKey,
+                  label: r.label,
+                }))}
+                value={resolution}
+                onChange={setResolution}
+              />
+
+              <div className="flex flex-1 flex-col gap-2 sm:max-w-xs">
+                <button
+                  type="button"
+                  onClick={handleRender}
+                  disabled={isBusy}
+                  className="rounded-xl border border-hairline bg-panel-raised px-6 py-3 font-sans text-sm font-semibold tracking-wide text-cream shadow-[0_1px_0_rgba(255,255,255,0.04)_inset,0_2px_6px_rgba(0,0,0,0.4)] transition-shadow hover:shadow-[0_0_16px_rgba(255,138,61,0.45)] hover:text-amber disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {isUploading
+                    ? "UPLOADING…"
+                    : isRendering
+                      ? `RENDERING ${Math.round(renderProgress * 100)}%`
+                      : "RENDER"}
+                </button>
+
+                {isRendering && (
+                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-chassis">
+                    <div
+                      className="h-full bg-amber shadow-[0_0_16px_rgba(255,138,61,0.45)] transition-[width] duration-300"
+                      style={{ width: `${Math.round(renderProgress * 100)}%` }}
+                    />
+                  </div>
+                )}
+
+                {error && <p className="text-xs text-red-400">{error}</p>}
+
+                {renderedUrl && (
+                  <a
+                    href={renderedUrl}
+                    download
+                    className="font-mono text-xs text-amber underline"
+                  >
+                    Download video
+                  </a>
+                )}
+              </div>
+            </div>
+          </Panel>
         </div>
       )}
     </div>
   );
 }
 
-function SliderField({
-  label,
-  value,
-  min,
-  max,
-  step,
-  onChange,
+function Rivet({ className = "" }: { className?: string }) {
+  return (
+    <span
+      className={`pointer-events-none absolute z-10 h-1.5 w-1.5 rounded-full bg-[radial-gradient(circle_at_35%_30%,rgba(255,255,255,0.5),rgba(0,0,0,0.6))] ${className}`}
+    />
+  );
+}
+
+function InputJack({
+  hasFile,
+  fileName,
+  onFileChange,
+  compact = false,
 }: {
-  label: string;
-  value: number;
-  min: number;
-  max: number;
-  step: number;
-  onChange: (value: number) => void;
+  hasFile: boolean;
+  fileName?: string;
+  onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  compact?: boolean;
 }) {
   return (
-    <label className="flex flex-col gap-1">
-      <span className="flex justify-between">
-        <span>{label}</span>
-        <span className="text-zinc-500">{value}</span>
+    <label
+      className={`group relative flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md ${
+        compact ? "py-2" : "py-8"
+      }`}
+    >
+      <span
+        className={`relative flex items-center justify-center rounded-full border-2 border-dashed ${
+          hasFile ? "border-amber-dim" : "border-hairline"
+        } ${compact ? "h-12 w-12" : "h-16 w-16"} transition-colors group-hover:border-amber`}
+      >
+        <svg
+          width={compact ? 18 : 22}
+          height={compact ? 18 : 22}
+          viewBox="0 0 24 24"
+          fill="none"
+        >
+          <circle
+            cx="12"
+            cy="12"
+            r="4"
+            className={hasFile ? "fill-amber" : "fill-steel"}
+          />
+          <path
+            d="M12 2v6M12 16v6M2 12h6M16 12h6"
+            stroke={hasFile ? "var(--patch-amber)" : "var(--steel-label)"}
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
+        </svg>
+        {hasFile && (
+          <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-amber shadow-[0_0_8px_rgba(255,138,61,0.8)]" />
+        )}
       </span>
+      <span className="font-mono text-[11px] tracking-[0.08em] text-steel uppercase">
+        {hasFile ? "Loaded" : "Input"}
+      </span>
+      {fileName && (
+        <span className="max-w-[180px] truncate font-mono text-xs text-cream">
+          {fileName}
+        </span>
+      )}
+      {!hasFile && !compact && (
+        <span className="text-xs text-steel">Click to select a track</span>
+      )}
       <input
-        type="range"
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
+        type="file"
+        accept="audio/*,.wav,.mp3,.m4a,.aac,.ogg,.flac"
+        className="hidden"
+        onChange={onFileChange}
       />
     </label>
   );
