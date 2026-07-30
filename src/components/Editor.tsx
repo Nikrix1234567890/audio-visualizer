@@ -226,7 +226,7 @@ export function Editor() {
           </Panel>
 
           <Panel label="Shape">
-            <div className="flex flex-wrap justify-around gap-3">
+            <div className="flex flex-wrap items-center justify-around gap-3">
               <SegmentedSelector
                 options={BAR_COUNT_OPTIONS.map((n) => ({
                   value: n,

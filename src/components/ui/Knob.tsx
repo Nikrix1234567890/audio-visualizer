@@ -130,7 +130,7 @@ export function Knob({
         onPointerUp={handlePointerUp}
         onWheel={handleWheel}
         onKeyDown={handleKeyDown}
-        className="cursor-ns-resize touch-none outline-none"
+        className="block cursor-ns-resize touch-none outline-none"
         style={{
           filter: isDragging
             ? "drop-shadow(0 0 10px rgba(255,138,61,0.55))"

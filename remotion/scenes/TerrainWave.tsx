@@ -1,16 +1,18 @@
 import React from 'react';
-import {Line} from '@react-three/drei';
+import {Line, Stars} from '@react-three/drei';
 import {visualizeAudio} from '@remotion/media-utils';
 import type {SceneProps} from './types';
+import {PostFX} from './PostFX';
 
 export const TERRAIN_ROWS = 14;
 const ROW_FRAME_STEP = 3;
 
 /**
- * A synthwave-style receding grid of contour lines. Each row samples the
- * spectrum at a slightly earlier point in time than the one in front of it,
- * so the whole grid reads as a landscape the audio's history has carved,
- * scrolling toward the camera as time advances.
+ * A synthwave-style receding grid of contour lines, under a starfield sky
+ * with a glowing horizon sun. Each row samples the spectrum at a slightly
+ * earlier point in time than the one in front of it, so the whole grid
+ * reads as a landscape the audio's history has carved, scrolling toward
+ * the camera as time advances.
  */
 export const TerrainWave: React.FC<SceneProps> = ({
   audioData,
@@ -21,12 +23,29 @@ export const TerrainWave: React.FC<SceneProps> = ({
   const {barCount, radius, heightScale, hueStart, hueEnd} = settings;
   const rowSpacing = radius * 0.7;
   const width = radius * 4.5;
-  // Center the whole grid on the origin so the default (auto look-at-origin)
-  // camera frames the middle of the terrain, not just its nearest edge.
   const zOffset = (TERRAIN_ROWS * rowSpacing) / 2;
+  const sunHue = hueStart % 360;
 
   return (
     <>
+      <Stars
+        radius={radius * 30}
+        depth={radius * 10}
+        count={2000}
+        factor={radius * 0.6}
+        saturation={0}
+        fade
+        speed={0.3}
+      />
+
+      {/* Horizon sun: a bright emissive disc bloom turns into a soft glow.
+          Excluded from scene fog (fog=false) so it stays visible despite
+          sitting near the fog's far plane. */}
+      <mesh position={[0, radius * 0.6, -zOffset - radius * 3]}>
+        <circleGeometry args={[radius * 2.2, 48]} />
+        <meshBasicMaterial color={`hsl(${sunHue}, 95%, 62%)`} fog={false} />
+      </mesh>
+
       {new Array(TERRAIN_ROWS).fill(0).map((_, r) => {
         const rowFrame = Math.max(0, frame - r * ROW_FRAME_STEP);
         const spectrum = visualizeAudio({
@@ -52,13 +71,14 @@ export const TerrainWave: React.FC<SceneProps> = ({
           <Line
             key={r}
             points={points}
-            color={`hsl(${hue}, 85%, ${45 + depthFactor * 25}%)`}
-            lineWidth={2}
+            color={`hsl(${hue}, 95%, ${55 + depthFactor * 25}%)`}
+            lineWidth={2.5}
             transparent
-            opacity={0.25 + depthFactor * 0.75}
+            opacity={0.3 + depthFactor * 0.7}
           />
         );
       })}
+      <PostFX />
     </>
   );
 };
