@@ -290,6 +290,167 @@ export const TEMPLATES: SceneTemplate[] = [
     },
   },
   {
+    id: "vortex",
+    label: "Vortex",
+    focusElementId: "vortex",
+    scene: {
+      version: 1,
+      camera: { ...DEFAULT_CAMERA, distance: 14, height: 7, orbit: 0.05, bob: 1, drift: 0.1, fov: 45 },
+      cameraBindings: {},
+      look: { ...DEFAULT_LOOK, background: "#030108", bloom: 0.8, vignette: 0.75 },
+      lookBindings: {},
+      elements: [
+        createElement("vortex", { id: "vortex", position: [0, 1.5, 0] }),
+        createElement("stars", { id: "stars", params: { count: 2500, size: 3 } }),
+      ],
+    },
+  },
+  {
+    id: "resonance",
+    label: "Resonance",
+    focusElementId: "plate",
+    scene: {
+      version: 1,
+      camera: { ...DEFAULT_CAMERA, distance: 13, height: 10, orbit: 0.05, bob: 1, drift: 0.1, fov: 45 },
+      cameraBindings: {},
+      look: { ...DEFAULT_LOOK, background: "#020308", bloom: 0.8, vignette: 0.75 },
+      lookBindings: {},
+      elements: [
+        createElement("resonancePlate", { id: "plate" }),
+      ],
+    },
+  },
+  {
+    id: "pendulum",
+    label: "Pendulum",
+    focusElementId: "pendulums",
+    scene: {
+      version: 1,
+      camera: { ...DEFAULT_CAMERA, distance: 15, height: 2, orbit: 0, sway: 3, bob: 0.5, drift: 0.12, fov: 45 },
+      cameraBindings: {},
+      look: { ...DEFAULT_LOOK, background: "#02030a", bloom: 0.9, vignette: 0.75 },
+      lookBindings: {},
+      elements: [
+        createElement("pendulumWave", { id: "pendulums", position: [0, 1, 0], rotation: [0, 58, 0] }),
+      ],
+    },
+  },
+  {
+    id: "hypercube",
+    label: "Hypercube",
+    focusElementId: "cube",
+    scene: {
+      version: 1,
+      camera: { ...DEFAULT_CAMERA, distance: 10, height: 1.5, orbit: 0.12, bob: 1, drift: 0.2, fov: 45 },
+      cameraBindings: {},
+      look: { ...DEFAULT_LOOK, background: "#02020a", bloom: 1.2, vignette: 0.75 },
+      lookBindings: {},
+      elements: [
+        createElement("hypercube", { id: "cube" }),
+        createElement("particles", { id: "dust", name: "Dust", params: { count: 400, spread: 16, hole: 5, depth: 40, size: 0.14, speed: 0.3, boost: 2, hue: 250, saturation: 0.6, opacity: 0.5 } }),
+      ],
+    },
+  },
+  {
+    id: "equalizer",
+    label: "Equalizer",
+    focusElementId: "wall",
+    scene: {
+      version: 1,
+      camera: { ...DEFAULT_CAMERA, distance: 15, height: 0, orbit: 0, sway: 3, bob: 0.5, drift: 0.15, fov: 45 },
+      cameraBindings: {},
+      look: { ...DEFAULT_LOOK, background: "#020403", bloom: 0.7, vignette: 0.7 },
+      lookBindings: {},
+      elements: [
+        createElement("ledWall", { id: "wall" }),
+      ],
+    },
+  },
+  {
+    id: "radar",
+    label: "Radar",
+    focusElementId: "radar",
+    scene: {
+      version: 1,
+      camera: { ...DEFAULT_CAMERA, distance: 12, height: 10, orbit: 0.03, bob: 0.6, drift: 0.1, fov: 45 },
+      cameraBindings: {},
+      look: { ...DEFAULT_LOOK, background: "#010502", bloom: 1.1, vignette: 0.8 },
+      lookBindings: {},
+      elements: [
+        createElement("radar", { id: "radar" }),
+      ],
+    },
+  },
+  {
+    id: "solar",
+    label: "Solar",
+    focusElementId: "star",
+    scene: {
+      version: 1,
+      camera: { ...DEFAULT_CAMERA, distance: 12, height: 1, orbit: 0.08, bob: 1.5, drift: 0.12, fov: 45 },
+      cameraBindings: {},
+      look: { ...DEFAULT_LOOK, background: "#050201", bloom: 0.9, vignette: 0.7 },
+      lookBindings: {},
+      elements: [
+        createElement("corona", { id: "star" }),
+        createElement("stars", { id: "stars", params: { count: 2500, size: 3 } }),
+      ],
+    },
+  },
+  {
+    id: "sunflower",
+    label: "Sunflower",
+    focusElementId: "flower",
+    scene: {
+      version: 1,
+      camera: { ...DEFAULT_CAMERA, distance: 13, height: 10, orbit: 0.04, bob: 1, drift: 0.1, fov: 45 },
+      cameraBindings: {},
+      look: { ...DEFAULT_LOOK, background: "#050302", bloom: 0.8, vignette: 0.75 },
+      lookBindings: {},
+      elements: [
+        createElement("sunflower", { id: "flower" }),
+      ],
+    },
+  },
+  {
+    id: "knot",
+    label: "Knot",
+    focusElementId: "knot",
+    scene: {
+      version: 1,
+      camera: { ...DEFAULT_CAMERA, distance: 11, height: 2, orbit: 0.15, bob: 1.5, drift: 0.2, fov: 45 },
+      cameraBindings: {},
+      look: { ...DEFAULT_LOOK, background: "#020309", bloom: 0.8, vignette: 0.75 },
+      lookBindings: {},
+      elements: [
+        createElement("torusKnot", { id: "knot" }),
+        createElement("particles", { id: "dust", name: "Dust", params: { count: 400, spread: 16, hole: 6, depth: 40, size: 0.14, speed: 0.3, boost: 2, hue: 220, saturation: 0.6, opacity: 0.5 } }),
+      ],
+    },
+  },
+  {
+    id: "jellyfish",
+    label: "Jellyfish",
+    focusElementId: "jelly",
+    scene: {
+      version: 1,
+      camera: { ...DEFAULT_CAMERA, distance: 15, height: -1, orbit: 0.06, bob: 1, drift: 0.15, fov: 45 },
+      cameraBindings: {},
+      look: { ...DEFAULT_LOOK, background: "#010409", bloom: 0.8, vignette: 0.7 },
+      lookBindings: {},
+      elements: [
+        createElement("jellyfish", {
+          id: "jelly",
+          position: [0, 2.5, 0],
+          // It bobs upward with every swell of the bass.
+          bindings: { "position.1": { source: "bass", amount: 1 } },
+        }),
+        createElement("particles", { id: "plankton", name: "Plankton", params: { count: 500, spread: 18, hole: 0, depth: 40, size: 0.12, speed: 0.15, boost: 1, hue: 190, saturation: 0.5, opacity: 0.45 } }),
+        createElement("backdrop", { id: "backdrop", params: { top: "#04121f", bottom: "#010205" } }),
+      ],
+    },
+  },
+  {
     id: "pulseRing",
     label: "Pulse Ring",
     focusElementId: "picture",

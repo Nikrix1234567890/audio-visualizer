@@ -44,8 +44,11 @@ export const AudioVisualizer3D: React.FC<AudioVisualizerProps> = ({
   return (
     <AbsoluteFill style={{backgroundColor: background}}>
       <Audio src={audioSrc} />
-      {/* The camera is positioned by the SceneRenderer, see CameraRig there. */}
-      <ThreeCanvas width={width} height={height}>
+      {/* The camera is positioned by the SceneRenderer, see CameraRig there.
+          dpr 1: draw exactly width x height pixels. On a high-density
+          screen the default would draw four times as many for a preview
+          that is shown scaled down anyway - a large, invisible cost. */}
+      <ThreeCanvas width={width} height={height} dpr={1}>
         <SceneRenderer
           scene={scene}
           analysis={analysis}
