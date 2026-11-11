@@ -3,7 +3,7 @@ import { HeroScene } from "@/components/landing/HeroScene";
 import { PlanCards } from "@/components/PlanCards";
 import { Reveal } from "@/components/Reveal";
 import { TemplateGrid } from "@/components/TemplateGrid";
-import { Wordmark } from "@/components/Wordmark";
+import { SiteFooter } from "@/components/SiteFooter";
 import { ELEMENT_TYPES } from "../../remotion/scene/definitions";
 import { TEMPLATES } from "../../remotion/scene/templates";
 
@@ -272,22 +272,7 @@ export default function LandingPage() {
         </Reveal>
       </section>
 
-      <footer className="relative border-t border-line">
-        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-6 text-xs text-muted">
-          <Wordmark />
-          <nav className="flex gap-5">
-            <Link href="/editor" className="hover:text-ink">
-              Editor
-            </Link>
-            <Link href="/pricing" className="hover:text-ink">
-              Pricing
-            </Link>
-            <Link href="/login" className="hover:text-ink">
-              Log in
-            </Link>
-          </nav>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { PlanCards } from "@/components/PlanCards";
+import { SiteFooter } from "@/components/SiteFooter";
 import { UpgradeButton } from "@/components/UpgradeButton";
 import { isStripeConfigured } from "@/lib/stripe";
 import { getTier } from "@/lib/userTier";
@@ -63,7 +64,8 @@ export default async function PricingPage({
     );
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-10 px-6 py-14">
+    <div className="flex flex-1 flex-col">
+    <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-10 px-6 py-14">
       <div className="flex flex-col gap-3">
         <span className="font-mono text-[11px] tracking-[0.12em] text-muted uppercase">
           Pricing
@@ -98,6 +100,8 @@ export default async function PricingPage({
           </div>
         ))}
       </dl>
+    </div>
+    <SiteFooter />
     </div>
   );
 }
