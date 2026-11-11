@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import path from "node:path";
 import fs from "node:fs";
 import { mkdir } from "node:fs/promises";
+import { createServer } from "node:net";
 import { renderMedia, selectComposition } from "@remotion/renderer";
 import { getAbsolutePath } from "@/lib/storage";
 import { prisma } from "@/lib/prisma";
@@ -13,6 +14,26 @@ import { RESOLUTIONS, type VisualizerSettings } from "../../../../remotion/types
 // https://www.remotion.dev/docs/miscellaneous/nextjs
 const BUNDLE_DIR = path.resolve(process.cwd(), ".remotion-bundle");
 const COMPOSITION_ID = "AudioVisualizer3D";
+
+/**
+ * Asks the OS for a free TCP port. Remotion serves the bundle from its own
+ * small HTTP server and by default starts looking at port 3000 - the same
+ * port this Next.js app usually runs on. On Windows both can end up bound to
+ * 3000, and the render browser then loads the Next.js app instead of the
+ * Remotion bundle. Handing Remotion an explicit free port avoids that.
+ */
+function getFreePort(): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const server = createServer();
+    server.unref();
+    server.on("error", reject);
+    server.listen(0, () => {
+      const address = server.address();
+      const port = typeof address === "object" && address ? address.port : 0;
+      server.close(() => resolve(port));
+    });
+  });
+}
 
 async function runRender(
   jobId: string,
@@ -34,6 +55,7 @@ async function runRender(
       id: COMPOSITION_ID,
       inputProps,
       chromiumOptions,
+      port: await getFreePort(),
     });
 
     // Override the composition's default 720p dimensions with the
@@ -55,6 +77,7 @@ async function runRender(
       outputLocation: outputPath,
       inputProps,
       chromiumOptions,
+      port: await getFreePort(),
       onProgress: ({ progress }) => {
         const percent = Math.round(progress * 100);
         if (percent === lastReportedPercent) return;
