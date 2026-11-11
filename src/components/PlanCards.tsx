@@ -39,7 +39,7 @@ export function PlanCards({
         action={
           <Link
             href="/editor"
-            className="rounded-xl border border-hairline bg-panel-raised px-5 py-2.5 text-center text-sm font-semibold tracking-wide text-cream shadow-control-raised outline-none hover:border-amber-dim hover:text-amber focus-visible:border-amber"
+            className="rounded-xl border border-line bg-surface-raised px-5 py-2.5 text-center text-sm font-semibold tracking-wide text-ink shadow-control-raised outline-none hover:border-accent-dim hover:text-accent focus-visible:border-accent"
           >
             Open the editor
           </Link>
@@ -55,7 +55,7 @@ export function PlanCards({
           premiumAction ?? (
             <Link
               href="/pricing"
-              className="rounded-xl bg-amber px-5 py-2.5 text-center text-sm font-semibold tracking-wide text-chassis outline-none hover:bg-amber/90 focus-visible:ring-2 focus-visible:ring-cream"
+              className="rounded-xl bg-brand px-5 py-2.5 text-center text-sm font-semibold tracking-wide text-canvas outline-none hover:brightness-110 focus-visible:ring-2 focus-visible:ring-ink"
             >
               See Premium
             </Link>
@@ -83,30 +83,30 @@ function Plan({
 }) {
   return (
     <div
-      className={`flex flex-col gap-5 rounded-[10px] border bg-panel p-6 ${
-        isHighlighted ? "border-amber-dim" : "border-hairline"
+      className={`flex flex-col gap-5 rounded-2xl border bg-surface p-6 ${
+        isHighlighted ? "border-accent-dim" : "border-line"
       }`}
     >
       <div className="flex flex-col gap-1">
         <span
           className={`font-mono text-[11px] tracking-[0.12em] uppercase ${
-            isHighlighted ? "text-amber" : "text-steel"
+            isHighlighted ? "text-accent" : "text-muted"
           }`}
         >
           {name}
         </span>
-        <span className="text-2xl font-semibold tracking-tight text-cream">
+        <span className="text-2xl font-semibold tracking-tight text-ink">
           {price}
         </span>
-        <span className="text-xs text-steel">{note}</span>
+        <span className="text-xs text-muted">{note}</span>
       </div>
-      <ul className="flex flex-1 flex-col gap-2 text-sm text-cream">
+      <ul className="flex flex-1 flex-col gap-2 text-sm text-ink">
         {features.map((feature) => (
           <li key={feature} className="flex gap-2">
             <span
               aria-hidden
               className={`mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full ${
-                isHighlighted ? "bg-amber" : "bg-amber-dim"
+                isHighlighted ? "bg-accent" : "bg-accent-dim"
               }`}
             />
             {feature}

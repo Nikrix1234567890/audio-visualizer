@@ -83,18 +83,18 @@ export function BindableSlider({
       }
       title={isPatched ? "Unplug from audio" : "React to audio"}
       onClick={togglePatch}
-      className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border outline-none transition-colors hover:border-amber focus-visible:border-amber ${
-        isPatched ? "border-amber bg-amber-dim shadow-glow-active" : "border-hairline"
+      className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border outline-none transition-colors hover:border-accent focus-visible:border-accent ${
+        isPatched ? "border-accent bg-accent-dim shadow-glow-active" : "border-line"
       }`}
     >
       <span
-        className={`h-1.5 w-1.5 rounded-full ${isPatched ? "bg-amber" : "bg-hairline"}`}
+        className={`h-1.5 w-1.5 rounded-full ${isPatched ? "bg-accent" : "bg-line"}`}
       />
     </button>
   );
 
   const patchStrip = binding && (
-    <div className="mt-1 flex flex-col gap-2 border-l border-amber-dim pl-3">
+    <div className="mt-1 flex flex-col gap-2 border-l border-accent-dim pl-3">
       <SegmentedSelector
         stretch
         options={AUDIO_SOURCES.map((s) => ({ value: s.id, label: s.label }))}
@@ -248,7 +248,7 @@ function AnimatedSlider({
   };
 
   const stepButton =
-    "flex h-6 w-6 items-center justify-center rounded-md border border-hairline text-cream outline-none hover:border-amber-dim hover:text-amber focus-visible:border-amber disabled:cursor-not-allowed disabled:text-steel disabled:opacity-40 disabled:hover:border-hairline disabled:hover:text-steel";
+    "flex h-6 w-6 items-center justify-center rounded-md border border-line text-ink outline-none hover:border-accent-dim hover:text-accent focus-visible:border-accent disabled:cursor-not-allowed disabled:text-muted disabled:opacity-40 disabled:hover:border-line disabled:hover:text-muted";
 
   return (
     <SliderRow
@@ -268,7 +268,7 @@ function AnimatedSlider({
         </>
       }
     >
-      <div className="mt-1 flex flex-col gap-2 border-l border-amber-dim pl-3">
+      <div className="mt-1 flex flex-col gap-2 border-l border-accent-dim pl-3">
         <div className="flex items-center gap-1.5">
           <button
             type="button"
@@ -286,14 +286,14 @@ function AnimatedSlider({
             disabled={!isOnKeyframe && isFull}
             title={isOnKeyframe ? "Remove the keyframe here" : "Add a keyframe here"}
             onClick={toggleHere}
-            className={`flex h-6 flex-1 items-center justify-center gap-1.5 rounded-md border font-mono text-[10px] tracking-[0.06em] uppercase outline-none hover:border-amber focus-visible:border-amber disabled:opacity-40 ${
+            className={`flex h-6 flex-1 items-center justify-center gap-1.5 rounded-md border font-mono text-[10px] tracking-[0.06em] uppercase outline-none hover:border-accent focus-visible:border-accent disabled:opacity-40 ${
               isOnKeyframe
-                ? "border-amber-dim text-amber"
-                : "border-hairline text-steel hover:text-cream"
+                ? "border-accent-dim text-accent"
+                : "border-line text-muted hover:text-ink"
             }`}
           >
             <span
-              className={`h-1.5 w-1.5 rotate-45 ${isOnKeyframe ? "bg-amber" : "border border-steel"}`}
+              className={`h-1.5 w-1.5 rotate-45 ${isOnKeyframe ? "bg-accent" : "border border-muted"}`}
             />
             {isOnKeyframe ? "Keyframe" : "Add keyframe"}
           </button>
@@ -307,7 +307,7 @@ function AnimatedSlider({
           >
             <Chevron direction="right" />
           </button>
-          <span className="w-12 shrink-0 text-right font-mono text-[10px] tracking-[0.06em] text-steel tabular-nums">
+          <span className="w-12 shrink-0 text-right font-mono text-[10px] tracking-[0.06em] text-muted tabular-nums">
             {(isOnKeyframe ? indexHere + 1 : "–") + " / " + keyframes.length}
           </span>
         </div>
@@ -351,8 +351,8 @@ function Diamond({
       className="group/diamond flex h-4 w-4 shrink-0 items-center justify-center outline-none"
     >
       <span
-        className={`h-2.5 w-2.5 rotate-45 border transition-colors group-hover/diamond:border-amber group-focus-visible/diamond:border-amber ${
-          isLit ? "border-amber bg-amber-dim shadow-glow-active" : "border-hairline"
+        className={`h-2.5 w-2.5 rotate-45 border transition-colors group-hover/diamond:border-accent group-focus-visible/diamond:border-accent ${
+          isLit ? "border-accent bg-accent-dim shadow-glow-active" : "border-line"
         }`}
       />
     </button>

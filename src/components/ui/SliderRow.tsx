@@ -58,12 +58,12 @@ export function SliderRow({
     <div className="flex flex-col gap-1">
       <div className="flex items-baseline justify-between gap-3">
         <span className="flex min-w-0 items-center gap-2">
-          <span className="truncate font-mono text-[11px] tracking-[0.08em] text-steel uppercase">
+          <span className="truncate font-mono text-[11px] tracking-[0.08em] text-muted uppercase">
             {label}
           </span>
           {accessory}
         </span>
-        <span className="flex shrink-0 items-baseline font-mono text-[13px] text-cream">
+        <span className="flex shrink-0 items-baseline font-mono text-[13px] text-ink">
           <input
             aria-label={`${label} value`}
             inputMode="decimal"
@@ -78,9 +78,9 @@ export function SliderRow({
                 e.currentTarget.blur();
               }
             }}
-            className="w-14 border-b border-transparent bg-transparent text-right outline-none hover:border-hairline focus:border-amber"
+            className="w-14 border-b border-transparent bg-transparent text-right outline-none hover:border-line focus:border-accent"
           />
-          {unit && <span className="pl-0.5 text-steel">{unit}</span>}
+          {unit && <span className="pl-0.5 text-muted">{unit}</span>}
         </span>
       </div>
 
@@ -112,18 +112,18 @@ export function SliderRow({
         }}
       >
         <div
-          className="absolute top-1/2 h-1 -translate-y-1/2 rounded-full bg-hairline"
+          className="absolute top-1/2 h-1 -translate-y-1/2 rounded-full bg-line"
           style={{ left: THUMB_RADIUS, right: THUMB_RADIUS }}
         />
         <div
-          className="absolute top-1/2 h-1 -translate-y-1/2 rounded-full bg-amber-dim group-hover:bg-amber group-focus-visible:bg-amber group-active:bg-amber"
+          className="absolute top-1/2 h-1 -translate-y-1/2 rounded-full bg-accent-dim group-hover:bg-accent group-focus-visible:bg-accent group-active:bg-accent"
           style={{
             left: THUMB_RADIUS,
             width: `calc((100% - ${THUMB_RADIUS * 2}px) * ${ratio})`,
           }}
         />
         <div
-          className="absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-hairline bg-panel-raised shadow-control-raised group-hover:border-amber-dim group-focus-visible:border-amber group-focus-visible:shadow-glow-active group-active:border-amber group-active:shadow-glow-active"
+          className="absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-line bg-surface-raised shadow-control-raised group-hover:border-accent-dim group-focus-visible:border-accent group-focus-visible:shadow-glow-active group-active:border-accent group-active:shadow-glow-active"
           style={{
             left: `calc(${THUMB_RADIUS}px + (100% - ${THUMB_RADIUS * 2}px) * ${ratio})`,
           }}

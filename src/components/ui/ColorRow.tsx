@@ -28,7 +28,7 @@ export function ColorRow({
 
   return (
     <div className="flex items-center justify-between gap-3">
-      <span className="font-mono text-[11px] tracking-[0.08em] text-steel uppercase">
+      <span className="font-mono text-[11px] tracking-[0.08em] text-muted uppercase">
         {label}
       </span>
       <span className="flex items-center gap-2">
@@ -46,10 +46,10 @@ export function ColorRow({
               e.currentTarget.blur();
             }
           }}
-          className="w-[4.5rem] border-b border-transparent bg-transparent text-right font-mono text-[13px] text-cream outline-none hover:border-hairline focus:border-amber"
+          className="w-[4.5rem] border-b border-transparent bg-transparent text-right font-mono text-[13px] text-ink outline-none hover:border-line focus:border-accent"
         />
         <label
-          className="relative h-5 w-7 shrink-0 cursor-pointer overflow-hidden rounded-md border border-hairline shadow-control-raised focus-within:border-amber"
+          className="relative h-5 w-7 shrink-0 cursor-pointer overflow-hidden rounded-md border border-line shadow-control-raised focus-within:border-accent"
           style={{ backgroundColor: value }}
         >
           <input

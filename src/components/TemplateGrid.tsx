@@ -11,10 +11,10 @@ export function TemplateGrid({ limit }: { limit?: number }) {
         <li key={template.id}>
           <Link
             href={`/editor?template=${template.id}`}
-            className="group flex flex-col overflow-hidden rounded-[10px] border border-hairline bg-panel outline-none hover:border-amber-dim focus-visible:border-amber"
+            className="group flex flex-col overflow-hidden rounded-2xl border border-line bg-surface outline-none hover:border-accent-dim focus-visible:border-accent"
           >
             <Thumbnail src={`/thumbnails/templates/${template.id}.jpg`} dimmed />
-            <span className="truncate px-3 py-2 font-mono text-[11px] tracking-[0.06em] text-steel uppercase group-hover:text-cream">
+            <span className="truncate px-3 py-2 font-mono text-[11px] tracking-[0.06em] text-muted uppercase group-hover:text-ink">
               {template.label}
             </span>
           </Link>

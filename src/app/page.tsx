@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { TemplateGrid } from "@/components/TemplateGrid";
 import { PlanCards } from "@/components/PlanCards";
+import { Wordmark } from "@/components/Wordmark";
 import { ELEMENT_TYPES } from "../../remotion/scene/definitions";
 import { TEMPLATES } from "../../remotion/scene/templates";
 
@@ -42,26 +43,26 @@ const FEATURES = [
 ];
 
 const primaryButton =
-  "rounded-xl bg-amber px-6 py-3 text-sm font-semibold tracking-wide text-chassis outline-none hover:bg-amber/90 focus-visible:ring-2 focus-visible:ring-cream";
+  "rounded-xl bg-brand px-6 py-3 text-sm font-semibold tracking-wide text-canvas outline-none hover:brightness-110 focus-visible:ring-2 focus-visible:ring-ink";
 const secondaryButton =
-  "rounded-xl border border-hairline bg-panel-raised px-6 py-3 text-sm font-semibold tracking-wide text-cream shadow-control-raised outline-none hover:border-amber-dim hover:text-amber focus-visible:border-amber";
+  "rounded-xl border border-line bg-surface-raised px-6 py-3 text-sm font-semibold tracking-wide text-ink shadow-control-raised outline-none hover:border-accent-dim hover:text-accent focus-visible:border-accent";
 const sectionLabel =
-  "font-mono text-[11px] tracking-[0.12em] text-steel uppercase";
+  "font-mono text-[11px] tracking-[0.12em] text-muted uppercase";
 
 /** The landing page: what the app is, what it makes, what it costs. */
 export default function LandingPage() {
   return (
     <div className="flex flex-col">
       {/* Hero */}
-      <section className="chassis-grain border-b border-hairline">
+      <section className="surface-texture border-b border-line">
         <div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-6 py-16 lg:grid-cols-[5fr_6fr] lg:py-24">
           <div className="flex flex-col gap-6">
             <span className={sectionLabel}>Audio-reactive 3D video</span>
-            <h1 className="font-sans text-4xl leading-[1.05] font-semibold tracking-tight text-cream sm:text-5xl">
+            <h1 className="font-sans text-4xl leading-[1.05] font-semibold tracking-tight text-ink sm:text-5xl">
               Turn a song into a video that{" "}
-              <span className="text-amber">moves with it</span>.
+              <span className="text-accent">moves with it</span>.
             </h1>
-            <p className="max-w-md text-base leading-relaxed text-steel">
+            <p className="max-w-md text-base leading-relaxed text-muted">
               Build a 3D scene from elements, wire it to the music and render
               it - all in the browser. No software to install, no timeline to
               learn.
@@ -74,14 +75,14 @@ export default function LandingPage() {
                 See the templates
               </a>
             </div>
-            <p className="text-xs text-steel">
+            <p className="text-xs text-muted">
               Free to use, no account needed to try it.
             </p>
           </div>
 
-          <div className="relative rounded-[10px] border border-hairline bg-panel p-2 shadow-scope-recessed">
+          <div className="relative rounded-2xl border border-line bg-surface p-2 shadow-scope-recessed">
             <video
-              className="aspect-video w-full rounded-md bg-chassis object-cover"
+              className="aspect-video w-full rounded-md bg-canvas object-cover"
               src="/landing/hero.mp4"
               poster="/landing/hero-poster.jpg"
               autoPlay
@@ -95,22 +96,22 @@ export default function LandingPage() {
       </section>
 
       {/* How it works */}
-      <section className="border-b border-hairline">
+      <section className="border-b border-line">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-16">
           <h2 className={sectionLabel}>How it works</h2>
           <ol className="grid gap-4 md:grid-cols-3">
             {STEPS.map((step) => (
               <li
                 key={step.label}
-                className="flex flex-col gap-3 rounded-[10px] border border-hairline bg-panel p-5"
+                className="flex flex-col gap-3 rounded-2xl border border-line bg-surface p-5"
               >
-                <span className="font-mono text-[11px] tracking-[0.12em] text-amber uppercase">
+                <span className="font-mono text-[11px] tracking-[0.12em] text-accent uppercase">
                   {step.label}
                 </span>
-                <h3 className="text-lg font-semibold tracking-tight text-cream">
+                <h3 className="text-lg font-semibold tracking-tight text-ink">
                   {step.title}
                 </h3>
-                <p className="text-sm leading-relaxed text-steel">{step.text}</p>
+                <p className="text-sm leading-relaxed text-muted">{step.text}</p>
               </li>
             ))}
           </ol>
@@ -118,11 +119,11 @@ export default function LandingPage() {
       </section>
 
       {/* Templates */}
-      <section id="templates" className="scroll-mt-4 border-b border-hairline">
+      <section id="templates" className="scroll-mt-4 border-b border-line">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-16">
           <div className="flex flex-col gap-3">
             <h2 className={sectionLabel}>Templates</h2>
-            <p className="max-w-xl text-2xl font-semibold tracking-tight text-cream">
+            <p className="max-w-xl text-2xl font-semibold tracking-tight text-ink">
               {TEMPLATES.length} starting points. Click one to open it in the
               editor.
             </p>
@@ -132,16 +133,16 @@ export default function LandingPage() {
       </section>
 
       {/* Features */}
-      <section className="border-b border-hairline">
+      <section className="border-b border-line">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-16">
           <h2 className={sectionLabel}>What you can do</h2>
           <ul className="grid gap-x-10 gap-y-8 md:grid-cols-2">
             {FEATURES.map((feature) => (
-              <li key={feature.title} className="flex flex-col gap-2 border-t border-hairline pt-5">
-                <h3 className="text-lg font-semibold tracking-tight text-cream">
+              <li key={feature.title} className="flex flex-col gap-2 border-t border-line pt-5">
+                <h3 className="text-lg font-semibold tracking-tight text-ink">
                   {feature.title}
                 </h3>
-                <p className="max-w-md text-sm leading-relaxed text-steel">
+                <p className="max-w-md text-sm leading-relaxed text-muted">
                   {feature.text}
                 </p>
               </li>
@@ -151,11 +152,11 @@ export default function LandingPage() {
       </section>
 
       {/* Plans */}
-      <section className="border-b border-hairline">
+      <section className="border-b border-line">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-16">
           <div className="flex flex-col gap-3">
             <h2 className={sectionLabel}>Plans</h2>
-            <p className="max-w-xl text-2xl font-semibold tracking-tight text-cream">
+            <p className="max-w-xl text-2xl font-semibold tracking-tight text-ink">
               Free to make videos. Premium when you want them bigger and
               unmarked.
             </p>
@@ -165,9 +166,9 @@ export default function LandingPage() {
       </section>
 
       {/* Closing call */}
-      <section className="chassis-grain">
+      <section className="surface-texture">
         <div className="mx-auto flex w-full max-w-6xl flex-col items-start gap-6 px-6 py-16">
-          <p className="max-w-xl text-3xl font-semibold tracking-tight text-cream">
+          <p className="max-w-xl text-3xl font-semibold tracking-tight text-ink">
             Your track is the only thing missing.
           </p>
           <Link href="/editor" className={primaryButton}>
@@ -176,19 +177,17 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <footer className="border-t border-hairline">
-        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-6 text-xs text-steel">
-          <span>
-            Audio<span className="text-amber">Visualizer</span>
-          </span>
+      <footer className="border-t border-line">
+        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-6 text-xs text-muted">
+          <Wordmark />
           <nav className="flex gap-5">
-            <Link href="/editor" className="hover:text-cream">
+            <Link href="/editor" className="hover:text-ink">
               Editor
             </Link>
-            <Link href="/pricing" className="hover:text-cream">
+            <Link href="/pricing" className="hover:text-ink">
               Pricing
             </Link>
-            <Link href="/login" className="hover:text-cream">
+            <Link href="/login" className="hover:text-ink">
               Log in
             </Link>
           </nav>

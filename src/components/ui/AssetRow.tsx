@@ -59,11 +59,11 @@ export function AssetRow({
   };
 
   const buttonClass =
-    "rounded-md border border-hairline px-2.5 py-1.5 font-mono text-[11px] tracking-[0.06em] text-cream uppercase outline-none hover:border-amber-dim hover:text-amber focus-visible:border-amber disabled:cursor-not-allowed disabled:opacity-50";
+    "rounded-md border border-line px-2.5 py-1.5 font-mono text-[11px] tracking-[0.06em] text-ink uppercase outline-none hover:border-accent-dim hover:text-accent focus-visible:border-accent disabled:cursor-not-allowed disabled:opacity-50";
 
   return (
     <div className="flex flex-col gap-2">
-      <span className="font-mono text-[11px] tracking-[0.08em] text-steel uppercase">
+      <span className="font-mono text-[11px] tracking-[0.08em] text-muted uppercase">
         {label}
       </span>
 
@@ -72,7 +72,7 @@ export function AssetRow({
           <div
             role="img"
             aria-label={value ? "Chosen picture" : "No picture chosen"}
-            className="h-12 w-12 shrink-0 rounded-md border border-hairline bg-chassis bg-cover bg-center shadow-scope-recessed"
+            className="h-12 w-12 shrink-0 rounded-md border border-line bg-canvas bg-cover bg-center shadow-scope-recessed"
             style={
               value ? { backgroundImage: `url("/api/files/${value}")` } : undefined
             }
@@ -80,7 +80,7 @@ export function AssetRow({
         ) : (
           <span
             className={`h-2 w-2 shrink-0 rounded-full ${
-              value ? "bg-amber shadow-glow-active" : "bg-amber-dim"
+              value ? "bg-accent shadow-glow-active" : "bg-accent-dim"
             }`}
             aria-label={value ? "Model loaded" : "No model chosen"}
             role="img"
@@ -116,7 +116,7 @@ export function AssetRow({
       />
 
       {error && <p className="text-xs text-red-400">{error}</p>}
-      {!value && !error && <p className="text-xs text-steel">{hint}</p>}
+      {!value && !error && <p className="text-xs text-muted">{hint}</p>}
     </div>
   );
 }

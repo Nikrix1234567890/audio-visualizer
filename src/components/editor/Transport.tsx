@@ -83,17 +83,17 @@ export function Transport({
   const ready = Boolean(player && audioData);
 
   return (
-    <div className="editor-area-transport chassis-grain flex min-h-0 flex-col gap-3 border-t border-hairline bg-panel p-3 lg:flex-row lg:items-stretch lg:border-t-0">
+    <div className="editor-area-transport surface-texture flex min-h-0 flex-col gap-3 border-t border-line bg-surface p-3 lg:flex-row lg:items-stretch lg:border-t-0">
       <div className="flex shrink-0 items-center gap-3">
         <button
           type="button"
           onClick={() => fileInput.current?.click()}
           title={fileName ?? "Load an audio file"}
-          className="flex max-w-44 items-center gap-2 rounded-md border border-hairline bg-panel-raised px-3 py-2 font-mono text-[11px] tracking-[0.06em] text-cream uppercase shadow-control-raised outline-none hover:border-amber-dim hover:text-amber focus-visible:border-amber"
+          className="flex max-w-44 items-center gap-2 rounded-md border border-line bg-surface-raised px-3 py-2 font-mono text-[11px] tracking-[0.06em] text-ink uppercase shadow-control-raised outline-none hover:border-accent-dim hover:text-accent focus-visible:border-accent"
         >
           <span
             className={`h-2 w-2 shrink-0 rounded-full ${
-              fileName ? "bg-amber shadow-glow-active" : "bg-amber-dim"
+              fileName ? "bg-accent shadow-glow-active" : "bg-accent-dim"
             }`}
           />
           <span className="truncate normal-case">
@@ -118,8 +118,8 @@ export function Transport({
           onClick={(e) => player?.toggle(e)}
           aria-label={isPlaying ? "Pause" : "Play"}
           title="Play / pause (Space)"
-          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-hairline bg-panel-raised shadow-control-raised outline-none hover:border-amber-dim hover:text-amber focus-visible:border-amber disabled:cursor-not-allowed disabled:opacity-40 ${
-            isPlaying ? "text-amber shadow-glow-active" : "text-cream"
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-line bg-surface-raised shadow-control-raised outline-none hover:border-accent-dim hover:text-accent focus-visible:border-accent disabled:cursor-not-allowed disabled:opacity-40 ${
+            isPlaying ? "text-accent shadow-glow-active" : "text-ink"
           }`}
         >
           <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
@@ -131,9 +131,9 @@ export function Transport({
           </svg>
         </button>
 
-        <span className="w-24 shrink-0 font-mono text-[13px] text-cream tabular-nums">
+        <span className="w-24 shrink-0 font-mono text-[13px] text-ink tabular-nums">
           {formatTime(frame / fps)}
-          <span className="text-steel"> / {formatTime(durationInFrames / fps)}</span>
+          <span className="text-muted"> / {formatTime(durationInFrames / fps)}</span>
         </span>
 
         <button
@@ -142,8 +142,8 @@ export function Transport({
           aria-label={muted ? "Unmute" : "Mute"}
           aria-pressed={muted}
           title={muted ? "Unmute" : "Mute"}
-          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-hairline outline-none hover:border-amber-dim focus-visible:border-amber ${
-            muted ? "text-steel" : "text-cream"
+          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-line outline-none hover:border-accent-dim focus-visible:border-accent ${
+            muted ? "text-muted" : "text-ink"
           }`}
         >
           <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden fill="none">

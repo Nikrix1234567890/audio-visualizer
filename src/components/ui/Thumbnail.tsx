@@ -14,7 +14,7 @@ export function Thumbnail({ src, dimmed = false }: { src: string; dimmed?: boole
       loading="lazy"
       width={480}
       height={270}
-      className={`aspect-video w-full bg-chassis object-cover transition-opacity ${
+      className={`aspect-video w-full bg-canvas object-cover transition-opacity ${
         dimmed ? "opacity-70 group-hover:opacity-100 group-focus-visible:opacity-100" : ""
       }`}
     />

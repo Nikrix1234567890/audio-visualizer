@@ -153,7 +153,7 @@ export function Preview({
   return (
     <section className="editor-area-preview flex min-h-0 min-w-0 flex-col gap-3 p-4">
       <div className="flex shrink-0 items-center gap-3">
-        <span className="font-mono text-[11px] tracking-[0.08em] text-steel uppercase">
+        <span className="font-mono text-[11px] tracking-[0.08em] text-muted uppercase">
           Tool
         </span>
         <SegmentedSelector options={TOOLS} value={tool} onChange={setTool} />
@@ -165,14 +165,14 @@ export function Preview({
             <path d="M10 4l3.5 3.5L10 11M13 7.5H6.5a3.5 3.5 0 000 7H9" />
           </HistoryButton>
         </div>
-        <span className="hidden text-xs text-steel xl:inline">
+        <span className="hidden text-xs text-muted xl:inline">
           {isPlaying
             ? "Pause to edit in the picture."
             : "Click an element to select it, drag the handles to change it."}
         </span>
         {isPlaying && measuredFps !== null && (
           <span
-            className="ml-auto font-mono text-[11px] tracking-[0.06em] text-steel uppercase tabular-nums"
+            className="ml-auto font-mono text-[11px] tracking-[0.06em] text-muted uppercase tabular-nums"
             title="Frames the preview showed in the last second"
           >
             {measuredFps} / {fps} fps
@@ -185,11 +185,7 @@ export function Preview({
         className="flex aspect-video min-h-0 w-full items-center justify-center lg:aspect-auto lg:flex-1"
       >
         {width > 0 && (
-          <div className="relative rounded-[10px] border border-hairline bg-panel p-2 shadow-scope-recessed">
-            <Rivet className="left-1 top-1" />
-            <Rivet className="right-1 top-1" />
-            <Rivet className="bottom-1 left-1" />
-            <Rivet className="bottom-1 right-1" />
+          <div className="relative rounded-2xl border border-line bg-surface p-2 shadow-scope-recessed">
 
             {audioUrl ? (
               <Player
@@ -238,24 +234,24 @@ function DropZone({
   return (
     <label
       style={{ width, height }}
-      className="group flex cursor-pointer flex-col items-center justify-center gap-3 rounded-md bg-chassis"
+      className="group flex cursor-pointer flex-col items-center justify-center gap-3 rounded-md bg-canvas"
     >
-      <span className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed border-hairline transition-colors group-hover:border-amber">
+      <span className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed border-line transition-colors group-hover:border-accent">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
-          <circle cx="12" cy="12" r="4" className="fill-steel" />
+          <circle cx="12" cy="12" r="4" className="fill-muted" />
           <path
             d="M12 2v6M12 16v6M2 12h6M16 12h6"
-            stroke="var(--steel-label)"
+            stroke="var(--muted)"
             strokeWidth="1.5"
             strokeLinecap="round"
           />
         </svg>
       </span>
-      <span className="font-mono text-[11px] tracking-[0.08em] text-steel uppercase">
+      <span className="font-mono text-[11px] tracking-[0.08em] text-muted uppercase">
         {isLoading ? "Reading track…" : "Input"}
       </span>
       {!isLoading && (
-        <span className="text-xs text-steel">
+        <span className="text-xs text-muted">
           Drop a track here or click to select one
         </span>
       )}
@@ -292,7 +288,7 @@ function HistoryButton({
       title={label}
       disabled={disabled}
       onClick={onClick}
-      className="flex h-8 w-8 items-center justify-center rounded-md border border-hairline text-cream outline-none hover:border-amber-dim hover:text-amber focus-visible:border-amber disabled:cursor-not-allowed disabled:text-steel disabled:opacity-40 disabled:hover:border-hairline disabled:hover:text-steel"
+      className="flex h-8 w-8 items-center justify-center rounded-md border border-line text-ink outline-none hover:border-accent-dim hover:text-accent focus-visible:border-accent disabled:cursor-not-allowed disabled:text-muted disabled:opacity-40 disabled:hover:border-line disabled:hover:text-muted"
     >
       <svg
         width="16"
@@ -308,13 +304,5 @@ function HistoryButton({
         {children}
       </svg>
     </button>
-  );
-}
-
-function Rivet({ className = "" }: { className?: string }) {
-  return (
-    <span
-      className={`pointer-events-none absolute z-10 h-1 w-1 rounded-full bg-[radial-gradient(circle_at_35%_30%,rgba(255,255,255,0.5),rgba(0,0,0,0.6))] ${className}`}
-    />
   );
 }

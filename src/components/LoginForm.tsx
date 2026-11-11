@@ -38,7 +38,7 @@ export function LoginForm() {
   }
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center bg-chassis px-6 py-16 text-cream">
+    <div className="flex flex-1 flex-col items-center justify-center bg-canvas px-6 py-16 text-ink">
       <div className="w-full max-w-sm">
         <h1 className="mb-6 text-xl font-semibold">Log in</h1>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -49,7 +49,7 @@ export function LoginForm() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="rounded-md border border-hairline bg-panel px-3 py-2 text-sm outline-none focus:border-amber"
+              className="rounded-md border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-accent"
             />
           </label>
           <label className="flex flex-col gap-1 text-sm">
@@ -59,21 +59,21 @@ export function LoginForm() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="rounded-md border border-hairline bg-panel px-3 py-2 text-sm outline-none focus:border-amber"
+              className="rounded-md border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-accent"
             />
           </label>
           {error && <p className="text-sm text-red-400">{error}</p>}
           <button
             type="submit"
             disabled={isSubmitting}
-            className="mt-2 rounded-md bg-amber px-4 py-2 text-sm font-medium text-chassis hover:bg-amber/90 disabled:opacity-50"
+            className="mt-2 rounded-md bg-brand px-4 py-2 text-sm font-medium text-canvas hover:brightness-110 disabled:opacity-50"
           >
             {isSubmitting ? "Logging in..." : "Log in"}
           </button>
         </form>
-        <p className="mt-4 text-sm text-steel">
+        <p className="mt-4 text-sm text-muted">
           No account yet?{" "}
-          <Link href="/register" className="text-amber underline">
+          <Link href="/register" className="text-accent underline">
             Sign up
           </Link>
         </p>

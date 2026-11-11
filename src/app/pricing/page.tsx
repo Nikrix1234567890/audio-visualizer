@@ -4,20 +4,21 @@ import { PlanCards } from "@/components/PlanCards";
 import { UpgradeButton } from "@/components/UpgradeButton";
 import { isStripeConfigured } from "@/lib/stripe";
 import { getTier } from "@/lib/userTier";
+import { BRAND } from "../../../remotion/brand";
 
 const first = (value: string | string[] | undefined) =>
   Array.isArray(value) ? value[0] : value;
 
-const amberButton =
-  "rounded-xl bg-amber px-5 py-2.5 text-center text-sm font-semibold tracking-wide text-chassis outline-none hover:bg-amber/90 focus-visible:ring-2 focus-visible:ring-cream";
+const brandButton =
+  "rounded-xl bg-brand px-5 py-2.5 text-center text-sm font-semibold tracking-wide text-canvas outline-none hover:brightness-110 focus-visible:ring-2 focus-visible:ring-ink";
 const note =
-  "rounded-xl border border-hairline px-5 py-2.5 text-center text-sm text-steel";
+  "rounded-xl border border-line px-5 py-2.5 text-center text-sm text-muted";
 
 const QUESTIONS = [
   {
     question: "What does the watermark look like?",
     answer:
-      "A small “AudioVisualizer” in the bottom right corner. The editor preview shows it exactly where the video will have it.",
+      `A small “${BRAND.name}” in the bottom right corner. The editor preview shows it exactly where the video will have it.`,
   },
   {
     question: "Do I keep my projects on the free plan?",
@@ -54,7 +55,7 @@ export default async function PricingPage({
     ) : !isStripeConfigured() ? (
       <p className={note}>Premium is not on sale yet.</p>
     ) : !userId ? (
-      <Link href="/login?callbackUrl=/pricing" className={amberButton}>
+      <Link href="/login?callbackUrl=/pricing" className={brandButton}>
         Log in to go Premium
       </Link>
     ) : (
@@ -64,17 +65,17 @@ export default async function PricingPage({
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-10 px-6 py-14">
       <div className="flex flex-col gap-3">
-        <span className="font-mono text-[11px] tracking-[0.12em] text-steel uppercase">
+        <span className="font-mono text-[11px] tracking-[0.12em] text-muted uppercase">
           Pricing
         </span>
-        <h1 className="max-w-xl text-3xl font-semibold tracking-tight text-cream">
+        <h1 className="max-w-xl text-3xl font-semibold tracking-tight text-ink">
           Free to make videos. Premium when you want them bigger and
           unmarked.
         </h1>
       </div>
 
       {justPaid && (
-        <p className="rounded-[10px] border border-amber-dim bg-panel px-5 py-4 text-sm text-cream">
+        <p className="rounded-2xl border border-accent-dim bg-surface px-5 py-4 text-sm text-ink">
           {tier === "PREMIUM"
             ? "Thank you - your account is on Premium now."
             : "Thank you. Your payment is being confirmed; Premium is switched on within a minute. Reload this page to check."}
@@ -90,10 +91,10 @@ export default async function PricingPage({
         {QUESTIONS.map(({ question, answer }) => (
           <div
             key={question}
-            className="flex flex-col gap-1.5 border-t border-hairline pt-4"
+            className="flex flex-col gap-1.5 border-t border-line pt-4"
           >
-            <dt className="font-semibold text-cream">{question}</dt>
-            <dd className="leading-relaxed text-steel">{answer}</dd>
+            <dt className="font-semibold text-ink">{question}</dt>
+            <dd className="leading-relaxed text-muted">{answer}</dd>
           </div>
         ))}
       </dl>

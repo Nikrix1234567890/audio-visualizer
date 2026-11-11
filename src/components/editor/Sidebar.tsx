@@ -198,7 +198,7 @@ export function Sidebar({
   const percent = Math.round(render.progress * 100);
 
   return (
-    <aside className="editor-area-side chassis-grain flex min-h-0 flex-col bg-panel lg:overflow-y-auto">
+    <aside className="editor-area-side surface-texture flex min-h-0 flex-col bg-surface lg:overflow-y-auto">
       {section(
         "project",
         "Project",
@@ -208,7 +208,7 @@ export function Sidebar({
             value={project.title}
             maxLength={80}
             onChange={(e) => project.onTitleChange(e.target.value)}
-            className="rounded-md border border-hairline bg-chassis px-2.5 py-1.5 text-sm text-cream shadow-scope-recessed outline-none focus:border-amber"
+            className="rounded-md border border-line bg-canvas px-2.5 py-1.5 text-sm text-ink shadow-scope-recessed outline-none focus:border-accent"
           />
 
           {project.isLoggedIn ? (
@@ -218,36 +218,36 @@ export function Sidebar({
                   type="button"
                   onClick={project.onSave}
                   disabled={!project.hasTrack || project.status !== "unsaved"}
-                  className="rounded-md border border-hairline bg-panel-raised px-4 py-2 font-mono text-[11px] tracking-[0.08em] text-cream uppercase shadow-control-raised outline-none hover:border-amber-dim hover:text-amber focus-visible:border-amber disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-hairline disabled:hover:text-cream"
+                  className="rounded-md border border-line bg-surface-raised px-4 py-2 font-mono text-[11px] tracking-[0.08em] text-ink uppercase shadow-control-raised outline-none hover:border-accent-dim hover:text-accent focus-visible:border-accent disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-line disabled:hover:text-ink"
                 >
                   {project.status === "saving" ? "Saving…" : "Save"}
                 </button>
-                <span className="flex items-center gap-2 font-mono text-[11px] tracking-[0.06em] text-steel uppercase">
+                <span className="flex items-center gap-2 font-mono text-[11px] tracking-[0.06em] text-muted uppercase">
                   <span
                     className={`h-2 w-2 rounded-full ${
                       project.status === "saved"
-                        ? "bg-amber shadow-glow-active"
-                        : "bg-amber-dim"
+                        ? "bg-accent shadow-glow-active"
+                        : "bg-accent-dim"
                     }`}
                   />
                   {project.status === "saved" ? "Saved" : "Not saved"}
                 </span>
               </div>
               {!project.hasTrack && (
-                <p className="text-xs text-steel">
+                <p className="text-xs text-muted">
                   Load a track to save - a project keeps its track.
                 </p>
               )}
               <Link
                 href="/dashboard"
-                className="text-xs text-steel underline hover:text-amber"
+                className="text-xs text-muted underline hover:text-accent"
               >
                 All projects
               </Link>
             </>
           ) : (
-            <p className="text-xs text-steel">
-              <Link href="/login?callbackUrl=/editor" className="text-amber underline">
+            <p className="text-xs text-muted">
+              <Link href="/login?callbackUrl=/editor" className="text-accent underline">
                 Log in
               </Link>{" "}
               to save this project to your account. Logging in reloads the
@@ -274,10 +274,10 @@ export function Sidebar({
                     type="button"
                     aria-pressed={isActive}
                     onClick={() => onLoadTemplate(template.id)}
-                    className={`group flex w-full flex-col overflow-hidden rounded-md border text-left outline-none transition-all focus-visible:border-amber ${
+                    className={`group flex w-full flex-col overflow-hidden rounded-md border text-left outline-none transition-all focus-visible:border-accent ${
                       isActive
-                        ? "border-amber-dim shadow-glow-active"
-                        : "border-hairline hover:border-amber-dim"
+                        ? "border-accent-dim shadow-glow-active"
+                        : "border-line hover:border-accent-dim"
                     }`}
                   >
                     <Thumbnail
@@ -286,7 +286,7 @@ export function Sidebar({
                     />
                     <span
                       className={`truncate px-2 py-1.5 font-mono text-[10px] tracking-[0.06em] uppercase ${
-                        isActive ? "text-amber" : "text-steel group-hover:text-cream"
+                        isActive ? "text-accent" : "text-muted group-hover:text-ink"
                       }`}
                     >
                       {template.label}
@@ -296,7 +296,7 @@ export function Sidebar({
               );
             })}
           </ul>
-          <p className="text-xs text-steel">
+          <p className="text-xs text-muted">
             A template is a starting point. Add, remove and change its
             elements below.
           </p>
@@ -320,17 +320,17 @@ export function Sidebar({
                   className="group flex w-full flex-col items-center gap-1 outline-none"
                 >
                   <span
-                    className="h-7 w-full rounded-md border border-hairline shadow-control-raised group-hover:border-amber-dim group-focus-visible:border-amber"
+                    className="h-7 w-full rounded-md border border-line shadow-control-raised group-hover:border-accent-dim group-focus-visible:border-accent"
                     style={{ background: paletteGradient(palette) }}
                   />
-                  <span className="font-mono text-[10px] tracking-[0.06em] text-steel uppercase group-hover:text-cream">
+                  <span className="font-mono text-[10px] tracking-[0.06em] text-muted uppercase group-hover:text-ink">
                     {palette.label}
                   </span>
                 </button>
               </li>
             ))}
           </ul>
-          <p className="text-xs text-steel">
+          <p className="text-xs text-muted">
             Recolours every element at once. Fine-tune single elements below.
           </p>
         </>,
@@ -457,24 +457,24 @@ export function Sidebar({
             onChange={onFrameRateChange}
             onLocked={() => setShowUpgrade(true)}
           />
-          <p className="font-mono text-[11px] tracking-[0.06em] text-steel tabular-nums">
+          <p className="font-mono text-[11px] tracking-[0.06em] text-muted tabular-nums">
             {outputSize(aspect, resolution).width} x{" "}
             {outputSize(aspect, resolution).height} px
           </p>
           {tier === "FREE" ? (
             <p
-              className={`text-xs ${showUpgrade ? "text-cream" : "text-steel"}`}
+              className={`text-xs ${showUpgrade ? "text-ink" : "text-muted"}`}
             >
               Free plan: up to {TIER_LIMITS.FREE.maxResolution},{" "}
               {TIER_LIMITS.FREE.frameRates.join(" / ")} fps, with a small
               watermark.{" "}
-              <Link href="/pricing" className="text-amber underline">
+              <Link href="/pricing" className="text-accent underline">
                 Go Premium
               </Link>{" "}
               for 4K, 60 fps and no watermark.
             </p>
           ) : (
-            <p className="text-xs text-steel">
+            <p className="text-xs text-muted">
               60 fps is as smooth as the preview; 30 fps renders in half the
               time.
             </p>
@@ -484,8 +484,8 @@ export function Sidebar({
             type="button"
             onClick={onRender}
             disabled={!render.canRender || isBusy}
-            className={`rounded-xl border border-hairline bg-panel-raised px-6 py-3 font-sans text-sm font-semibold tracking-wide shadow-control-raised transition-shadow hover:text-amber hover:shadow-glow-active disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:text-cream disabled:hover:shadow-control-raised ${
-              render.isRendering ? "text-amber shadow-glow-active" : "text-cream"
+            className={`rounded-xl border border-line bg-surface-raised px-6 py-3 font-sans text-sm font-semibold tracking-wide shadow-control-raised transition-shadow hover:text-accent hover:shadow-glow-active disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:text-ink disabled:hover:shadow-control-raised ${
+              render.isRendering ? "text-accent shadow-glow-active" : "text-ink"
             }`}
           >
             {render.isUploading ? (
@@ -498,16 +498,16 @@ export function Sidebar({
           </button>
 
           {render.isRendering && (
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-chassis">
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-canvas">
               <div
-                className="h-full bg-amber shadow-glow-active transition-[width] duration-300"
+                className="h-full bg-accent shadow-glow-active transition-[width] duration-300"
                 style={{ width: `${percent}%` }}
               />
             </div>
           )}
 
           {!render.canRender && (
-            <p className="text-xs text-steel">Load a track to render.</p>
+            <p className="text-xs text-muted">Load a track to render.</p>
           )}
           {render.error && (
             <p className="text-xs text-red-400">{render.error}</p>
@@ -516,7 +516,7 @@ export function Sidebar({
             <a
               href={render.renderedUrl}
               download
-              className="font-mono text-xs text-amber underline"
+              className="font-mono text-xs text-accent underline"
             >
               Download video
             </a>
@@ -568,7 +568,7 @@ function ElementInspector({
   return (
     <>
       <label className="flex items-center justify-between gap-3">
-        <span className="font-mono text-[11px] tracking-[0.08em] text-steel uppercase">
+        <span className="font-mono text-[11px] tracking-[0.08em] text-muted uppercase">
           Name
         </span>
         <input
@@ -578,7 +578,7 @@ function ElementInspector({
           onBlur={(e) => {
             if (!e.target.value.trim()) onChange({ name: def.label });
           }}
-          className="min-w-0 flex-1 border-b border-hairline bg-transparent text-right text-sm text-cream outline-none focus:border-amber"
+          className="min-w-0 flex-1 border-b border-line bg-transparent text-right text-sm text-ink outline-none focus:border-accent"
         />
       </label>
 
@@ -610,7 +610,7 @@ function ElementInspector({
           onChange={(period) => onChange({ tempo: { ...tempo, period } })}
         />
       )}
-      <p className="text-xs text-steel">
+      <p className="text-xs text-muted">
         Lets the motion slow down and speed up again in a wave. At 1 it
         comes to a brief standstill.
       </p>
@@ -664,7 +664,7 @@ function ElementInspector({
 
 function SubHeading({ children }: { children: ReactNode }) {
   return (
-    <div className="mt-1 border-t border-hairline pt-3 font-mono text-[10px] tracking-[0.12em] text-steel uppercase">
+    <div className="mt-1 border-t border-line pt-3 font-mono text-[10px] tracking-[0.12em] text-muted uppercase">
       {children}
     </div>
   );
@@ -682,12 +682,12 @@ function Section({
   children: ReactNode;
 }) {
   return (
-    <section className="border-b border-hairline">
+    <section className="border-b border-line">
       <button
         type="button"
         onClick={onToggle}
         aria-expanded={!isCollapsed}
-        className="flex w-full items-center gap-2 px-4 py-3 text-left font-mono text-[11px] tracking-[0.12em] text-steel uppercase outline-none hover:text-cream focus-visible:text-amber"
+        className="flex w-full items-center gap-2 px-4 py-3 text-left font-mono text-[11px] tracking-[0.12em] text-muted uppercase outline-none hover:text-ink focus-visible:text-accent"
       >
         <svg
           width="8"

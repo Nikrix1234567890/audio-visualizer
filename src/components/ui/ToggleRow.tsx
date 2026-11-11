@@ -12,7 +12,7 @@ export function ToggleRow({
 }) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <span className="font-mono text-[11px] tracking-[0.08em] text-steel uppercase">
+      <span className="font-mono text-[11px] tracking-[0.08em] text-muted uppercase">
         {label}
       </span>
       <button
@@ -21,15 +21,15 @@ export function ToggleRow({
         aria-checked={value}
         aria-label={label}
         onClick={() => onChange(!value)}
-        className={`relative h-5 w-9 shrink-0 rounded-full border outline-none transition-colors focus-visible:border-amber ${
-          value ? "border-amber-dim bg-amber-dim" : "border-hairline bg-chassis"
+        className={`relative h-5 w-9 shrink-0 rounded-full border outline-none transition-colors focus-visible:border-accent ${
+          value ? "border-accent-dim bg-accent-dim" : "border-line bg-canvas"
         }`}
       >
         <span
           className={`absolute top-1/2 h-3.5 w-3.5 -translate-y-1/2 rounded-full shadow-control-raised transition-all ${
             value
-              ? "left-[18px] bg-amber shadow-glow-active"
-              : "left-0.5 bg-panel-raised"
+              ? "left-[18px] bg-accent shadow-glow-active"
+              : "left-0.5 bg-surface-raised"
           }`}
         />
       </button>

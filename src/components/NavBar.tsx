@@ -1,27 +1,28 @@
 import Link from "next/link";
 import { auth, signOut } from "@/auth";
+import { Wordmark } from "@/components/Wordmark";
 
 export async function NavBar() {
   const session = await auth();
 
   return (
-    <nav className="flex items-center justify-between border-b border-hairline bg-chassis px-6 py-3 text-sm text-cream">
-      <Link href="/" className="font-semibold tracking-tight">
-        Audio<span className="text-amber">Visualizer</span>
+    <nav className="flex items-center justify-between border-b border-line bg-canvas px-6 py-3 text-sm text-ink">
+      <Link href="/" className="outline-none focus-visible:opacity-80">
+        <Wordmark />
       </Link>
       <div className="flex items-center gap-4">
-        <Link href="/editor" className="text-steel hover:text-cream">
+        <Link href="/editor" className="text-muted hover:text-ink">
           Editor
         </Link>
-        <Link href="/pricing" className="text-steel hover:text-cream">
+        <Link href="/pricing" className="text-muted hover:text-ink">
           Pricing
         </Link>
         {session?.user ? (
           <>
-            <Link href="/dashboard" className="text-steel hover:text-cream">
+            <Link href="/dashboard" className="text-muted hover:text-ink">
               Dashboard
             </Link>
-            <span className="font-mono text-xs text-steel">
+            <span className="font-mono text-xs text-muted">
               {session.user.email}
             </span>
             <form
@@ -32,7 +33,7 @@ export async function NavBar() {
             >
               <button
                 type="submit"
-                className="rounded-md border border-hairline px-3 py-1 text-cream hover:border-amber-dim hover:text-amber"
+                className="rounded-md border border-line px-3 py-1 text-ink hover:border-accent-dim hover:text-accent"
               >
                 Sign out
               </button>
@@ -40,12 +41,12 @@ export async function NavBar() {
           </>
         ) : (
           <>
-            <Link href="/login" className="text-steel hover:text-cream">
+            <Link href="/login" className="text-muted hover:text-ink">
               Log in
             </Link>
             <Link
               href="/register"
-              className="rounded-md bg-amber px-3 py-1 font-medium text-chassis hover:bg-amber/90"
+              className="rounded-md bg-brand px-3 py-1 font-medium text-canvas hover:brightness-110"
             >
               Sign up
             </Link>

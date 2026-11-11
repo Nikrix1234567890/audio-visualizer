@@ -96,8 +96,8 @@ export function MyTemplates({
     "shrink-0 rounded-md px-1.5 py-1 font-mono text-[10px] tracking-[0.06em] uppercase outline-none";
 
   return (
-    <div className="flex flex-col gap-2 border-t border-hairline pt-3">
-      <span className="font-mono text-[10px] tracking-[0.12em] text-steel uppercase">
+    <div className="flex flex-col gap-2 border-t border-line pt-3">
+      <span className="font-mono text-[10px] tracking-[0.12em] text-muted uppercase">
         My templates
       </span>
 
@@ -106,13 +106,13 @@ export function MyTemplates({
           {scenes.map((saved) => (
             <li
               key={saved.id}
-              className="flex items-center rounded-md border border-transparent hover:border-hairline"
+              className="flex items-center rounded-md border border-transparent hover:border-line"
             >
               <button
                 type="button"
                 onClick={() => load(saved.id)}
                 title="Load this template"
-                className="min-w-0 flex-1 truncate px-2.5 py-2 text-left text-sm text-cream outline-none hover:text-amber focus-visible:text-amber"
+                className="min-w-0 flex-1 truncate px-2.5 py-2 text-left text-sm text-ink outline-none hover:text-accent focus-visible:text-accent"
               >
                 {saved.title}
               </button>
@@ -121,7 +121,7 @@ export function MyTemplates({
                 onClick={() => copyLink(saved.id)}
                 title="Copy a link anyone can open this template with"
                 className={`${small} ${
-                  copiedId === saved.id ? "text-amber" : "text-steel hover:text-amber focus-visible:text-amber"
+                  copiedId === saved.id ? "text-accent" : "text-muted hover:text-accent focus-visible:text-accent"
                 }`}
               >
                 {copiedId === saved.id ? "Copied" : "Link"}
@@ -131,7 +131,7 @@ export function MyTemplates({
                 onClick={() => remove(saved)}
                 aria-label={`Delete ${saved.title}`}
                 title="Delete"
-                className={`${small} text-steel hover:text-red-400 focus-visible:text-red-400`}
+                className={`${small} text-muted hover:text-red-400 focus-visible:text-red-400`}
               >
                 ✕
               </button>
@@ -144,11 +144,11 @@ export function MyTemplates({
         type="button"
         onClick={save}
         disabled={isSaving}
-        className="rounded-md border border-dashed border-hairline px-3 py-2 font-mono text-[11px] tracking-[0.08em] text-steel uppercase outline-none hover:border-amber-dim hover:text-amber focus-visible:border-amber disabled:opacity-50"
+        className="rounded-md border border-dashed border-line px-3 py-2 font-mono text-[11px] tracking-[0.08em] text-muted uppercase outline-none hover:border-accent-dim hover:text-accent focus-visible:border-accent disabled:opacity-50"
       >
         {isSaving ? "Saving…" : "+ Save scene as template"}
       </button>
-      <p className="text-xs text-steel">
+      <p className="text-xs text-muted">
         Keeps elements, camera and look - not the track. Pictures and 3D
         models stay private: someone opening your link sees the scene
         without them.

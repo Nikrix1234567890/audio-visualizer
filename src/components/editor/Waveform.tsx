@@ -10,10 +10,10 @@ const BAR_GAP = 1;
 const SEEK_KEY_SECONDS = 5;
 
 // Canvas cannot read CSS variables cheaply per frame; these mirror DESIGN.md.
-const COLOR_PLAYED = "#ff8a3d";
-const COLOR_UNPLAYED = "#3d3d48";
-const COLOR_BEAT = "rgba(242, 237, 226, 0.45)";
-const COLOR_PLAYHEAD = "#f2ede2";
+const COLOR_PLAYED = "#a78bfa";
+const COLOR_UNPLAYED = "#3a3768";
+const COLOR_BEAT = "rgba(242, 240, 255, 0.45)";
+const COLOR_PLAYHEAD = "#f2f0ff";
 
 /** Whose keyframe a timeline marker stands for. */
 export type MarkerOwner = "element" | "camera" | "look";
@@ -182,7 +182,7 @@ export function Waveform({
       aria-valuemax={Math.round(duration)}
       aria-valuenow={Math.round(seconds)}
       aria-valuetext={`${formatTime(seconds)} of ${formatTime(duration)}`}
-      className={`relative h-full min-h-12 w-full touch-none rounded-md bg-chassis shadow-scope-recessed outline-none focus-visible:ring-1 focus-visible:ring-amber ${
+      className={`relative h-full min-h-12 w-full touch-none rounded-md bg-canvas shadow-scope-recessed outline-none focus-visible:ring-1 focus-visible:ring-accent ${
         audioData ? "cursor-pointer" : ""
       }`}
       onPointerDown={(e) => {
@@ -251,15 +251,15 @@ export function Waveform({
                 <span
                   className={`h-2 w-2 rotate-45 border group-hover/marker:scale-125 group-focus-visible/marker:scale-125 ${
                     marker.owner === "element"
-                      ? "border-amber bg-amber"
-                      : "border-cream bg-chassis"
+                      ? "border-accent bg-accent"
+                      : "border-ink bg-canvas"
                   }`}
                 />
               </button>
             );
           })}
       {!audioData && (
-        <span className="absolute inset-0 flex items-center justify-center font-mono text-[11px] tracking-[0.08em] text-steel uppercase">
+        <span className="absolute inset-0 flex items-center justify-center font-mono text-[11px] tracking-[0.08em] text-muted uppercase">
           No track loaded
         </span>
       )}

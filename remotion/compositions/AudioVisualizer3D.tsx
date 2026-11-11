@@ -4,6 +4,7 @@ import {useAudioData} from '@remotion/media-utils';
 import {ThreeCanvas} from '@remotion/three';
 import type {AudioVisualizerProps} from '../types';
 import {getTrackAnalysis} from '../audio/analysis';
+import {BRAND} from '../brand';
 import {sanitizeScene} from '../scene/sanitize';
 import {SceneRenderer} from '../scene/SceneRenderer';
 
@@ -93,7 +94,8 @@ export const AudioVisualizer3D: React.FC<AudioVisualizerProps> = ({
               textShadow: '0 1px 4px rgba(0, 0, 0, 0.7)',
             }}
           >
-            Audio<span style={{color: 'rgba(255, 138, 61, 0.85)'}}>Visualizer</span>
+            {BRAND.first}
+            <span style={{color: 'rgba(167, 139, 250, 0.9)'}}>{BRAND.second}</span>
           </div>
         </AbsoluteFill>
       ) : null}

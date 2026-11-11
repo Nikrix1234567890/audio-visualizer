@@ -14,7 +14,7 @@ export function TextRow({
 }) {
   return (
     <label className="flex flex-col gap-1.5">
-      <span className="font-mono text-[11px] tracking-[0.08em] text-steel uppercase">
+      <span className="font-mono text-[11px] tracking-[0.08em] text-muted uppercase">
         {label}
       </span>
       <input
@@ -22,7 +22,7 @@ export function TextRow({
         maxLength={maxLength}
         spellCheck={false}
         onChange={(e) => onChange(e.target.value)}
-        className="rounded-md border border-hairline bg-chassis px-2.5 py-1.5 text-sm text-cream shadow-scope-recessed outline-none focus:border-amber"
+        className="rounded-md border border-line bg-canvas px-2.5 py-1.5 text-sm text-ink shadow-scope-recessed outline-none focus:border-accent"
       />
     </label>
   );

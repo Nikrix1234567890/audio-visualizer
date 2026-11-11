@@ -78,7 +78,7 @@ export function ResizeHandle({
       }}
     >
       <span
-        className={`absolute bg-hairline transition-colors group-hover:bg-amber-dim group-focus-visible:bg-amber group-active:bg-amber ${
+        className={`absolute bg-line transition-colors group-hover:bg-accent-dim group-focus-visible:bg-accent group-active:bg-accent ${
           isVertical
             ? "inset-y-0 left-1/2 w-px -translate-x-1/2"
             : "inset-x-0 top-1/2 h-px -translate-y-1/2"

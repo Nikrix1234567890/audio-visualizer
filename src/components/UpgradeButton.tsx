@@ -29,7 +29,7 @@ export function UpgradeButton() {
         type="button"
         onClick={start}
         disabled={isStarting}
-        className="rounded-xl bg-amber px-5 py-2.5 text-sm font-semibold tracking-wide text-chassis outline-none hover:bg-amber/90 focus-visible:ring-2 focus-visible:ring-cream disabled:opacity-60"
+        className="rounded-xl bg-brand px-5 py-2.5 text-sm font-semibold tracking-wide text-canvas outline-none hover:brightness-110 focus-visible:ring-2 focus-visible:ring-ink disabled:opacity-60"
       >
         {isStarting ? "Opening the payment page…" : "Go Premium"}
       </button>

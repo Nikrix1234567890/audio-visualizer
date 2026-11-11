@@ -24,7 +24,7 @@ export function DeleteButton({ url, question }: { url: string; question: string 
       type="button"
       onClick={remove}
       disabled={isDeleting}
-      className="shrink-0 rounded-md border border-hairline px-2.5 py-1.5 font-mono text-[11px] tracking-[0.06em] text-steel uppercase outline-none hover:border-red-400 hover:text-red-400 focus-visible:border-red-400 disabled:opacity-50"
+      className="shrink-0 rounded-md border border-line px-2.5 py-1.5 font-mono text-[11px] tracking-[0.06em] text-muted uppercase outline-none hover:border-red-400 hover:text-red-400 focus-visible:border-red-400 disabled:opacity-50"
     >
       {isDeleting ? "Deleting…" : failed ? "Failed - retry" : "Delete"}
     </button>

@@ -48,30 +48,30 @@ export default async function DashboardPage() {
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-10 px-6 py-10">
       <section className="flex flex-col gap-4">
-        <h1 className="font-sans text-2xl font-semibold tracking-tight text-cream">
+        <h1 className="font-sans text-2xl font-semibold tracking-tight text-ink">
           Your projects
         </h1>
 
         {projects.length === 0 ? (
-          <p className="text-sm text-steel">
+          <p className="text-sm text-muted">
             Nothing saved yet. Start from a template below, load a track and
             press Save in the editor.
           </p>
         ) : (
-          <ul className="flex flex-col rounded-[10px] border border-hairline bg-panel">
+          <ul className="flex flex-col rounded-2xl border border-line bg-surface">
             {projects.map((project) => (
               <li
                 key={project.id}
-                className="flex items-center gap-4 border-b border-hairline px-4 py-3 last:border-b-0"
+                className="flex items-center gap-4 border-b border-line px-4 py-3 last:border-b-0"
               >
                 <Link
                   href={`/editor?project=${project.id}`}
-                  className="flex min-w-0 flex-1 flex-col gap-0.5 outline-none hover:text-amber focus-visible:text-amber"
+                  className="flex min-w-0 flex-1 flex-col gap-0.5 outline-none hover:text-accent focus-visible:text-accent"
                 >
-                  <span className="truncate text-sm text-cream">
+                  <span className="truncate text-sm text-ink">
                     {project.title}
                   </span>
-                  <span className="font-mono text-[11px] tracking-[0.06em] text-steel uppercase">
+                  <span className="font-mono text-[11px] tracking-[0.06em] text-muted uppercase">
                     Changed {dateFormat.format(project.updatedAt)}
                   </span>
                 </Link>
@@ -83,33 +83,33 @@ export default async function DashboardPage() {
       </section>
 
       <section className="flex flex-col gap-4">
-        <h2 className="font-mono text-[11px] tracking-[0.12em] text-steel uppercase">
+        <h2 className="font-mono text-[11px] tracking-[0.12em] text-muted uppercase">
           Your videos
         </h2>
         {videos.length === 0 ? (
-          <p className="text-sm text-steel">
+          <p className="text-sm text-muted">
             Videos you render while logged in are kept here, ready to
             download again.
           </p>
         ) : (
-          <ul className="flex flex-col rounded-[10px] border border-hairline bg-panel">
+          <ul className="flex flex-col rounded-2xl border border-line bg-surface">
             {videos.map((video) => (
               <li
                 key={video.id}
-                className="flex items-center gap-4 border-b border-hairline px-4 py-3 last:border-b-0"
+                className="flex items-center gap-4 border-b border-line px-4 py-3 last:border-b-0"
               >
                 <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                  <span className="text-sm text-cream tabular-nums">
+                  <span className="text-sm text-ink tabular-nums">
                     {describeVideo(video.settings)}
                   </span>
-                  <span className="font-mono text-[11px] tracking-[0.06em] text-steel uppercase">
+                  <span className="font-mono text-[11px] tracking-[0.06em] text-muted uppercase">
                     Rendered {dateFormat.format(video.completedAt ?? video.createdAt)}
                   </span>
                 </div>
                 <a
                   href={`/api/files/${video.outputPath}`}
                   download
-                  className="shrink-0 rounded-md border border-hairline px-2.5 py-1.5 font-mono text-[11px] tracking-[0.06em] text-cream uppercase outline-none hover:border-amber-dim hover:text-amber focus-visible:border-amber"
+                  className="shrink-0 rounded-md border border-line px-2.5 py-1.5 font-mono text-[11px] tracking-[0.06em] text-ink uppercase outline-none hover:border-accent-dim hover:text-accent focus-visible:border-accent"
                 >
                   Download
                 </a>
@@ -124,7 +124,7 @@ export default async function DashboardPage() {
       </section>
 
       <section className="flex flex-col gap-4">
-        <h2 className="font-mono text-[11px] tracking-[0.12em] text-steel uppercase">
+        <h2 className="font-mono text-[11px] tracking-[0.12em] text-muted uppercase">
           Start a new project
         </h2>
         <TemplateGrid />

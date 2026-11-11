@@ -16,7 +16,7 @@ export function SegmentedSelector<T extends string | number>({
 }) {
   return (
     <div
-      className={`gap-1 rounded-full border border-hairline p-1 ${
+      className={`gap-1 rounded-full border border-line p-1 ${
         stretch ? "flex w-full" : "inline-flex flex-wrap"
       }`}
     >
@@ -32,14 +32,14 @@ export function SegmentedSelector<T extends string | number>({
             onClick={() =>
               option.locked ? onLocked?.(option.value) : onChange(option.value)
             }
-            className={`rounded-full py-1.5 font-mono text-[11px] leading-tight tracking-[0.06em] uppercase outline-none transition-all focus-visible:text-amber ${
+            className={`rounded-full py-1.5 font-mono text-[11px] leading-tight tracking-[0.06em] uppercase outline-none transition-all focus-visible:text-accent ${
               stretch ? "min-w-0 flex-1 px-1.5" : "px-3"
             } ${
               isActive
-                ? "bg-panel-raised text-amber shadow-glow-active"
+                ? "bg-surface-raised text-accent shadow-glow-active"
                 : option.locked
-                  ? "cursor-not-allowed text-steel opacity-40"
-                  : "text-steel hover:text-cream"
+                  ? "cursor-not-allowed text-muted opacity-40"
+                  : "text-muted hover:text-ink"
             }`}
           >
             {option.label}

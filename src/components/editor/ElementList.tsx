@@ -48,7 +48,7 @@ export function ElementList({
   return (
     <div className="flex flex-col gap-2">
       {elements.length === 0 && (
-        <p className="text-xs text-steel">
+        <p className="text-xs text-muted">
           The scene is empty. Add an element to get started.
         </p>
       )}
@@ -86,27 +86,27 @@ export function ElementList({
               }}
               className={`flex cursor-grab items-center rounded-md border active:cursor-grabbing ${
                 isDropTarget
-                  ? "border-amber"
+                  ? "border-accent"
                   : isSelected
-                    ? "border-amber-dim bg-panel-raised"
-                    : "border-transparent hover:border-hairline"
+                    ? "border-accent-dim bg-surface-raised"
+                    : "border-transparent hover:border-line"
               } ${dragFrom === index ? "opacity-40" : ""}`}
             >
               <button
                 type="button"
                 onClick={() => onSelect(element.id)}
                 aria-pressed={isSelected}
-                className="flex min-w-0 flex-1 items-baseline gap-2 px-2.5 py-2 text-left outline-none focus-visible:text-amber"
+                className="flex min-w-0 flex-1 items-baseline gap-2 px-2.5 py-2 text-left outline-none focus-visible:text-accent"
               >
                 <span
                   className={`truncate text-sm ${
-                    isSelected ? "text-amber" : "text-cream"
+                    isSelected ? "text-accent" : "text-ink"
                   } ${element.visible ? "" : "opacity-40"}`}
                 >
                   {element.name}
                 </span>
                 {element.name !== ELEMENT_DEFS[element.type].label && (
-                  <span className="shrink-0 font-mono text-[10px] tracking-[0.06em] text-steel uppercase">
+                  <span className="shrink-0 font-mono text-[10px] tracking-[0.06em] text-muted uppercase">
                     {ELEMENT_DEFS[element.type].label}
                   </span>
                 )}
@@ -170,8 +170,8 @@ export function ElementList({
         disabled={isFull}
         aria-expanded={isAdding}
         onClick={() => setIsAdding(!isAdding)}
-        className={`rounded-md border border-dashed px-3 py-2 font-mono text-[11px] tracking-[0.08em] uppercase outline-none hover:border-amber-dim hover:text-amber focus-visible:border-amber disabled:cursor-not-allowed disabled:opacity-40 ${
-          isAdding ? "border-amber-dim text-amber" : "border-hairline text-steel"
+        className={`rounded-md border border-dashed px-3 py-2 font-mono text-[11px] tracking-[0.08em] uppercase outline-none hover:border-accent-dim hover:text-accent focus-visible:border-accent disabled:cursor-not-allowed disabled:opacity-40 ${
+          isAdding ? "border-accent-dim text-accent" : "border-line text-muted"
         }`}
       >
         {isFull ? `Limit of ${MAX_ELEMENTS} elements reached` : "+ Add element"}
@@ -190,19 +190,19 @@ export function ElementList({
                     onAdd(type);
                     setIsAdding(false);
                   }}
-                  className="group flex h-full w-full flex-col overflow-hidden rounded-md border border-hairline bg-chassis text-left outline-none hover:border-amber-dim focus-visible:border-amber"
+                  className="group flex h-full w-full flex-col overflow-hidden rounded-md border border-line bg-canvas text-left outline-none hover:border-accent-dim focus-visible:border-accent"
                 >
                   {FILE_ELEMENTS.includes(type) ? (
-                    <span className="flex aspect-video w-full items-center justify-center bg-panel font-mono text-[10px] tracking-[0.08em] text-steel uppercase">
+                    <span className="flex aspect-video w-full items-center justify-center bg-surface font-mono text-[10px] tracking-[0.08em] text-muted uppercase">
                       Your file
                     </span>
                   ) : (
                     <Thumbnail src={`/thumbnails/elements/${type}.jpg`} dimmed />
                   )}
-                  <span className="truncate px-2 pt-1.5 text-xs text-cream group-hover:text-amber">
+                  <span className="truncate px-2 pt-1.5 text-xs text-ink group-hover:text-accent">
                     {def.label}
                   </span>
-                  <span className="mx-2 mb-1.5 line-clamp-2 text-[11px] leading-snug text-steel">
+                  <span className="mx-2 mb-1.5 line-clamp-2 text-[11px] leading-snug text-muted">
                     {def.description}
                   </span>
                 </button>
@@ -235,8 +235,8 @@ function IconButton({
       title={label}
       onClick={onClick}
       disabled={disabled}
-      className={`flex h-8 w-7 shrink-0 disabled:cursor-not-allowed disabled:opacity-40 items-center justify-center rounded-md outline-none hover:text-amber focus-visible:text-amber ${
-        active ? "text-cream" : "text-steel"
+      className={`flex h-8 w-7 shrink-0 disabled:cursor-not-allowed disabled:opacity-40 items-center justify-center rounded-md outline-none hover:text-accent focus-visible:text-accent ${
+        active ? "text-ink" : "text-muted"
       }`}
     >
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>

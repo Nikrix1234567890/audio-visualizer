@@ -1,23 +1,23 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, IBM_Plex_Mono } from "next/font/google";
+import { Sora, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
 import { NavBar } from "@/components/NavBar";
+import { BRAND } from "../../remotion/brand";
 
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space-grotesk",
+const display = Sora({
+  variable: "--font-display",
   subsets: ["latin"],
 });
 
-const plexMono = IBM_Plex_Mono({
-  variable: "--font-plex-mono",
-  weight: ["400", "500", "600"],
+const code = JetBrains_Mono({
+  variable: "--font-code",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "Audio Visualizer",
-  description: "Turn any song into an audio-reactive 3D video, right in your browser.",
+  title: BRAND.name,
+  description: BRAND.tagline,
 };
 
 export default function RootLayout({
@@ -28,9 +28,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${spaceGrotesk.variable} ${plexMono.variable} h-full antialiased`}
+      className={`${display.variable} ${code.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col bg-chassis text-cream">
+      <body className="flex min-h-full flex-col bg-canvas text-ink">
         <AuthProvider>
           <NavBar />
           <div className="flex flex-1 flex-col">{children}</div>
