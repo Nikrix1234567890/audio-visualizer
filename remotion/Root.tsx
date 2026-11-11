@@ -4,7 +4,7 @@ import {getAudioDurationInSeconds} from '@remotion/media-utils';
 import {HelloWorld} from './compositions/HelloWorld';
 import {Demo3D} from './compositions/Demo3D';
 import {AudioVisualizer3D} from './compositions/AudioVisualizer3D';
-import {DEFAULT_VISUALIZER_SETTINGS} from './types';
+import {DEFAULT_TEMPLATE} from './scene/templates';
 
 const FPS = 30;
 
@@ -39,7 +39,7 @@ export const RemotionRoot: React.FC = () => {
         durationInFrames={12 * FPS}
         defaultProps={{
           audioSrc: staticFile('audio/demo-track.wav'),
-          ...DEFAULT_VISUALIZER_SETTINGS,
+          scene: DEFAULT_TEMPLATE.scene,
         }}
         calculateMetadata={async ({props}) => {
           const durationInSeconds = await getAudioDurationInSeconds(

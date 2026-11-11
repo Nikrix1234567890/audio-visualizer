@@ -3,7 +3,7 @@
 import { Player, type PlayerRef } from "@remotion/player";
 import { useEffect, useRef, useState } from "react";
 import { AudioVisualizer3D } from "../../../remotion/compositions/AudioVisualizer3D";
-import type { VisualizerSettings } from "../../../remotion/types";
+import type { SceneDocument } from "../../../remotion/scene/definitions";
 
 const COMPOSITION_WIDTH = 1280;
 const COMPOSITION_HEIGHT = 720;
@@ -20,7 +20,7 @@ export function Preview({
   audioUrl,
   durationInFrames,
   fps,
-  settings,
+  scene,
   initiallyMuted,
   isLoading,
   onPlayer,
@@ -29,7 +29,7 @@ export function Preview({
   audioUrl: string | null;
   durationInFrames: number;
   fps: number;
-  settings: VisualizerSettings;
+  scene: SceneDocument;
   initiallyMuted: boolean;
   isLoading: boolean;
   onPlayer: (player: PlayerRef | null) => void;
@@ -74,7 +74,7 @@ export function Preview({
               <Player
                 ref={onPlayer}
                 component={AudioVisualizer3D}
-                inputProps={{ audioSrc: audioUrl, ...settings }}
+                inputProps={{ audioSrc: audioUrl, scene }}
                 durationInFrames={durationInFrames}
                 compositionWidth={COMPOSITION_WIDTH}
                 compositionHeight={COMPOSITION_HEIGHT}

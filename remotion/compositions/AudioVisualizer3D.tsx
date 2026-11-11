@@ -1,57 +1,43 @@
-import React from 'react';
+import React, {useMemo} from 'react';
 import {AbsoluteFill, useCurrentFrame, useVideoConfig} from 'remotion';
 import {Audio} from '@remotion/media';
 import {useAudioData} from '@remotion/media-utils';
 import {ThreeCanvas} from '@remotion/three';
 import type {AudioVisualizerProps} from '../types';
 import {getTrackAnalysis} from '../audio/analysis';
-import {RadialBars, radialBarsCameraPosition} from '../scenes/RadialBars';
-import {SphereSwarm, sphereSwarmCameraPosition} from '../scenes/SphereSwarm';
-import {TerrainWave, terrainWaveCameraPosition} from '../scenes/TerrainWave';
+import {sanitizeScene} from '../scene/sanitize';
+import {SceneRenderer} from '../scene/SceneRenderer';
 
-const BACKGROUND = '#05070d';
-
-export const AudioVisualizer3D: React.FC<AudioVisualizerProps> = (props) => {
-  const {audioSrc, scene, radius, cameraSpeed} = props;
+/**
+ * The one composition behind both the live preview and the final render:
+ * an audio file plus a scene document in, a 3D picture per frame out.
+ */
+export const AudioVisualizer3D: React.FC<AudioVisualizerProps> = ({
+  audioSrc,
+  scene: rawScene,
+}) => {
   const frame = useCurrentFrame();
   const {fps, width, height} = useVideoConfig();
   const audioData = useAudioData(audioSrc);
+  // Guarantees a complete, in-range document even for scenes saved by an
+  // older version of the editor.
+  const scene = useMemo(() => sanitizeScene(rawScene), [rawScene]);
+  const background = scene.look.background;
 
   if (!audioData) {
-    return <AbsoluteFill style={{backgroundColor: BACKGROUND}} />;
+    return <AbsoluteFill style={{backgroundColor: background}} />;
   }
 
   // Cached per audio file, so this only costs time on the very first frame.
   const analysis = getTrackAnalysis(audioData);
-  const sceneProps = {analysis, frame, fps, settings: props};
-
-  const cameraPosition =
-    scene === 'sphereSwarm'
-      ? sphereSwarmCameraPosition(frame, fps, radius, cameraSpeed)
-      : scene === 'terrainWave'
-        ? terrainWaveCameraPosition(frame, fps, radius, cameraSpeed)
-        : radialBarsCameraPosition(frame, fps, radius, cameraSpeed);
+  const time = frame / fps;
 
   return (
-    <AbsoluteFill style={{backgroundColor: BACKGROUND}}>
+    <AbsoluteFill style={{backgroundColor: background}}>
       <Audio src={audioSrc} />
-      <ThreeCanvas
-        width={width}
-        height={height}
-        camera={{position: cameraPosition, fov: 50}}
-      >
-        {scene === 'terrainWave' ? (
-          <fog attach="fog" args={[BACKGROUND, radius * 2, radius * 11]} />
-        ) : null}
-        <ambientLight intensity={0.5} />
-        <pointLight position={[10, 10, 10]} intensity={1.2} />
-        {scene === 'sphereSwarm' ? (
-          <SphereSwarm {...sceneProps} />
-        ) : scene === 'terrainWave' ? (
-          <TerrainWave {...sceneProps} />
-        ) : (
-          <RadialBars {...sceneProps} />
-        )}
+      {/* The camera is positioned by the SceneRenderer, see CameraRig there. */}
+      <ThreeCanvas width={width} height={height}>
+        <SceneRenderer scene={scene} analysis={analysis} time={time} />
       </ThreeCanvas>
     </AbsoluteFill>
   );

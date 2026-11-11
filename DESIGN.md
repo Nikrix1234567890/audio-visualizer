@@ -98,7 +98,7 @@ A near-black instrument chassis with one committed amber accent; color intensity
 
 An editor workbench, not a scrolling page. On desktop the editor fills exactly the viewport under the nav bar and never scrolls as a whole:
 
-- **Left - settings rail.** One tall panel of collapsible sections (Scene, Shape, Color, Motion, Output), separated by hairline seams. It scrolls on its own if the sections outgrow it. Output (resolution + Render) sits last - the end of the signal chain.
+- **Left - settings rail.** One tall panel of collapsible sections, separated by hairline seams: Template (starting points), Elements (everything in the scene), Selected (the chosen element's parameters and transform), Camera, Look, Output. It scrolls on its own if the sections outgrow it. Output (resolution + Render) sits last - the end of the signal chain.
 - **Right - scope.** The live 3D preview, always the largest thing on screen. It keeps its aspect ratio and is fitted into whatever room the other two areas leave.
 - **Bottom - transport.** Load track, play/pause, time readout, mute, and the waveform across the remaining width. The preview has no player controls of its own; everything that moves through the song lives here.
 
@@ -127,8 +127,17 @@ Modules use a modest corner radius (`10px`) - enough to feel machined/modern, no
 ### Fader (signature component)
 One parameter per row in the settings rail: the caption plate (Label style) on the left, the exact value as an editable mono readout on the right, and a horizontal fader beneath - a thin Hairline Steel track, a fill in Patch Amber Dim that turns full Patch Amber while hovered, focused or dragged, and a small round raised cap. Drag anywhere on the track, use the arrow keys (Shift for bigger steps), or type a value into the readout. This replaces every native `<input type="range">` in the editor. (Rotary knobs were tried first and dropped: they looked right but were slow to set precisely and too wide for a rail.)
 
+### Element List
+The scene's contents, one row per element: its name (with the element type as a small mono caption once it has been renamed), an eye toggle and a remove cross. The selected row is the only lit one - Patch Amber name on a Panel Graphite Raised fill with an amber-dim outline; hidden elements dim their name. Below the list a dashed "+ Add element" button opens the catalogue of element types, each with a one-line description. The controls shown under "Selected" are generated from the element type's parameter definitions, so every element gets the same faders, switches and swatches.
+
+### Switch
+For on/off parameters: caption left, a small pill track right with a round cap that slides and lights Patch Amber when on. Off is unlit graphite.
+
+### Colour Swatch
+For colour parameters: caption left, the hex value as an editable mono readout, and a small raised swatch showing the colour. Clicking the swatch opens the system colour picker - the one place a native control is used, because nothing custom beats it.
+
 ### Segmented Selector
-A row of backlit, pill-shaped (`999px`) buttons sharing one Hairline Steel outline, used for Scene (visualizer style), Count and Resolution. In the settings rail the segments stretch to share the full width equally. The selected segment fills Panel Graphite Raised with a Patch Amber label and glow-active; unselected segments show Steel Label text on transparent background.
+A row of backlit, pill-shaped (`999px`) buttons sharing one Hairline Steel outline, used for Template and Resolution. In the settings rail the segments stretch to share the full width equally. The selected segment fills Panel Graphite Raised with a Patch Amber label and glow-active; unselected segments show Steel Label text on transparent background.
 
 ### Input Jack (upload zone)
 While no track is loaded, the scope shows a circular dashed-ring drop target styled like a jack socket, with a small centered plug glyph. Dropping an audio file anywhere on the editor also loads it. Once a track is loaded, the jack's role moves to the transport: a small raised button with a signal-present dot (Patch Amber when loaded, dim otherwise) and the filename in mono.

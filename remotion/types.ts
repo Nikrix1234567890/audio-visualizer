@@ -1,14 +1,8 @@
-// Single source of truth for the visualizer's configurable settings.
-// Shared between the Remotion compositions, the live editor UI and the
+// Shared between the Remotion composition, the live editor UI and the
 // server-side render API route, so all three always agree on the schema.
+// The scene document itself is defined in ./scene/definitions.ts.
 
-export type SceneId = "radialBars" | "sphereSwarm" | "terrainWave";
-
-export const SCENES: { id: SceneId; label: string }[] = [
-  { id: "radialBars", label: "Radial Bars" },
-  { id: "sphereSwarm", label: "Sphere Swarm" },
-  { id: "terrainWave", label: "Terrain Wave" },
-];
+import type { SceneDocument } from "./scene/definitions";
 
 export type ResolutionKey = "720p" | "1080p" | "1440p" | "4k";
 
@@ -24,30 +18,7 @@ export const RESOLUTIONS: Record<
 
 export const DEFAULT_RESOLUTION: ResolutionKey = "1080p";
 
-export type VisualizerSettings = {
-  scene: SceneId;
-  /** Number of bars / particles / points per row, depending on the active scene. */
-  barCount: number;
-  /** Overall scale of the scene (ring radius / sphere radius / grid size, depending on the active scene). */
-  radius: number;
-  barWidth: number;
-  heightScale: number;
-  hueStart: number;
-  hueEnd: number;
-  cameraSpeed: number;
-};
-
-export const DEFAULT_VISUALIZER_SETTINGS: VisualizerSettings = {
-  scene: "radialBars",
-  barCount: 64,
-  radius: 4,
-  barWidth: 0.3,
-  heightScale: 4.5,
-  hueStart: 200,
-  hueEnd: 500,
-  cameraSpeed: 0.25,
-};
-
-export type AudioVisualizerProps = VisualizerSettings & {
+export type AudioVisualizerProps = {
   audioSrc: string;
+  scene: SceneDocument;
 };

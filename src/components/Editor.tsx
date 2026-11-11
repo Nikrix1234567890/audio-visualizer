@@ -9,18 +9,15 @@ import {
   useState,
   type CSSProperties,
 } from "react";
+import type { SceneDocument } from "../../remotion/scene/definitions";
 import {
-  DEFAULT_RESOLUTION,
-  DEFAULT_VISUALIZER_SETTINGS,
-  type ResolutionKey,
-  type VisualizerSettings,
-} from "../../remotion/types";
+  DEFAULT_TEMPLATE,
+  TEMPLATES,
+  cloneScene,
+} from "../../remotion/scene/templates";
+import { DEFAULT_RESOLUTION, type ResolutionKey } from "../../remotion/types";
 import { Preview } from "@/components/editor/Preview";
-import {
-  Sidebar,
-  type CollapsedSections,
-  type SectionId,
-} from "@/components/editor/Sidebar";
+import { Sidebar, type CollapsedSections } from "@/components/editor/Sidebar";
 import { Transport } from "@/components/editor/Transport";
 import { ResizeHandle } from "@/components/ui/ResizeHandle";
 import { useStoredState } from "@/lib/useStoredState";
@@ -51,8 +48,15 @@ export function Editor() {
   const [track, setTrack] = useState<Track | null>(null);
   const [isLoadingTrack, setIsLoadingTrack] = useState(false);
   const [player, setPlayer] = useState<PlayerRef | null>(null);
-  const [settings, setSettings] = useState<VisualizerSettings>(
-    DEFAULT_VISUALIZER_SETTINGS,
+  const [scene, setScene] = useState<SceneDocument>(() =>
+    cloneScene(DEFAULT_TEMPLATE.scene),
+  );
+  // Which template the scene still equals; null as soon as it was edited.
+  const [templateId, setTemplateId] = useState<string | null>(
+    DEFAULT_TEMPLATE.id,
+  );
+  const [selectedId, setSelectedId] = useState<string | null>(
+    DEFAULT_TEMPLATE.focusElementId,
   );
   const [resolution, setResolution] =
     useState<ResolutionKey>(DEFAULT_RESOLUTION);
@@ -117,14 +121,28 @@ export function Editor() {
     }
   }, []);
 
-  const updateSetting = useCallback(
-    <K extends keyof VisualizerSettings>(
-      key: K,
-      value: VisualizerSettings[K],
-    ) => {
-      setSettings((prev) => ({ ...prev, [key]: value }));
+  const changeScene = useCallback((next: SceneDocument) => {
+    setScene(next);
+    setTemplateId(null);
+  }, []);
+
+  const loadTemplate = useCallback(
+    (id: string) => {
+      const template = TEMPLATES.find((t) => t.id === id);
+      if (!template) return;
+      if (
+        templateId === null &&
+        !window.confirm(
+          "Replace your current scene with this template? Your changes will be lost.",
+        )
+      ) {
+        return;
+      }
+      setScene(cloneScene(template.scene));
+      setTemplateId(template.id);
+      setSelectedId(template.focusElementId);
     },
-    [],
+    [templateId],
   );
 
   // Keep the player's mute state in line with the remembered preference.
@@ -232,7 +250,7 @@ export function Editor() {
       const renderResponse = await fetch("/api/render", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ audioKey, settings, resolution }),
+        body: JSON.stringify({ audioKey, scene, resolution }),
       });
 
       if (!renderResponse.ok) {
@@ -249,10 +267,10 @@ export function Editor() {
       setIsUploading(false);
       setIsRendering(false);
     }
-  }, [track, settings, resolution, pollJobStatus]);
+  }, [track, scene, resolution, pollJobStatus]);
 
   const toggleSection = useCallback(
-    (id: SectionId) => setCollapsed({ ...collapsed, [id]: !collapsed[id] }),
+    (id: string) => setCollapsed({ ...collapsed, [id]: !collapsed[id] }),
     [collapsed, setCollapsed],
   );
 
@@ -276,8 +294,12 @@ export function Editor() {
       }}
     >
       <Sidebar
-        settings={settings}
-        onSettingChange={updateSetting}
+        scene={scene}
+        onSceneChange={changeScene}
+        templateId={templateId}
+        onLoadTemplate={loadTemplate}
+        selectedId={selectedId}
+        onSelect={setSelectedId}
         resolution={resolution}
         onResolutionChange={setResolution}
         collapsed={collapsed}
@@ -309,7 +331,7 @@ export function Editor() {
         audioUrl={track?.url ?? null}
         durationInFrames={durationInFrames}
         fps={FPS}
-        settings={settings}
+        scene={scene}
         initiallyMuted={muted}
         isLoading={isLoadingTrack}
         onPlayer={setPlayer}

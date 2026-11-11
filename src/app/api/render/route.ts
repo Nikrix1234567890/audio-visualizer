@@ -6,8 +6,10 @@ import { createServer } from "node:net";
 import { renderMedia, selectComposition } from "@remotion/renderer";
 import { getAbsolutePath } from "@/lib/storage";
 import { prisma } from "@/lib/prisma";
-import { sanitizeResolution, sanitizeSettings } from "@/lib/visualizerSettings";
-import { RESOLUTIONS, type VisualizerSettings } from "../../../../remotion/types";
+import { sanitizeResolution } from "@/lib/visualizerSettings";
+import { RESOLUTIONS } from "../../../../remotion/types";
+import type { SceneDocument } from "../../../../remotion/scene/definitions";
+import { sanitizeScene } from "../../../../remotion/scene/sanitize";
 
 // Pre-built by `pnpm remotion:bundle` (see scripts/bundle-remotion.ts).
 // @remotion/bundler cannot run inside this route directly - see
@@ -38,10 +40,10 @@ function getFreePort(): Promise<number> {
 async function runRender(
   jobId: string,
   audioSrc: string,
-  settings: VisualizerSettings,
+  scene: SceneDocument,
   resolution: { width: number; height: number },
 ) {
-  const inputProps = { audioSrc, ...settings };
+  const inputProps = { audioSrc, scene };
   const chromiumOptions = { gl: "angle" as const, disableWebSecurity: true };
 
   try {
@@ -131,7 +133,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "audioKey is missing." }, { status: 400 });
   }
 
-  const settings = sanitizeSettings(body?.settings);
+  // Clamps and allowlists everything the client sent (see sanitize.ts).
+  const scene = sanitizeScene(body?.scene);
   const resolutionKey = sanitizeResolution(body?.resolution);
   const resolution = RESOLUTIONS[resolutionKey];
 
@@ -144,7 +147,7 @@ export async function POST(request: Request) {
   const job = await prisma.renderJob.create({
     data: {
       audioKey,
-      settings: { ...settings, resolution: resolutionKey },
+      settings: JSON.parse(JSON.stringify({ scene, resolution: resolutionKey })),
       status: "QUEUED",
     },
   });
@@ -152,7 +155,7 @@ export async function POST(request: Request) {
   // Deliberately not awaited: this is a long-running self-hosted Node
   // process (not serverless), so the render keeps going in the background
   // while the client polls GET /api/render/[jobId] for progress.
-  void runRender(job.id, audioSrc, settings, resolution);
+  void runRender(job.id, audioSrc, scene, resolution);
 
   return NextResponse.json({ jobId: job.id });
 }

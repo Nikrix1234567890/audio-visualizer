@@ -2,18 +2,25 @@
 
 import type { ReactNode } from "react";
 import {
-  RESOLUTIONS,
-  SCENES,
-  type ResolutionKey,
-  type VisualizerSettings,
-} from "../../../remotion/types";
+  CAMERA_PARAMS,
+  ELEMENT_DEFS,
+  LOOK_PARAMS,
+  TRANSFORM_LIMITS,
+  createElement,
+  type ElementType,
+  type ParamValue,
+  type SceneDocument,
+  type SceneElement,
+  type Vec3,
+} from "../../../remotion/scene/definitions";
+import { TEMPLATES } from "../../../remotion/scene/templates";
+import { RESOLUTIONS, type ResolutionKey } from "../../../remotion/types";
+import { ElementList } from "@/components/editor/ElementList";
+import { ParamControls } from "@/components/editor/ParamControls";
 import { SegmentedSelector } from "@/components/ui/SegmentedSelector";
 import { SliderRow } from "@/components/ui/SliderRow";
 
-const BAR_COUNT_OPTIONS = [16, 32, 64, 128];
-
-export type SectionId = "scene" | "shape" | "color" | "motion" | "output";
-export type CollapsedSections = Partial<Record<SectionId, boolean>>;
+export type CollapsedSections = Record<string, boolean>;
 
 export type RenderState = {
   canRender: boolean;
@@ -24,9 +31,15 @@ export type RenderState = {
   renderedUrl: string | null;
 };
 
+const AXES = ["X", "Y", "Z"] as const;
+
 export function Sidebar({
-  settings,
-  onSettingChange,
+  scene,
+  onSceneChange,
+  templateId,
+  onLoadTemplate,
+  selectedId,
+  onSelect,
   resolution,
   onResolutionChange,
   collapsed,
@@ -34,19 +47,21 @@ export function Sidebar({
   render,
   onRender,
 }: {
-  settings: VisualizerSettings;
-  onSettingChange: <K extends keyof VisualizerSettings>(
-    key: K,
-    value: VisualizerSettings[K],
-  ) => void;
+  scene: SceneDocument;
+  onSceneChange: (scene: SceneDocument) => void;
+  /** The template the scene still matches, or null once it was edited. */
+  templateId: string | null;
+  onLoadTemplate: (id: string) => void;
+  selectedId: string | null;
+  onSelect: (id: string | null) => void;
   resolution: ResolutionKey;
   onResolutionChange: (value: ResolutionKey) => void;
   collapsed: CollapsedSections;
-  onToggleSection: (id: SectionId) => void;
+  onToggleSection: (id: string) => void;
   render: RenderState;
   onRender: () => void;
 }) {
-  const section = (id: SectionId, label: string, children: ReactNode) => (
+  const section = (id: string, label: string, children: ReactNode) => (
     <Section
       label={label}
       isCollapsed={Boolean(collapsed[id])}
@@ -56,106 +71,98 @@ export function Sidebar({
     </Section>
   );
 
+  const selected = scene.elements.find((e) => e.id === selectedId) ?? null;
+
+  const updateElement = (id: string, patch: Partial<SceneElement>) =>
+    onSceneChange({
+      ...scene,
+      elements: scene.elements.map((e) => (e.id === id ? { ...e, ...patch } : e)),
+    });
+
+  const addElement = (type: ElementType) => {
+    const element = createElement(type);
+    onSceneChange({ ...scene, elements: [...scene.elements, element] });
+    onSelect(element.id);
+  };
+
+  const removeElement = (id: string) => {
+    const remaining = scene.elements.filter((e) => e.id !== id);
+    onSceneChange({ ...scene, elements: remaining });
+    if (id === selectedId) onSelect(remaining[0]?.id ?? null);
+  };
+
   const isBusy = render.isUploading || render.isRendering;
   const percent = Math.round(render.progress * 100);
 
   return (
     <aside className="editor-area-side chassis-grain flex min-h-0 flex-col bg-panel lg:overflow-y-auto">
       {section(
-        "scene",
-        "Scene",
-        <SegmentedSelector
-          stretch
-          options={SCENES.map((s) => ({ value: s.id, label: s.label }))}
-          value={settings.scene}
-          onChange={(v) => onSettingChange("scene", v)}
+        "template",
+        "Template",
+        <>
+          <SegmentedSelector
+            stretch
+            options={TEMPLATES.map((t) => ({ value: t.id, label: t.label }))}
+            value={templateId ?? ""}
+            onChange={onLoadTemplate}
+          />
+          <p className="text-xs text-steel">
+            A template is a starting point. Add, remove and change its
+            elements below.
+          </p>
+        </>,
+      )}
+
+      {section(
+        "elements",
+        "Elements",
+        <ElementList
+          elements={scene.elements}
+          selectedId={selectedId}
+          onSelect={onSelect}
+          onToggleVisible={(id) => {
+            const element = scene.elements.find((e) => e.id === id);
+            if (element) updateElement(id, { visible: !element.visible });
+          }}
+          onRemove={removeElement}
+          onAdd={addElement}
+        />,
+      )}
+
+      {selected &&
+        section(
+          "selected",
+          `Selected: ${selected.name}`,
+          <ElementInspector
+            key={selected.id}
+            element={selected}
+            onChange={(patch) => updateElement(selected.id, patch)}
+          />,
+        )}
+
+      {section(
+        "camera",
+        "Camera",
+        <ParamControls
+          defs={CAMERA_PARAMS}
+          values={scene.camera}
+          onChange={(key, value) =>
+            onSceneChange({ ...scene, camera: { ...scene.camera, [key]: value } })
+          }
         />,
       )}
 
       {section(
-        "shape",
-        "Shape",
-        <>
-          <div className="flex flex-col gap-1.5">
-            <span className="font-mono text-[11px] tracking-[0.08em] text-steel uppercase">
-              Count
-            </span>
-            <SegmentedSelector
-              stretch
-              options={BAR_COUNT_OPTIONS.map((n) => ({
-                value: n,
-                label: String(n),
-              }))}
-              value={settings.barCount}
-              onChange={(v) => onSettingChange("barCount", v)}
-            />
-          </div>
-          <SliderRow
-            label="Radius"
-            value={settings.radius}
-            min={1}
-            max={10}
-            step={0.1}
-            onChange={(v) => onSettingChange("radius", v)}
-          />
-          {/* Terrain Wave draws lines, which have no width to set. */}
-          {settings.scene !== "terrainWave" && (
-            <SliderRow
-              label="Width"
-              value={settings.barWidth}
-              min={0.05}
-              max={1}
-              step={0.01}
-              onChange={(v) => onSettingChange("barWidth", v)}
-            />
+        "look",
+        "Look",
+        <ParamControls
+          defs={LOOK_PARAMS.filter(
+            (def) => scene.look.fog || !def.key.startsWith("fog") || def.key === "fog",
           )}
-          <SliderRow
-            label="Height"
-            value={settings.heightScale}
-            min={1}
-            max={10}
-            step={0.1}
-            onChange={(v) => onSettingChange("heightScale", v)}
-          />
-        </>,
-      )}
-
-      {section(
-        "color",
-        "Color",
-        <>
-          <SliderRow
-            label="Hue start"
-            value={settings.hueStart}
-            min={0}
-            max={360}
-            step={1}
-            unit="°"
-            onChange={(v) => onSettingChange("hueStart", v)}
-          />
-          <SliderRow
-            label="Hue end"
-            value={settings.hueEnd}
-            min={0}
-            max={720}
-            step={1}
-            unit="°"
-            onChange={(v) => onSettingChange("hueEnd", v)}
-          />
-        </>,
-      )}
-
-      {section(
-        "motion",
-        "Motion",
-        <SliderRow
-          label="Camera speed"
-          value={settings.cameraSpeed}
-          min={0}
-          max={2}
-          step={0.01}
-          unit="x"
-          onChange={(v) => onSettingChange("cameraSpeed", v)}
+          values={scene.look}
+          onChange={(key, value) =>
+            onSceneChange({ ...scene, look: { ...scene.look, [key]: value } })
+          }
         />,
       )}
 
@@ -220,6 +227,90 @@ export function Sidebar({
   );
 }
 
+/** Name, parameters and transform of the selected element. */
+function ElementInspector({
+  element,
+  onChange,
+}: {
+  element: SceneElement;
+  onChange: (patch: Partial<SceneElement>) => void;
+}) {
+  const def = ELEMENT_DEFS[element.type];
+
+  const setAxis = (key: "position" | "rotation", axis: number, value: number) => {
+    const next = [...element[key]] as Vec3;
+    next[axis] = value;
+    onChange({ [key]: next });
+  };
+
+  return (
+    <>
+      <label className="flex items-center justify-between gap-3">
+        <span className="font-mono text-[11px] tracking-[0.08em] text-steel uppercase">
+          Name
+        </span>
+        <input
+          value={element.name}
+          maxLength={40}
+          onChange={(e) => onChange({ name: e.target.value })}
+          onBlur={(e) => {
+            if (!e.target.value.trim()) onChange({ name: def.label });
+          }}
+          className="min-w-0 flex-1 border-b border-hairline bg-transparent text-right text-sm text-cream outline-none focus:border-amber"
+        />
+      </label>
+
+      <ParamControls
+        defs={def.params}
+        values={element.params}
+        onChange={(key: string, value: ParamValue) =>
+          onChange({ params: { ...element.params, [key]: value } })
+        }
+      />
+
+      <SubHeading>Position</SubHeading>
+      {AXES.map((axis, i) => (
+        <SliderRow
+          key={`position-${axis}`}
+          label={`Position ${axis}`}
+          value={element.position[i]}
+          {...TRANSFORM_LIMITS.position}
+          onChange={(v) => setAxis("position", i, v)}
+        />
+      ))}
+
+      <SubHeading>Rotation</SubHeading>
+      {AXES.map((axis, i) => (
+        <SliderRow
+          key={`rotation-${axis}`}
+          label={`Rotation ${axis}`}
+          value={element.rotation[i]}
+          {...TRANSFORM_LIMITS.rotation}
+          unit="°"
+          onChange={(v) => setAxis("rotation", i, v)}
+        />
+      ))}
+
+      <SubHeading>Size</SubHeading>
+      <SliderRow
+        label="Scale"
+        value={element.scale}
+        {...TRANSFORM_LIMITS.scale}
+        unit="x"
+        onChange={(v) => onChange({ scale: v })}
+      />
+    </>
+  );
+}
+
+function SubHeading({ children }: { children: ReactNode }) {
+  return (
+    <div className="mt-1 border-t border-hairline pt-3 font-mono text-[10px] tracking-[0.12em] text-steel uppercase">
+      {children}
+    </div>
+  );
+}
+
 function Section({
   label,
   isCollapsed,
@@ -244,11 +335,11 @@ function Section({
           height="8"
           viewBox="0 0 8 8"
           aria-hidden
-          className={`transition-transform ${isCollapsed ? "" : "rotate-90"}`}
+          className={`shrink-0 transition-transform ${isCollapsed ? "" : "rotate-90"}`}
         >
           <path d="M2 1l4 3-4 3z" fill="currentColor" />
         </svg>
-        {label}
+        <span className="truncate">{label}</span>
       </button>
       {!isCollapsed && (
         <div className="flex flex-col gap-4 px-4 pb-5">{children}</div>
