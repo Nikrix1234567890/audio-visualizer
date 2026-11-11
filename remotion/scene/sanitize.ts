@@ -11,6 +11,7 @@ import {
   ELEMENT_TYPES,
   LOOK_PARAMS,
   MAX_ELEMENTS,
+  MAX_TEXT_LENGTH,
   TRANSFORM_LIMITS,
   createElementId,
   type AudioSource,
@@ -30,6 +31,9 @@ import { AUDIO_SOURCES, TRANSFORM_TARGETS, isBindable } from "./bindings";
 const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
 /** Storage key of an uploaded picture, exactly as /api/upload hands it out. */
 const IMAGE_KEY = /^uploads\/[0-9a-f-]{36}\.(png|jpg|jpeg|webp)$/;
+const MODEL_KEY = /^uploads\/[0-9a-f-]{36}\.glb$/;
+/** Control characters (line breaks, tabs, ...) have no place in a single line of text. */
+const CONTROL_CHARACTERS = /[\u0000-\u001f\u007f]/g;
 const SAFE_ID = /^[a-zA-Z0-9_-]{1,40}$/;
 const MAX_NAME_LENGTH = 40;
 
@@ -51,6 +55,14 @@ function sanitizeParam(def: ParamDef, value: unknown, fallback: ParamValue): Par
   }
   if (def.kind === "image") {
     return typeof value === "string" && IMAGE_KEY.test(value) ? value : "";
+  }
+  if (def.kind === "model") {
+    return typeof value === "string" && MODEL_KEY.test(value) ? value : "";
+  }
+  if (def.kind === "text") {
+    return typeof value === "string"
+      ? value.replace(CONTROL_CHARACTERS, "").slice(0, MAX_TEXT_LENGTH)
+      : fallback;
   }
   return typeof value === "string" && HEX_COLOR.test(value) ? value : fallback;
 }

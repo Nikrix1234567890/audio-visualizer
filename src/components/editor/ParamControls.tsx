@@ -1,14 +1,16 @@
 "use client";
 
-import type {
-  Binding,
-  Bindings,
-  ParamDef,
-  ParamValue,
+import {
+  MAX_TEXT_LENGTH,
+  type Binding,
+  type Bindings,
+  type ParamDef,
+  type ParamValue,
 } from "../../../remotion/scene/definitions";
 import { BindableSlider } from "@/components/editor/BindableSlider";
 import { ColorRow } from "@/components/ui/ColorRow";
-import { ImageRow } from "@/components/ui/ImageRow";
+import { AssetRow } from "@/components/ui/AssetRow";
+import { TextRow } from "@/components/ui/TextRow";
 import { SliderRow } from "@/components/ui/SliderRow";
 import { ToggleRow } from "@/components/ui/ToggleRow";
 
@@ -66,12 +68,24 @@ export function ParamControls({
             />
           );
         }
-        if (def.kind === "image") {
+        if (def.kind === "image" || def.kind === "model") {
           return (
-            <ImageRow
+            <AssetRow
+              key={def.key}
+              kind={def.kind}
+              label={def.label}
+              value={String(values[def.key] ?? "")}
+              onChange={(v) => onChange(def.key, v)}
+            />
+          );
+        }
+        if (def.kind === "text") {
+          return (
+            <TextRow
               key={def.key}
               label={def.label}
               value={String(values[def.key] ?? "")}
+              maxLength={MAX_TEXT_LENGTH}
               onChange={(v) => onChange(def.key, v)}
             />
           );

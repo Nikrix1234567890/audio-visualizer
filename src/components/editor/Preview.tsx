@@ -1,9 +1,14 @@
 "use client";
 
 import { Player, type PlayerRef } from "@remotion/player";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AudioVisualizer3D } from "../../../remotion/compositions/AudioVisualizer3D";
 import type { SceneDocument } from "../../../remotion/scene/definitions";
+import type {
+  SceneEditorHooks,
+  TransformTool,
+} from "../../../remotion/scene/SceneRenderer";
+import { SegmentedSelector } from "@/components/ui/SegmentedSelector";
 
 const COMPOSITION_WIDTH = 1280;
 const COMPOSITION_HEIGHT = 720;
@@ -11,10 +16,19 @@ const ASPECT = COMPOSITION_WIDTH / COMPOSITION_HEIGHT;
 /** Bezel padding (p-2) on both sides, see the scope frame below. */
 const BEZEL = 16;
 
+const TOOLS: { value: TransformTool; label: string }[] = [
+  { value: "move", label: "Move" },
+  { value: "rotate", label: "Rotate" },
+  { value: "scale", label: "Scale" },
+  { value: "off", label: "Off" },
+];
+
 /**
  * The "scope": the live 3D picture, fitted into whatever space the layout
- * gives it. It has no controls of its own - playback is driven from the
- * transport bar through the player ref handed to `onPlayer`.
+ * gives it. It has no playback controls of its own - those live in the
+ * transport bar. While paused, clicking an element selects it and the
+ * chosen tool's handles let you move, rotate or scale it right in the
+ * picture.
  */
 export function Preview({
   audioUrl,
@@ -25,6 +39,9 @@ export function Preview({
   isLoading,
   onPlayer,
   onPickFile,
+  selectedId,
+  onSelect,
+  onTransform,
 }: {
   audioUrl: string | null;
   durationInFrames: number;
@@ -34,9 +51,35 @@ export function Preview({
   isLoading: boolean;
   onPlayer: (player: PlayerRef | null) => void;
   onPickFile: (file: File) => void;
+  selectedId: string | null;
+  onSelect: SceneEditorHooks["onSelect"];
+  onTransform: SceneEditorHooks["onTransform"];
 }) {
   const areaRef = useRef<HTMLDivElement>(null);
   const [area, setArea] = useState({ width: 0, height: 0 });
+  const [tool, setTool] = useState<TransformTool>("move");
+  const [player, setPlayer] = useState<PlayerRef | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  const handlePlayer = useCallback(
+    (instance: PlayerRef | null) => {
+      setPlayer(instance);
+      onPlayer(instance);
+    },
+    [onPlayer],
+  );
+
+  useEffect(() => {
+    if (!player) return;
+    const onPlay = () => setIsPlaying(true);
+    const onPause = () => setIsPlaying(false);
+    player.addEventListener("play", onPlay);
+    player.addEventListener("pause", onPause);
+    return () => {
+      player.removeEventListener("play", onPlay);
+      player.removeEventListener("pause", onPause);
+    };
+  }, [player]);
 
   useEffect(() => {
     const element = areaRef.current;
@@ -51,6 +94,18 @@ export function Preview({
     return () => observer.disconnect();
   }, []);
 
+  // The handles would only be in the way of a playing video.
+  const activeTool = isPlaying ? "off" : tool;
+  const inputProps = useMemo(
+    () => ({
+      audioSrc: audioUrl ?? "",
+      scene,
+      appBase: "",
+      editor: { selectedId, tool: activeTool, onSelect, onTransform },
+    }),
+    [audioUrl, scene, selectedId, activeTool, onSelect, onTransform],
+  );
+
   // Largest 16:9 box (plus bezel) that fits into the available area.
   const maxWidth = Math.max(0, area.width - BEZEL);
   const maxHeight = Math.max(0, area.height - BEZEL);
@@ -58,10 +113,22 @@ export function Preview({
   const height = Math.floor(width / ASPECT);
 
   return (
-    <section className="editor-area-preview flex min-h-0 min-w-0 p-4">
+    <section className="editor-area-preview flex min-h-0 min-w-0 flex-col gap-3 p-4">
+      <div className="flex shrink-0 items-center gap-3">
+        <span className="font-mono text-[11px] tracking-[0.08em] text-steel uppercase">
+          Tool
+        </span>
+        <SegmentedSelector options={TOOLS} value={tool} onChange={setTool} />
+        <span className="hidden text-xs text-steel xl:inline">
+          {isPlaying
+            ? "Pause to edit in the picture."
+            : "Click an element to select it, drag the handles to change it."}
+        </span>
+      </div>
+
       <div
         ref={areaRef}
-        className="flex aspect-video min-h-0 w-full items-center justify-center lg:aspect-auto lg:h-full"
+        className="flex aspect-video min-h-0 w-full items-center justify-center lg:aspect-auto lg:flex-1"
       >
         {width > 0 && (
           <div className="relative rounded-[10px] border border-hairline bg-panel p-2 shadow-scope-recessed">
@@ -72,9 +139,9 @@ export function Preview({
 
             {audioUrl ? (
               <Player
-                ref={onPlayer}
+                ref={handlePlayer}
                 component={AudioVisualizer3D}
-                inputProps={{ audioSrc: audioUrl, scene, assetBase: "/api/files/" }}
+                inputProps={inputProps}
                 durationInFrames={durationInFrames}
                 compositionWidth={COMPOSITION_WIDTH}
                 compositionHeight={COMPOSITION_HEIGHT}
@@ -82,7 +149,7 @@ export function Preview({
                 style={{ width, height, borderRadius: 6, overflow: "hidden" }}
                 controls={false}
                 initiallyMuted={initiallyMuted}
-                clickToPlay
+                clickToPlay={false}
                 doubleClickToFullscreen={false}
                 spaceKeyToPlayOrPause={false}
                 loop

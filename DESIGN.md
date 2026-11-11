@@ -139,8 +139,11 @@ For on/off parameters: caption left, a small pill track right with a round cap t
 ### Colour Swatch
 For colour parameters: caption left, the hex value as an editable mono readout, and a small raised swatch showing the colour. Clicking the swatch opens the system colour picker - the one place a native control is used, because nothing custom beats it.
 
+### Text Field
+For short text parameters: caption above, a single-line field in a recessed well below, amber outline on focus.
+
 ### Picture Well
-For picture parameters: caption above, then a small recessed square (scope-recessed) showing the chosen picture - empty chassis black when there is none - next to plain mono caps buttons: "Choose picture", then "Replace" and "Remove" once one is set. The picture uploads the moment it is chosen; the button reads "Uploading..." meanwhile, and a one-line hint names the accepted formats until a picture is set.
+For picture parameters: caption above, then a small recessed square (scope-recessed) showing the chosen picture - empty chassis black when there is none - next to plain mono caps buttons: "Choose picture", then "Replace" and "Remove" once one is set. The picture uploads the moment it is chosen; the button reads "Uploading..." meanwhile, and a one-line hint names the accepted formats until a picture is set. 3D model files use the same row without the thumbnail: a signal dot (lit amber once a model is loaded) takes its place.
 
 ### Segmented Selector
 A row of backlit, pill-shaped (`999px`) buttons sharing one Hairline Steel outline, used for Template and Resolution. In the settings rail the segments stretch to share the full width equally. The selected segment fills Panel Graphite Raised with a Patch Amber label and glow-active; unselected segments show Steel Label text on transparent background.
@@ -152,7 +155,10 @@ While no track is loaded, the scope shows a circular dashed-ring drop target sty
 A large, chunky, bevelled push-button (Panel Graphite Raised at rest). While idle it reads "RENDER" in Space Grotesk 600. While active it shows a live mono percentage readout, gains glow-active, and its fill pulses gently. Disabled state drops to a flat, unlit Panel Graphite with no bevel.
 
 ### Scope (preview module)
-A recessed bezel (scope-recessed shadow, `10px` radius, corner rivets) framing the `@remotion/player` canvas. The player's own control bar is switched off; clicking the picture toggles playback.
+A recessed bezel (scope-recessed shadow, `10px` radius, corner rivets) framing the `@remotion/player` canvas. The player's own control bar is switched off, and clicking the picture does not start or stop playback - the picture is a workspace: while paused, clicking an element selects it, and the active tool's handles (the standard three-axis gizmo: arrows to move, rings to rotate, boxes to scale) sit on the selected element. The handles disappear while the video plays.
+
+### Tool Selector
+A segmented selector in a slim row above the scope, captioned "TOOL": Move, Rotate, Scale, Off. A one-line hint beside it says what a click and a drag do (or, while playing, to pause first).
 
 ### Transport
 The bar along the bottom. Left: the track button, a round raised play/pause button (lit amber with glow-active while playing), a mono time readout (`0:42 / 3:51`) and a mute toggle. Right: the waveform. Space toggles playback and the left/right arrows jump five seconds, unless a control has the keyboard focus.
@@ -177,4 +183,4 @@ A 7px hit area with a single Hairline Steel line, between the rail and the scope
 - **Don't** fall back to native `<input type="range">` sliders, plain `<select>` dropdowns, or generic rounded "card" containers with drop shadows - every control is a purpose-built instrument component.
 - **Don't** render faders or panels as photorealistic skeuomorphic textures (no wood grain, no photographic brushed metal) - the hardware language stays graphic/vector.
 - **Don't** let corner rivets spread beyond the scope module frame; they are one signature detail, not a repeating pattern.
-- **Don't** put playback controls on top of the picture or bring back the player's built-in control bar - transport lives in the bottom bar only.
+- **Don't** put playback controls on top of the picture or bring back the player's built-in control bar - transport lives in the bottom bar only. The only things drawn over the picture are the gizmo handles of the selected element.

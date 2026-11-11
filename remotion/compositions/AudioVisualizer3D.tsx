@@ -8,6 +8,9 @@ import {getTrackAnalysis} from '../audio/analysis';
 import {sanitizeScene} from '../scene/sanitize';
 import {SceneRenderer} from '../scene/SceneRenderer';
 
+/** The font used by Text elements, shipped with the app in public/fonts. */
+const FONT_PATH = 'fonts/Geist-Regular.ttf';
+
 /**
  * The one composition behind both the live preview and the final render:
  * an audio file plus a scene document in, a 3D picture per frame out.
@@ -15,7 +18,8 @@ import {SceneRenderer} from '../scene/SceneRenderer';
 export const AudioVisualizer3D: React.FC<AudioVisualizerProps> = ({
   audioSrc,
   scene: rawScene,
-  assetBase,
+  appBase,
+  editor,
 }) => {
   const frame = useCurrentFrame();
   const {fps, width, height} = useVideoConfig();
@@ -24,7 +28,10 @@ export const AudioVisualizer3D: React.FC<AudioVisualizerProps> = ({
   // older version of the editor.
   const scene = useMemo(() => sanitizeScene(rawScene), [rawScene]);
   const background = scene.look.background;
-  const assetUrl = useCallback((key: string) => `${assetBase}${key}`, [assetBase]);
+  const assetUrl = useCallback(
+    (key: string) => `${appBase}/api/files/${key}`,
+    [appBase],
+  );
 
   if (!audioData) {
     return <AbsoluteFill style={{backgroundColor: background}} />;
@@ -44,6 +51,8 @@ export const AudioVisualizer3D: React.FC<AudioVisualizerProps> = ({
           analysis={analysis}
           time={time}
           assetUrl={assetUrl}
+          fontUrl={`${appBase}/${FONT_PATH}`}
+          editor={editor}
         />
       </ThreeCanvas>
     </AbsoluteFill>

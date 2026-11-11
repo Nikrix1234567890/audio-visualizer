@@ -3,6 +3,7 @@
 // The scene document itself is defined in ./scene/definitions.ts.
 
 import type { SceneDocument } from "./scene/definitions";
+import type { SceneEditorHooks } from "./scene/SceneRenderer";
 
 export type ResolutionKey = "720p" | "1080p" | "1440p" | "4k";
 
@@ -22,9 +23,12 @@ export type AudioVisualizerProps = {
   audioSrc: string;
   scene: SceneDocument;
   /**
-   * Prefix that turns the storage key of an uploaded file (e.g. a picture
-   * used by an Image element) into a loadable URL: "/api/files/" in the
-   * editor, the app's full address during a server render.
+   * Where the app itself is reachable, without a trailing slash. Uploaded
+   * files (pictures, models) and the text font are loaded from there. Empty
+   * in the editor, where relative addresses work; the app's full address
+   * during a server render, which runs on a different port.
    */
-  assetBase: string;
+  appBase: string;
+  /** Selection and gizmo hooks. Only the editor passes these, never a render. */
+  editor?: SceneEditorHooks;
 };

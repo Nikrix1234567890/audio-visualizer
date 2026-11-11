@@ -2,33 +2,48 @@
 
 import { useRef, useState } from "react";
 
-const ACCEPTED_IMAGES = "image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp";
+const KINDS = {
+  image: {
+    accept: "image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp",
+    choose: "Choose picture",
+    hint: "PNG, JPG or WebP, up to 10 MB.",
+  },
+  model: {
+    accept: ".glb,model/gltf-binary",
+    choose: "Choose model",
+    hint: "A .glb file, up to 50 MB.",
+  },
+} as const;
 
 /**
- * A picture parameter. Choosing a file uploads it straight away (the render
- * server needs it later) and stores the key it gets back; the row then shows
- * a thumbnail with buttons to replace or remove it.
+ * A file parameter (a picture or a 3D model). Choosing a file uploads it
+ * straight away - the render server needs it later - and stores the key it
+ * gets back; the row then offers to replace or remove it. Pictures show a
+ * thumbnail in a small recessed well.
  */
-export function ImageRow({
+export function AssetRow({
+  kind,
   label,
   value,
   onChange,
 }: {
+  kind: keyof typeof KINDS;
   label: string;
-  /** Storage key of the uploaded picture, or "" for none. */
+  /** Storage key of the uploaded file, or "" for none. */
   value: string;
   onChange: (value: string) => void;
 }) {
   const input = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { accept, choose, hint } = KINDS[kind];
 
   const upload = async (file: File) => {
     setError(null);
     setIsUploading(true);
     try {
       const formData = new FormData();
-      formData.append("image", file);
+      formData.append(kind, file);
       const response = await fetch("/api/upload", {
         method: "POST",
         body: formData,
@@ -53,12 +68,24 @@ export function ImageRow({
       </span>
 
       <div className="flex items-center gap-3">
-        <div
-          role="img"
-          aria-label={value ? "Chosen picture" : "No picture chosen"}
-          className="h-12 w-12 shrink-0 rounded-md border border-hairline bg-chassis bg-cover bg-center shadow-scope-recessed"
-          style={value ? { backgroundImage: `url("/api/files/${value}")` } : undefined}
-        />
+        {kind === "image" ? (
+          <div
+            role="img"
+            aria-label={value ? "Chosen picture" : "No picture chosen"}
+            className="h-12 w-12 shrink-0 rounded-md border border-hairline bg-chassis bg-cover bg-center shadow-scope-recessed"
+            style={
+              value ? { backgroundImage: `url("/api/files/${value}")` } : undefined
+            }
+          />
+        ) : (
+          <span
+            className={`h-2 w-2 shrink-0 rounded-full ${
+              value ? "bg-amber shadow-glow-active" : "bg-amber-dim"
+            }`}
+            aria-label={value ? "Model loaded" : "No model chosen"}
+            role="img"
+          />
+        )}
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
@@ -66,7 +93,7 @@ export function ImageRow({
             onClick={() => input.current?.click()}
             className={buttonClass}
           >
-            {isUploading ? "Uploading…" : value ? "Replace" : "Choose picture"}
+            {isUploading ? "Uploading…" : value ? "Replace" : choose}
           </button>
           {value && !isUploading && (
             <button type="button" onClick={() => onChange("")} className={buttonClass}>
@@ -79,7 +106,7 @@ export function ImageRow({
       <input
         ref={input}
         type="file"
-        accept={ACCEPTED_IMAGES}
+        accept={accept}
         className="hidden"
         onChange={(e) => {
           const file = e.target.files?.[0];
@@ -89,9 +116,7 @@ export function ImageRow({
       />
 
       {error && <p className="text-xs text-red-400">{error}</p>}
-      {!value && !error && (
-        <p className="text-xs text-steel">PNG, JPG or WebP, up to 10 MB.</p>
-      )}
+      {!value && !error && <p className="text-xs text-steel">{hint}</p>}
     </div>
   );
 }

@@ -14,6 +14,7 @@ const CONTENT_TYPES: Record<string, string> = {
   ".jpg": "image/jpeg",
   ".jpeg": "image/jpeg",
   ".webp": "image/webp",
+  ".glb": "model/gltf-binary",
 };
 
 // Browsers (notably Chrome) can fail to determine an <audio>/<video> element's

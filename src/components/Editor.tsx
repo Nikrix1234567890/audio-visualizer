@@ -9,7 +9,10 @@ import {
   useState,
   type CSSProperties,
 } from "react";
-import type { SceneDocument } from "../../remotion/scene/definitions";
+import type {
+  SceneDocument,
+  SceneElement,
+} from "../../remotion/scene/definitions";
 import {
   DEFAULT_TEMPLATE,
   TEMPLATES,
@@ -125,6 +128,23 @@ export function Editor() {
     setScene(next);
     setTemplateId(null);
   }, []);
+
+  // Dragging the gizmo in the picture changes an element's transform.
+  const transformElement = useCallback(
+    (
+      id: string,
+      patch: Partial<Pick<SceneElement, "position" | "rotation" | "scale">>,
+    ) => {
+      setScene((current) => ({
+        ...current,
+        elements: current.elements.map((element) =>
+          element.id === id ? { ...element, ...patch } : element,
+        ),
+      }));
+      setTemplateId(null);
+    },
+    [],
+  );
 
   const loadTemplate = useCallback(
     (id: string) => {
@@ -336,6 +356,9 @@ export function Editor() {
         isLoading={isLoadingTrack}
         onPlayer={setPlayer}
         onPickFile={loadFile}
+        selectedId={selectedId}
+        onSelect={setSelectedId}
+        onTransform={transformElement}
       />
 
       <ResizeHandle

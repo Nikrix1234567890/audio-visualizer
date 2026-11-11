@@ -28,7 +28,14 @@ export type ParamDef =
   | { kind: "toggle"; key: string; label: string }
   | { kind: "color"; key: string; label: string }
   /** An uploaded picture; the value is its storage key, or "" for none. */
-  | { kind: "image"; key: string; label: string };
+  | { kind: "image"; key: string; label: string }
+  /** An uploaded 3D model (.glb); the value is its storage key, or "". */
+  | { kind: "model"; key: string; label: string }
+  /** A short single line of text. */
+  | { kind: "text"; key: string; label: string };
+
+/** Longest text a text parameter may hold. */
+export const MAX_TEXT_LENGTH = 120;
 
 export const ELEMENT_TYPES = [
   "barRing",
@@ -43,6 +50,8 @@ export const ELEMENT_TYPES = [
   "particles",
   "image",
   "backdrop",
+  "model",
+  "text",
 ] as const;
 
 export type ElementType = (typeof ELEMENT_TYPES)[number];
@@ -270,6 +279,31 @@ export const ELEMENT_DEFS: Record<ElementType, ElementDef> = {
       { kind: "number", key: "size", label: "Size", min: 0.2, max: 40, step: 0.1 },
       { kind: "toggle", key: "round", label: "Crop to circle" },
       { kind: "number", key: "opacity", label: "Opacity", min: 0, max: 1, step: 0.01 },
+    ],
+  },
+  model: {
+    type: "model",
+    label: "3D Model",
+    description: "Your own 3D model from a .glb file, fitted to size and slowly turning.",
+    defaults: { model: "", size: 4, spin: 20, light: 1 },
+    params: [
+      { kind: "model", key: "model", label: "Model file" },
+      { kind: "number", key: "size", label: "Size", min: 0.2, max: 40, step: 0.1 },
+      { kind: "number", key: "spin", label: "Spin", min: -360, max: 360, step: 1, unit: "°/s", modulate: false },
+      { kind: "number", key: "light", label: "Studio light", min: 0, max: 4, step: 0.05 },
+    ],
+  },
+  text: {
+    type: "text",
+    label: "Text",
+    description: "A line of text - a title, an artist name.",
+    defaults: { text: "YOUR TITLE", size: 1, color: "#ffffff", glow: 1, spacing: 0.05 },
+    params: [
+      { kind: "text", key: "text", label: "Text" },
+      { kind: "number", key: "size", label: "Size", min: 0.1, max: 10, step: 0.05 },
+      { kind: "color", key: "color", label: "Colour" },
+      { kind: "number", key: "glow", label: "Glow", min: 0, max: 4, step: 0.05 },
+      { kind: "number", key: "spacing", label: "Letter spacing", min: -0.1, max: 1, step: 0.01, modulate: false },
     ],
   },
   backdrop: {
