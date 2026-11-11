@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { internalOrigin } from "@/lib/origin";
 import path from "node:path";
 import fs from "node:fs";
 import { mkdir } from "node:fs/promises";
@@ -8,6 +9,7 @@ import { auth } from "@/auth";
 import { createFileToken, fileOwner } from "@/lib/fileAccess";
 import { HOUR, clientIp, rateLimit, tooManyRequests } from "@/lib/rateLimit";
 import { enqueueRender, queueRefusal } from "@/lib/renderQueue";
+import { renderConcurrency, renderGl } from "@/lib/renderSettings";
 import { fileExists, getAbsolutePath } from "@/lib/storage";
 import { TIER_LIMITS, isFrameRateAllowed, isResolutionAllowed } from "@/lib/tiers";
 import { getTier } from "@/lib/userTier";
@@ -38,7 +40,7 @@ async function runRender(
   watermark: boolean,
 ) {
   const inputProps = { audioSrc, scene, appBase, fileToken, watermark };
-  const chromiumOptions = { gl: "angle" as const, disableWebSecurity: true };
+  const chromiumOptions = { gl: renderGl(), disableWebSecurity: true };
 
   try {
     await prisma.renderJob.update({
@@ -80,6 +82,7 @@ async function runRender(
       outputLocation: outputPath,
       inputProps,
       chromiumOptions,
+      concurrency: renderConcurrency(),
       port: await getFreePort(),
       onProgress: ({ progress }) => {
         const percent = Math.round(progress * 100);
@@ -179,7 +182,7 @@ export async function POST(request: Request) {
   const fileToken = userId ? createFileToken(userId) : undefined;
   const tokenQuery = fileToken ? `?t=${encodeURIComponent(fileToken)}` : "";
 
-  const origin = new URL(request.url).origin;
+  const origin = internalOrigin(request);
   // The headless render browser fetches this over plain HTTP from our own
   // Next.js server - a different origin/port than the Remotion bundle is
   // served from, hence disableWebSecurity in runRender() to avoid CORS.

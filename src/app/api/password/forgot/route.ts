@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { publicOrigin } from "@/lib/origin";
 import { sendResetLink } from "@/lib/accountMails";
 import { prisma } from "@/lib/prisma";
 import { HOUR, clientIp, rateLimit, tooManyRequests } from "@/lib/rateLimit";
@@ -19,7 +20,7 @@ export async function POST(request: Request) {
   if (email && rateLimit(`forgot-to:${email}`, 3, HOUR)) {
     const user = await prisma.user.findUnique({ where: { email } });
     if (user) {
-      await sendResetLink(user, new URL(request.url).origin).catch((error) => {
+      await sendResetLink(user, publicOrigin(request)).catch((error) => {
         console.error("Sending the reset mail failed:", error);
       });
     }

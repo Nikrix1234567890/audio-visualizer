@@ -43,6 +43,12 @@ Single-session workflow: open the site, drag/select an audio file, watch the liv
 - `/account` shows the plan, changes the password and deletes the account with all its files; with a subscription it opens the Stripe customer portal.
 - Template cards play a short silent loop on hover (`public/previews`, made by `pnpm previews`); the landing page shows a live 3D scene in its hero.
 - `pnpm test` runs the automated checks of the scene logic and the server rules.
+- Accounts can reset a forgotten password by mail (a one-hour, single-use link) and are asked to confirm their address after signing up; the app works without confirming. Mails go out through Resend when `RESEND_API_KEY` and `MAIL_FROM` are set, otherwise they are printed to the server log.
+- Requests are limited per visitor: logins (also per account), sign-ups, reset requests, uploads and renders (`src/lib/rateLimit.ts`).
+- `/legal/imprint`, `/legal/privacy` and `/legal/terms` exist as clearly marked drafts; the owner has to fill them in and have them checked before the site is public.
+- The editor offers a demo track one click away, a first-visit card with four steps, and keyboard shortcuts (`?` lists them).
+- Every saved project gets a picture in the dashboard, drawn after saving and readable only by its owner.
+- How to run it on a server is in `DEPLOY.md`. It needs a virtual or dedicated server; classic shared web hosting cannot run it.
 - The template gallery and the element catalogue show preview pictures from `public/thumbnails`, rendered by `pnpm thumbnails` with the same composition as every video. Run it again after changing a template or an element.
 - The preview always plays at 60 frames per second (30 looked jerky with fast particles); the export frame rate is user-selectable, 60 (matches the preview) or 30 (renders in roughly half the time). A small readout above the preview shows the frames actually produced per second while playing.
 - Rendering runs server-side via `@remotion/renderer`, tracked as an async job in a database (Prisma/SQLite locally) with real progress percentage, polled by the client.

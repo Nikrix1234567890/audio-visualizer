@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { publicOrigin } from "@/lib/origin";
 import bcrypt from "bcryptjs";
 import { sendVerifyLink } from "@/lib/accountMails";
 import { prisma } from "@/lib/prisma";
@@ -51,7 +52,7 @@ export async function POST(request: Request) {
 
   // The account works right away; the mail only asks to confirm the
   // address. A mail that fails to send must not fail the registration.
-  sendVerifyLink(user, new URL(request.url).origin).catch((error) => {
+  sendVerifyLink(user, publicOrigin(request)).catch((error) => {
     console.error("Sending the confirmation mail failed:", error);
   });
 

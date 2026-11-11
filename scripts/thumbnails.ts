@@ -18,6 +18,7 @@ import {
 } from "../remotion/scene/definitions";
 import { TEMPLATES } from "../remotion/scene/templates";
 import { getFreePort } from "../src/lib/freePort";
+import { renderGl } from "../src/lib/renderSettings";
 
 const BUNDLE_DIR = path.resolve(process.cwd(), ".remotion-bundle");
 const OUT_DIR = path.resolve(process.cwd(), "public/thumbnails");
@@ -72,7 +73,7 @@ async function main() {
   await mkdir(path.join(OUT_DIR, "templates"), { recursive: true });
   await mkdir(path.join(OUT_DIR, "elements"), { recursive: true });
 
-  const chromiumOptions = { gl: "angle" as const };
+  const chromiumOptions = { gl: renderGl() };
   const browser = await openBrowser("chrome", { chromiumOptions });
 
   try {

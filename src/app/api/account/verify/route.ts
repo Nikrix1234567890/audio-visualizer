@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { publicOrigin } from "@/lib/origin";
 import { auth } from "@/auth";
 import { sendVerifyLink } from "@/lib/accountMails";
 import { prisma } from "@/lib/prisma";
@@ -22,7 +23,7 @@ export async function POST(request: Request) {
   if (user.emailVerified) return NextResponse.json({ ok: true, alreadyConfirmed: true });
 
   try {
-    await sendVerifyLink(user, new URL(request.url).origin);
+    await sendVerifyLink(user, publicOrigin(request));
   } catch (error) {
     console.error("Sending the confirmation mail failed:", error);
     return NextResponse.json(

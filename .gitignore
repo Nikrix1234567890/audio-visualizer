@@ -54,3 +54,5 @@ next-env.d.ts
 # (regenerate with `pnpm remotion:bundle`)
 /.remotion-bundle/
 /.next-prod/
+
+# kept out of Docker images too, see .dockerignore

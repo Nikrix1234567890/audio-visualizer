@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { internalOrigin } from "@/lib/origin";
 import { auth } from "@/auth";
 import { claimFiles, fileOwner, sceneAssetKeys } from "@/lib/fileAccess";
 import { prisma } from "@/lib/prisma";
@@ -79,7 +80,7 @@ export async function PUT(request: Request, context: Context) {
     userId,
     audioKey: saved.audioKey,
     scene: saved.scene,
-    origin: new URL(request.url).origin,
+    origin: internalOrigin(request),
   });
   return NextResponse.json(saved);
 }

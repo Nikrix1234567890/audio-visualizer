@@ -1,8 +1,8 @@
 # Handover
 
 For the agent (or person) picking this project up on another machine.
-Written on 2026-11-11 at the end of a long session on a Windows PC; the
-next session is on a Mac.
+Written on 2026-11-11 and extended in the night to 2026-11-12, at the end
+of a long session on a Windows PC; the next session is on a Mac.
 
 ## What this is
 
@@ -18,6 +18,7 @@ Read these first, in this order:
    `node_modules/next/dist/docs/` before writing Next code.
 2. `PRODUCT.md` - what the product does and the rules it follows.
 3. `DESIGN.md` - the look ("Night Signal") and where it lives.
+4. `DEPLOY.md` - how to put it on a server (written, never tried).
 
 ## Working with the owner
 
@@ -101,7 +102,7 @@ pnpm tier you@example.com PREMIUM
 | --- | --- |
 | `pnpm dev` | Development server on port 3000 |
 | `pnpm build` / `pnpm start` | Production build and server |
-| `pnpm test` | 17 checks of scene logic and server rules |
+| `pnpm test` | 22 checks of scene logic, server rules and account helpers |
 | `pnpm lint` | ESLint |
 | `pnpm exec tsc --noEmit` | Type check |
 | `pnpm remotion:bundle` | Rebuild the render bundle - **needed after every change under `remotion/`**, or server renders show the old code |
@@ -130,7 +131,9 @@ pnpm tier you@example.com PREMIUM
   (timeline), `BindableSlider` (fader with audio jack and keyframes).
 - `src/lib/` - server rules: `fileAccess.ts` (who may read a file),
   `tiers.ts` (plan limits), `stripe.ts` (payments), `renderQueue.ts`,
-  `cleanup.ts`, `projects.ts`.
+  `cleanup.ts`, `projects.ts`, `tokens.ts` and `mail.ts` (signed mail
+  links), `rateLimit.ts`, `origin.ts` and `renderSettings.ts` (values that
+  differ between development and a server).
 - `scripts/` - the commands above. `tests/` - the automated tests.
 - `prisma/` - schema and migrations (SQLite in development).
 
@@ -138,7 +141,13 @@ pnpm tier you@example.com PREMIUM
 
 Everything is committed and pushed. Types, lint and tests pass.
 
-Built in this session, newest first: timeline zoom and per-setting keyframe
+Built in the night to 2026-11-12, newest first: server instructions and a
+Dockerfile; four more elements and templates (Oscilloscope, Halo,
+Fireworks, Night City); project pictures in the dashboard; preview loops
+that wrap without a jump; onboarding and keyboard shortcuts; legal pages as
+drafts; password reset, address confirmation and request limits.
+
+Built before that, newest first: timeline zoom and per-setting keyframe
 rows; automated tests; account page; render queue; six new elements and
 templates; lyrics element; tempo on the beat; camera moves; new landing
 page with a live 3D hero; hover loops for templates; the rebrand; keyframes
@@ -153,6 +162,12 @@ square formats; files tied to accounts; template gallery.
   `gl: "angle"` (`src/app/api/render/route.ts`, `scripts/thumbnails.ts`,
   `scripts/previews.ts`). If a render fails or comes out black on the Mac,
   that option is the first thing to look at.
+- **No mail was ever sent.** Password reset and address confirmation were
+  tested with the links printed to the server log; sending through Resend
+  needs a key and a verified sender domain.
+- **`DEPLOY.md` and the `Dockerfile` were never tried.** In particular
+  rendering on Linux without a graphics card (`RENDER_GL="swangle"`) is
+  untested, and so is its speed.
 - **Stripe was never called.** The webhook was tested with self-signed
   messages only; Checkout and the customer portal need real keys in `.env`
   (see `.env.example`) and a test run.
@@ -179,14 +194,26 @@ square formats; files tied to accounts; template gallery.
 - Counts and speeds cannot be keyframed or bound to audio (the picture
   would jump); everything else can.
 - Thin 1-pixel lines look faint at 4K.
-- No email: no address confirmation, no password reset.
+- The legal pages are drafts with placeholders; nothing has been checked
+  by a lawyer.
+- Address confirmation is asked for but not enforced: an unconfirmed
+  account can do everything.
 - Storage is the local disk and the database is SQLite; both are meant to
   be swapped (object storage, Postgres) before a real launch.
 
+## Hosting
+
+The owner hosts at helloly and asked whether a normal web hosting package
+is enough for the launch. Answer given: almost certainly not - the app
+needs a long-running Node process, a headless browser with FFmpeg and a
+writable disk, which classic shared hosting does not offer. A virtual
+server (about 4 cores, 8 GB) is the smallest thing that can run it; the
+domain can stay where it is. Whether helloly sells such servers was not
+checked on their own site.
+
 ## Ideas the owner liked or might want next
 
-Deployment (hosting, Postgres, object storage, a real domain and name),
-password reset by email, a legal footer (imprint, privacy, terms - needed
-before taking money), per-element timeline tracks for bindings, more
-elements from the owner's inspiration screenshots, seamless preview loops,
-and a look at render speed for long tracks.
+Trying `DEPLOY.md` on a real server and measuring render speed there, a
+real name and domain, filling in the legal pages, a Stripe test run,
+sending mail for real, per-element timeline tracks for bindings, and more
+elements from the owner's inspiration screenshots.

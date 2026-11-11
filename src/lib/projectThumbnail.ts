@@ -5,6 +5,7 @@ import { renderStill, selectComposition } from "@remotion/renderer";
 import { createFileToken } from "@/lib/fileAccess";
 import { getFreePort } from "@/lib/freePort";
 import { enqueueRender } from "@/lib/renderQueue";
+import { renderGl } from "@/lib/renderSettings";
 import { getAbsolutePath } from "@/lib/storage";
 import type { SceneDocument } from "../../remotion/scene/definitions";
 
@@ -46,7 +47,7 @@ export function queueProjectThumbnail({
         appBase: origin,
         fileToken,
       };
-      const chromiumOptions = { gl: "angle" as const, disableWebSecurity: true };
+      const chromiumOptions = { gl: renderGl(), disableWebSecurity: true };
       const composition = await selectComposition({
         serveUrl: BUNDLE_DIR,
         id: "AudioVisualizer3D",

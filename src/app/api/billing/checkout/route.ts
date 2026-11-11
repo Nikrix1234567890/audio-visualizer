@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { publicOrigin } from "@/lib/origin";
 import { auth } from "@/auth";
 import { createCheckoutUrl, isStripeConfigured } from "@/lib/stripe";
 
@@ -19,7 +20,7 @@ export async function POST(request: Request) {
     const url = await createCheckoutUrl({
       userId: session.user.id,
       email: session.user.email ?? null,
-      origin: new URL(request.url).origin,
+      origin: publicOrigin(request),
     });
     return NextResponse.json({ url });
   } catch (error) {

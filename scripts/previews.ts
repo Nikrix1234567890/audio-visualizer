@@ -10,6 +10,7 @@ import { bundle } from "@remotion/bundler";
 import { openBrowser, renderMedia, selectComposition } from "@remotion/renderer";
 import { TEMPLATES } from "../remotion/scene/templates";
 import { getFreePort } from "../src/lib/freePort";
+import { renderGl } from "../src/lib/renderSettings";
 
 const BUNDLE_DIR = path.resolve(process.cwd(), ".remotion-bundle");
 const OUT_DIR = path.resolve(process.cwd(), "public/previews");
@@ -43,7 +44,7 @@ async function main() {
   });
   await mkdir(path.join(OUT_DIR, "portrait"), { recursive: true });
 
-  const chromiumOptions = { gl: "angle" as const };
+  const chromiumOptions = { gl: renderGl() };
   const browser = await openBrowser("chrome", { chromiumOptions });
 
   try {

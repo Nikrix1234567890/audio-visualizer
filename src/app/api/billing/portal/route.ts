@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { publicOrigin } from "@/lib/origin";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { createPortalUrl, isStripeConfigured } from "@/lib/stripe";
@@ -26,7 +27,7 @@ export async function POST(request: Request) {
   try {
     const url = await createPortalUrl({
       customerId: user.stripeCustomerId,
-      returnUrl: `${new URL(request.url).origin}/account`,
+      returnUrl: `${publicOrigin(request)}/account`,
     });
     return NextResponse.json({ url });
   } catch (error) {
