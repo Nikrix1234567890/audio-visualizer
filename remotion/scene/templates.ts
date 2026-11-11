@@ -487,6 +487,151 @@ export const TEMPLATES: SceneTemplate[] = [
       ],
     },
   },
+  {
+    id: "nebula",
+    label: "Nebula",
+    focusElementId: "nebula",
+    scene: {
+      version: 1,
+      camera: { ...DEFAULT_CAMERA, distance: 18, height: 3, orbit: 0.05, bob: 1, drift: 0.1, fov: 45 },
+      cameraBindings: {},
+      // Opens far away and glides into the cloud.
+      cameraKeyframes: {
+        distance: [
+          { t: 0, v: 26, ease: "smooth" },
+          { t: 10, v: 11, ease: "smooth" },
+        ],
+      },
+      look: { ...DEFAULT_LOOK, background: "#03020a", bloom: 0.9, vignette: 0.7 },
+      lookBindings: {},
+      elements: [
+        createElement("nebula", { id: "nebula", tempo: { amount: 0.6, period: 7, mode: "wave" } }),
+        createElement("stars", { id: "stars", params: { count: 3000, size: 3 } }),
+      ],
+    },
+  },
+  {
+    id: "eventHorizon",
+    label: "Event Horizon",
+    focusElementId: "hole",
+    scene: {
+      version: 1,
+      camera: { ...DEFAULT_CAMERA, distance: 16, height: 5, orbit: 0.06, bob: 1.2, drift: 0.09, fov: 45 },
+      cameraBindings: { shake: { source: "bass", amount: 0.15 } },
+      // Starts above the disc and sinks to its edge.
+      cameraKeyframes: {
+        height: [
+          { t: 0, v: 11, ease: "smooth" },
+          { t: 9, v: 2.5, ease: "smooth" },
+        ],
+      },
+      look: { ...DEFAULT_LOOK, background: "#020104", bloom: 1, vignette: 0.75 },
+      lookBindings: {},
+      elements: [
+        createElement("blackHole", {
+          id: "hole",
+          rotation: [0, 0, 10],
+          tempo: { amount: 0.7, period: 4, mode: "beat" },
+        }),
+        createElement("stars", { id: "stars", params: { count: 2500, size: 3 } }),
+      ],
+    },
+  },
+  {
+    id: "lissajous",
+    label: "Lissajous",
+    focusElementId: "curve",
+    scene: {
+      version: 1,
+      camera: { ...DEFAULT_CAMERA, distance: 12, height: 1, orbit: 0.15, bob: 0.8, drift: 0.15, fov: 45 },
+      cameraBindings: {},
+      look: { ...DEFAULT_LOOK, background: "#020409", bloom: 1.1, vignette: 0.7 },
+      lookBindings: {},
+      elements: [
+        createElement("lissajous", {
+          id: "curve",
+          bindings: { scale: { source: "beat", amount: 0.06 } },
+          // The curve grows thicker as the track goes on.
+          keyframes: {
+            thickness: [
+              { t: 0, v: 0.04, ease: "smooth" },
+              { t: 12, v: 0.4, ease: "smooth" },
+            ],
+          },
+          tempo: { amount: 0.7, period: 6, mode: "wave" },
+        }),
+        createElement("particles", {
+          id: "dust",
+          name: "Dust",
+          params: { count: 400, spread: 16, hole: 6, depth: 40, size: 0.14, speed: 0.3, boost: 2, hue: 200, saturation: 0.6, opacity: 0.5 },
+        }),
+      ],
+    },
+  },
+  {
+    id: "fountain",
+    label: "Fountain",
+    focusElementId: "fountain",
+    scene: {
+      version: 1,
+      camera: { ...DEFAULT_CAMERA, distance: 13, height: 3.5, orbit: 0.1, bob: 0.6, drift: 0.15, fov: 45 },
+      cameraBindings: {},
+      look: { ...DEFAULT_LOOK, background: "#06030a", bloom: 1.1, vignette: 0.7 },
+      lookBindings: {},
+      elements: [
+        createElement("fountain", {
+          id: "fountain",
+          position: [0, FLOOR_Y, 0],
+          tempo: { amount: 0.7, period: 4, mode: "beat" },
+        }),
+        createElement("glowDisc", { id: "glow", position: [0, FLOOR_Y + 0.02, 0] }),
+        createElement("gridFloor", { id: "floor", position: [0, FLOOR_Y, 0] }),
+      ],
+    },
+  },
+  {
+    id: "soundWaves",
+    label: "Sound Waves",
+    focusElementId: "waves",
+    scene: {
+      version: 1,
+      camera: { ...DEFAULT_CAMERA, distance: 14, height: 5, orbit: 0, sway: 3, bob: 1, drift: 0.2, fov: 45 },
+      cameraBindings: {},
+      look: { ...DEFAULT_LOOK, background: "#02030a", bloom: 1, vignette: 0.7 },
+      lookBindings: {},
+      elements: [
+        createElement("spectrumWaves", {
+          id: "waves",
+          position: [0, -1, 0],
+          params: { glow: 1.7, pointSize: 0.14, height: 4.5 },
+        }),
+        createElement("backdrop", { id: "backdrop", params: { top: "#0b1030", bottom: "#020208" } }),
+      ],
+    },
+  },
+  {
+    id: "shockwave",
+    label: "Shockwave",
+    focusElementId: "wave",
+    scene: {
+      version: 1,
+      camera: { ...DEFAULT_CAMERA, distance: 14, height: 7, orbit: 0.08, bob: 1, drift: 0.12, fov: 45 },
+      cameraBindings: { shake: { source: "beat", amount: 0.12 } },
+      look: { ...DEFAULT_LOOK, background: "#030208", bloom: 1.1, vignette: 0.7 },
+      lookBindings: { bloom: { source: "beat", amount: 0.5 } },
+      elements: [
+        createElement("shockwave", {
+          id: "wave",
+          tempo: { amount: 0.8, period: 4, mode: "beat" },
+        }),
+        createElement("core", {
+          id: "core",
+          params: { radius: 0.5, hue: 200, pulse: 1, light: 3 },
+          bindings: { scale: { source: "beat", amount: 0.4 } },
+        }),
+      ],
+    },
+  },
 ];
 
 // Tempo swings: the motion of these elements slows down and speeds up

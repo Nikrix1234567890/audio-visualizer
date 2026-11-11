@@ -24,6 +24,7 @@ import {ASSET_ELEMENT_COMPONENTS} from './elementsAssets';
 import {DENSE_ELEMENT_COMPONENTS} from './elementsDense';
 import {EXTRA_ELEMENT_COMPONENTS} from './elementsExtra';
 import {MORE_ELEMENT_COMPONENTS} from './elementsMore';
+import {NOVA_ELEMENT_COMPONENTS} from './elementsNova';
 import {SHAPE_ELEMENT_COMPONENTS} from './elementsShapes';
 
 const ELEMENT_COMPONENTS: Record<ElementType, React.FC<ElementProps>> = {
@@ -33,6 +34,7 @@ const ELEMENT_COMPONENTS: Record<ElementType, React.FC<ElementProps>> = {
   ...DENSE_ELEMENT_COMPONENTS,
   ...SHAPE_ELEMENT_COMPONENTS,
   ...MORE_ELEMENT_COMPONENTS,
+  ...NOVA_ELEMENT_COMPONENTS,
 };
 
 const DEG_TO_RAD = Math.PI / 180;
