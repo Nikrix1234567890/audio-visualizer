@@ -41,6 +41,8 @@ export function Preview({
   isLoading,
   onPlayer,
   onPickFile,
+  onLoadDemo,
+  notice,
   selectedId,
   onSelect,
   onTransform,
@@ -60,6 +62,10 @@ export function Preview({
   isLoading: boolean;
   onPlayer: (player: PlayerRef | null) => void;
   onPickFile: (file: File) => void;
+  /** Loads the demo track that ships with the app. */
+  onLoadDemo: () => void;
+  /** Shown between the toolbar and the picture (the first-visit card). */
+  notice?: React.ReactNode;
   selectedId: string | null;
   onSelect: SceneEditorHooks["onSelect"];
   onTransform: SceneEditorHooks["onTransform"];
@@ -180,6 +186,8 @@ export function Preview({
         )}
       </div>
 
+      {notice}
+
       <div
         ref={areaRef}
         className="flex aspect-video min-h-0 w-full items-center justify-center lg:aspect-auto lg:flex-1"
@@ -211,6 +219,7 @@ export function Preview({
                 height={height}
                 isLoading={isLoading}
                 onPickFile={onPickFile}
+                onLoadDemo={onLoadDemo}
               />
             )}
           </div>
@@ -225,17 +234,20 @@ function DropZone({
   height,
   isLoading,
   onPickFile,
+  onLoadDemo,
 }: {
   width: number;
   height: number;
   isLoading: boolean;
   onPickFile: (file: File) => void;
+  onLoadDemo: () => void;
 }) {
   return (
-    <label
+    <div
       style={{ width, height }}
-      className="group flex cursor-pointer flex-col items-center justify-center gap-3 rounded-md bg-canvas"
+      className="flex flex-col items-center justify-center gap-4 rounded-md bg-canvas"
     >
+    <label className="group flex cursor-pointer flex-col items-center justify-center gap-3">
       <span className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed border-line transition-colors group-hover:border-accent">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
           <circle cx="12" cy="12" r="4" className="fill-muted" />
@@ -267,6 +279,16 @@ function DropZone({
         }}
       />
     </label>
+      {!isLoading && (
+        <button
+          type="button"
+          onClick={onLoadDemo}
+          className="rounded-md border border-line px-3 py-1.5 font-mono text-[11px] tracking-[0.06em] text-muted uppercase outline-none hover:border-accent-dim hover:text-accent focus-visible:border-accent"
+        >
+          Or try the demo track
+        </button>
+      )}
+    </div>
   );
 }
 

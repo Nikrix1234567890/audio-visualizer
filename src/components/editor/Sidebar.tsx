@@ -7,11 +7,9 @@ import {
   ELEMENT_DEFS,
   DEFAULT_TEMPO,
   LOOK_PARAMS,
-  MAX_ELEMENTS,
   TEMPO_LIMITS,
   TRANSFORM_LIMITS,
   createElement,
-  createElementId,
   type Binding,
   type Bindings,
   type ElementType,
@@ -22,6 +20,11 @@ import {
   type Vec3,
 } from "../../../remotion/scene/definitions";
 import { withKeyframes } from "../../../remotion/scene/keyframes";
+import {
+  duplicateElement,
+  moveElement,
+  removeElement,
+} from "../../../remotion/scene/sceneOps";
 import {
   PALETTES,
   applyPalette,
@@ -163,38 +166,17 @@ export function Sidebar({
   };
 
   /** A copy right below the original, selected so it can be moved away. */
-  const duplicateElement = (id: string) => {
-    const index = scene.elements.findIndex((e) => e.id === id);
-    if (index < 0 || scene.elements.length >= MAX_ELEMENTS) return;
-    const original = scene.elements[index];
-    const copy: SceneElement = {
-      ...original,
-      id: createElementId(),
-      name: `${original.name} copy`.slice(0, 40),
-      position: [...original.position],
-      rotation: [...original.rotation],
-      params: { ...original.params },
-      bindings: { ...original.bindings },
-      keyframes: { ...original.keyframes },
-    };
-    const elements = [...scene.elements];
-    elements.splice(index + 1, 0, copy);
-    onSceneChange({ ...scene, elements });
-    onSelect(copy.id);
+  const duplicate = (id: string) => {
+    const result = duplicateElement(scene, id);
+    if (!result) return;
+    onSceneChange(result.scene);
+    onSelect(result.id);
   };
 
-  const moveElement = (from: number, to: number) => {
-    if (from === to) return;
-    const elements = [...scene.elements];
-    const [moved] = elements.splice(from, 1);
-    elements.splice(to, 0, moved);
-    onSceneChange({ ...scene, elements });
-  };
-
-  const removeElement = (id: string) => {
-    const remaining = scene.elements.filter((e) => e.id !== id);
-    onSceneChange({ ...scene, elements: remaining });
-    if (id === selectedId) onSelect(remaining[0]?.id ?? null);
+  const remove = (id: string) => {
+    const result = removeElement(scene, id);
+    onSceneChange(result.scene);
+    if (id === selectedId) onSelect(result.nextId);
   };
 
   const isBusy = render.isUploading || render.isRendering;
@@ -351,9 +333,9 @@ export function Sidebar({
             const element = scene.elements.find((e) => e.id === id);
             if (element) updateElement(id, { visible: !element.visible });
           }}
-          onRemove={removeElement}
-          onDuplicate={duplicateElement}
-          onMove={moveElement}
+          onRemove={remove}
+          onDuplicate={duplicate}
+          onMove={(from, to) => onSceneChange(moveElement(scene, from, to))}
           onAdd={addElement}
         />,
       )}

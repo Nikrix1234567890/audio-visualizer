@@ -29,6 +29,11 @@ import {
 } from "../../remotion/scene/keyframes";
 import { sanitizeScene } from "../../remotion/scene/sanitize";
 import {
+  duplicateElement,
+  nudgePosition,
+  removeElement,
+} from "../../remotion/scene/sceneOps";
+import {
   DEFAULT_TEMPLATE,
   TEMPLATES,
   cloneScene,
@@ -41,6 +46,7 @@ import {
   type FrameRate,
   type ResolutionKey,
 } from "../../remotion/types";
+import { FirstSteps, ShortcutsDialog } from "@/components/editor/EditorHelp";
 import { PlayheadProvider, usePlayheadStore } from "@/components/editor/Playhead";
 import { Preview } from "@/components/editor/Preview";
 import {
@@ -194,6 +200,8 @@ export function Editor({
     NO_COLLAPSED_SECTIONS,
   );
   const [muted, setMuted] = useStoredState("editor.muted", false);
+  const [hintsSeen, setHintsSeen] = useStoredState("editor.hintsSeen", false);
+  const [showShortcuts, setShowShortcuts] = useState(false);
 
   // Storage key of the track once it is on the server (upload or saved project).
   const audioKeyRef = useRef<string | null>(null);
@@ -350,6 +358,8 @@ export function Editor({
     },
     [markUnsaved, recordScene, player],
   );
+
+  const transformRef = useRef(transformElement);
 
   // Keyframes shown as markers in the timeline: the selected element's,
   // the camera's and the look's.
@@ -591,6 +601,87 @@ export function Editor({
     return () => clearTimeout(timeout);
   }, [player]);
 
+  // The demo track that ships with the app, loaded like a file the visitor
+  // picked - so it can be rendered and saved like any other track.
+  const loadDemo = useCallback(async () => {
+    try {
+      const response = await fetch("/audio/demo-track.wav");
+      if (!response.ok) throw new Error();
+      const blob = await response.blob();
+      await loadFile(new File([blob], "demo-track.wav", { type: "audio/wav" }));
+    } catch {
+      setError("The demo track could not be loaded.");
+    }
+  }, [loadFile]);
+
+  // Shortcuts for the selected element and the project. Kept in a ref so
+  // the listener below always sees the latest scene without re-subscribing.
+  const shortcutState = useRef({ scene, selectedId, handleSave: () => {} });
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      const { scene: current, selectedId: selected, handleSave: save } = shortcutState.current;
+      const isTyping =
+        e.target instanceof HTMLElement &&
+        Boolean(e.target.closest("input, textarea, select, [contenteditable=true]"));
+      const command = e.ctrlKey || e.metaKey;
+
+      if (command && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        save();
+        return;
+      }
+      if (isTyping) return;
+
+      if (e.key === "?") {
+        e.preventDefault();
+        setShowShortcuts(true);
+        return;
+      }
+      if (!selected) return;
+
+      const apply = (next: SceneDocument) => {
+        recordScene(next);
+        setTemplateId(null);
+        markUnsaved();
+      };
+
+      if (command && e.key.toLowerCase() === "d") {
+        e.preventDefault();
+        const result = duplicateElement(current, selected);
+        if (result) {
+          apply(result.scene);
+          setSelectedId(result.id);
+        }
+      } else if ((e.key === "Delete" || e.key === "Backspace") && !command && !e.altKey) {
+        e.preventDefault();
+        const result = removeElement(current, selected);
+        apply(result.scene);
+        setSelectedId(result.nextId);
+      } else if (e.altKey && e.key.startsWith("Arrow")) {
+        // Alt + arrows nudge: left/right along X, up/down along Y, and
+        // with Shift up/down along Z (towards the back / the front).
+        e.preventDefault();
+        const step = 0.1;
+        const [axis, delta] =
+          e.key === "ArrowLeft"
+            ? [0, -step]
+            : e.key === "ArrowRight"
+              ? [0, step]
+              : e.shiftKey
+                ? [2, e.key === "ArrowUp" ? -step : step]
+                : [1, e.key === "ArrowUp" ? step : -step];
+        const element = current.elements.find((el) => el.id === selected);
+        if (element) {
+          transformRef.current(selected, {
+            position: nudgePosition(element, axis as 0 | 1 | 2, delta),
+          });
+        }
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [recordScene, markUnsaved]);
+
   // Space plays/pauses, arrow keys jump - unless a control has the focus.
   const durationInFrames = track?.durationInFrames ?? 1;
   useEffect(() => {
@@ -754,6 +845,12 @@ export function Editor({
 
   const playhead = usePlayheadStore(track ? player : null, FPS);
 
+  // Keep what the shortcut listener reads up to date.
+  useEffect(() => {
+    shortcutState.current = { scene, selectedId, handleSave };
+    transformRef.current = transformElement;
+  });
+
   return (
     <PlayheadProvider value={playhead}>
     <div
@@ -842,6 +939,10 @@ export function Editor({
         isLoading={isLoadingTrack}
         onPlayer={setPlayer}
         onPickFile={loadFile}
+        onLoadDemo={loadDemo}
+        notice={
+          hintsSeen ? null : <FirstSteps onDismiss={() => setHintsSeen(true)} />
+        }
         selectedId={selectedId}
         onSelect={setSelectedId}
         onTransform={transformElement}
@@ -879,6 +980,7 @@ export function Editor({
         onMoveKey={moveKey}
       />
     </div>
+    {showShortcuts && <ShortcutsDialog onClose={() => setShowShortcuts(false)} />}
     </PlayheadProvider>
   );
 }
