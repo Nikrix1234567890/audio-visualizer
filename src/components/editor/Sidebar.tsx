@@ -7,6 +7,8 @@ import {
   LOOK_PARAMS,
   TRANSFORM_LIMITS,
   createElement,
+  type Binding,
+  type Bindings,
   type ElementType,
   type ParamValue,
   type SceneDocument,
@@ -15,10 +17,10 @@ import {
 } from "../../../remotion/scene/definitions";
 import { TEMPLATES } from "../../../remotion/scene/templates";
 import { RESOLUTIONS, type ResolutionKey } from "../../../remotion/types";
+import { BindableSlider } from "@/components/editor/BindableSlider";
 import { ElementList } from "@/components/editor/ElementList";
 import { ParamControls } from "@/components/editor/ParamControls";
 import { SegmentedSelector } from "@/components/ui/SegmentedSelector";
-import { SliderRow } from "@/components/ui/SliderRow";
 
 export type CollapsedSections = Record<string, boolean>;
 
@@ -32,6 +34,18 @@ export type RenderState = {
 };
 
 const AXES = ["X", "Y", "Z"] as const;
+
+/** A copy of `bindings` with one target set, or removed when `binding` is null. */
+function withBinding(
+  bindings: Bindings,
+  key: string,
+  binding: Binding | null,
+): Bindings {
+  const next = { ...bindings };
+  if (binding) next[key] = binding;
+  else delete next[key];
+  return next;
+}
 
 export function Sidebar({
   scene,
@@ -149,6 +163,13 @@ export function Sidebar({
           onChange={(key, value) =>
             onSceneChange({ ...scene, camera: { ...scene.camera, [key]: value } })
           }
+          bindings={scene.cameraBindings}
+          onBindingChange={(key, binding) =>
+            onSceneChange({
+              ...scene,
+              cameraBindings: withBinding(scene.cameraBindings, key, binding),
+            })
+          }
         />,
       )}
 
@@ -162,6 +183,13 @@ export function Sidebar({
           values={scene.look}
           onChange={(key, value) =>
             onSceneChange({ ...scene, look: { ...scene.look, [key]: value } })
+          }
+          bindings={scene.lookBindings}
+          onBindingChange={(key, binding) =>
+            onSceneChange({
+              ...scene,
+              lookBindings: withBinding(scene.lookBindings, key, binding),
+            })
           }
         />,
       )}
@@ -243,6 +271,9 @@ function ElementInspector({
     onChange({ [key]: next });
   };
 
+  const setBinding = (key: string, binding: Binding | null) =>
+    onChange({ bindings: withBinding(element.bindings, key, binding) });
+
   return (
     <>
       <label className="flex items-center justify-between gap-3">
@@ -266,38 +297,46 @@ function ElementInspector({
         onChange={(key: string, value: ParamValue) =>
           onChange({ params: { ...element.params, [key]: value } })
         }
+        bindings={element.bindings}
+        onBindingChange={setBinding}
       />
 
       <SubHeading>Position</SubHeading>
       {AXES.map((axis, i) => (
-        <SliderRow
+        <BindableSlider
           key={`position-${axis}`}
           label={`Position ${axis}`}
           value={element.position[i]}
           {...TRANSFORM_LIMITS.position}
           onChange={(v) => setAxis("position", i, v)}
+          binding={element.bindings[`position.${i}`]}
+          onBindingChange={(b) => setBinding(`position.${i}`, b)}
         />
       ))}
 
       <SubHeading>Rotation</SubHeading>
       {AXES.map((axis, i) => (
-        <SliderRow
+        <BindableSlider
           key={`rotation-${axis}`}
           label={`Rotation ${axis}`}
           value={element.rotation[i]}
           {...TRANSFORM_LIMITS.rotation}
           unit="°"
           onChange={(v) => setAxis("rotation", i, v)}
+          binding={element.bindings[`rotation.${i}`]}
+          onBindingChange={(b) => setBinding(`rotation.${i}`, b)}
         />
       ))}
 
       <SubHeading>Size</SubHeading>
-      <SliderRow
+      <BindableSlider
         label="Scale"
         value={element.scale}
         {...TRANSFORM_LIMITS.scale}
         unit="x"
         onChange={(v) => onChange({ scale: v })}
+        binding={element.bindings.scale}
+        onBindingChange={(b) => setBinding("scale", b)}
       />
     </>
   );

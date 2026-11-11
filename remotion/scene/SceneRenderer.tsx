@@ -4,8 +4,15 @@ import {PerspectiveCamera} from 'three';
 import {EffectComposer, Bloom, Vignette} from '@react-three/postprocessing';
 import {BlendFunction} from 'postprocessing';
 import {getAudioFrame, type TrackAnalysis} from '../audio/analysis';
+import {resolveParams, resolveTransform} from './bindings';
 import {cameraPosition} from './camera';
-import type {CameraSettings, SceneDocument} from './definitions';
+import {
+  CAMERA_PARAMS,
+  ELEMENT_DEFS,
+  LOOK_PARAMS,
+  type CameraSettings,
+  type SceneDocument,
+} from './definitions';
 import {ELEMENT_COMPONENTS} from './elements';
 
 const DEG_TO_RAD = Math.PI / 180;
@@ -52,12 +59,20 @@ export const SceneRenderer: React.FC<{
   analysis: TrackAnalysis;
   time: number;
 }> = ({scene, analysis, time}) => {
-  const {look} = scene;
   const audio = getAudioFrame(analysis, time);
+  // Everything below uses the values for this moment: the user's settings
+  // plus whatever their audio bindings add right now.
+  const look = resolveParams(LOOK_PARAMS, scene.look, scene.lookBindings, audio);
+  const camera = resolveParams(
+    CAMERA_PARAMS,
+    scene.camera,
+    scene.cameraBindings,
+    audio,
+  );
 
   return (
     <>
-      <CameraRig settings={scene.camera} time={time} />
+      <CameraRig settings={camera} time={time} />
       {look.fog ? (
         <fog attach="fog" args={[look.background, look.fogNear, look.fogFar]} />
       ) : null}
@@ -67,17 +82,23 @@ export const SceneRenderer: React.FC<{
       {scene.elements.map((element) => {
         if (!element.visible) return null;
         const Component = ELEMENT_COMPONENTS[element.type];
-        const [rx, ry, rz] = element.rotation;
+        const {position, rotation, scale} = resolveTransform(element, audio);
+        const [rx, ry, rz] = rotation;
 
         return (
           <group
             key={element.id}
-            position={element.position}
+            position={position}
             rotation={[rx * DEG_TO_RAD, ry * DEG_TO_RAD, rz * DEG_TO_RAD]}
-            scale={element.scale}
+            scale={scale}
           >
             <Component
-              params={element.params}
+              params={resolveParams(
+                ELEMENT_DEFS[element.type].params,
+                element.params,
+                element.bindings,
+                audio,
+              )}
               analysis={analysis}
               audio={audio}
               time={time}

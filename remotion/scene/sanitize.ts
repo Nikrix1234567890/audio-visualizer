@@ -13,6 +13,8 @@ import {
   MAX_ELEMENTS,
   TRANSFORM_LIMITS,
   createElementId,
+  type AudioSource,
+  type Bindings,
   type CameraSettings,
   type ElementType,
   type LookSettings,
@@ -23,6 +25,7 @@ import {
   type SceneElement,
   type Vec3,
 } from "./definitions";
+import { AUDIO_SOURCES, TRANSFORM_TARGETS, isBindable } from "./bindings";
 
 const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
 const SAFE_ID = /^[a-zA-Z0-9_-]{1,40}$/;
@@ -54,6 +57,37 @@ function sanitizeParams(defs: ParamDef[], input: unknown, defaults: Params): Par
     out[def.key] = sanitizeParam(def, raw[def.key], defaults[def.key]);
   }
   return out;
+}
+
+/**
+ * Keeps only bindings that point at something bindable, with a known signal
+ * and an amount no larger than the target's whole range.
+ */
+function sanitizeBindings(
+  targets: Record<string, { min: number; max: number }>,
+  input: unknown,
+): Bindings {
+  const raw = isRecord(input) ? input : {};
+  const out: Bindings = {};
+
+  for (const [key, limits] of Object.entries(targets)) {
+    const binding = raw[key];
+    if (!isRecord(binding)) continue;
+    if (!AUDIO_SOURCES.some((s) => s.id === binding.source)) continue;
+    const range = limits.max - limits.min;
+    out[key] = {
+      source: binding.source as AudioSource,
+      amount: clamp(binding.amount, 0, -range, range),
+    };
+  }
+
+  return out;
+}
+
+function bindableTargets(defs: ParamDef[]) {
+  const targets: Record<string, { min: number; max: number }> = {};
+  for (const def of defs) if (isBindable(def)) targets[def.key] = def;
+  return targets;
 }
 
 function sanitizeVec3(
@@ -90,6 +124,10 @@ function sanitizeElement(input: unknown, usedIds: Set<string>): SceneElement | n
     rotation: sanitizeVec3(input.rotation, TRANSFORM_LIMITS.rotation),
     scale: clamp(input.scale, 1, TRANSFORM_LIMITS.scale.min, TRANSFORM_LIMITS.scale.max),
     params: sanitizeParams(def.params, input.params, def.defaults),
+    bindings: sanitizeBindings(
+      { ...bindableTargets(def.params), ...TRANSFORM_TARGETS },
+      input.bindings,
+    ),
   };
 }
 
@@ -119,7 +157,12 @@ export function sanitizeScene(input: unknown): SceneDocument {
       raw.camera,
       DEFAULT_CAMERA,
     ) as unknown as CameraSettings,
+    cameraBindings: sanitizeBindings(
+      bindableTargets(CAMERA_PARAMS),
+      raw.cameraBindings,
+    ),
     look,
+    lookBindings: sanitizeBindings(bindableTargets(LOOK_PARAMS), raw.lookBindings),
     elements,
   };
 }

@@ -5,6 +5,7 @@ import {
   DEFAULT_CAMERA,
   DEFAULT_LOOK,
   createElement,
+  type Bindings,
   type SceneDocument,
 } from "./definitions";
 
@@ -26,9 +27,16 @@ export const TEMPLATES: SceneTemplate[] = [
     scene: {
       version: 1,
       camera: { ...DEFAULT_CAMERA },
+      cameraBindings: {},
       look: { ...DEFAULT_LOOK },
+      lookBindings: {},
       elements: [
-        createElement("barRing", { id: "ring", position: [0, FLOOR_Y, 0] }),
+        createElement("barRing", {
+          id: "ring",
+          position: [0, FLOOR_Y, 0],
+          // The whole ring kicks outward a little on every beat.
+          bindings: { scale: { source: "beat", amount: 0.06 } },
+        }),
         createElement("glowDisc", { id: "glow", position: [0, FLOOR_Y, 0] }),
         createElement("gridFloor", { id: "floor", position: [0, FLOOR_Y - 0.05, 0] }),
       ],
@@ -47,9 +55,15 @@ export const TEMPLATES: SceneTemplate[] = [
         bob: 3.2,
         drift: 0.15,
       },
+      cameraBindings: {},
       look: { ...DEFAULT_LOOK },
+      lookBindings: {},
       elements: [
-        createElement("sphereSwarm", { id: "swarm" }),
+        createElement("sphereSwarm", {
+          id: "swarm",
+          // The swarm breathes with the bass.
+          bindings: { scale: { source: "bass", amount: 0.12 } },
+        }),
         createElement("core", { id: "core" }),
       ],
     },
@@ -69,7 +83,10 @@ export const TEMPLATES: SceneTemplate[] = [
         bob: 0,
         drift: 0.125,
       },
+      cameraBindings: {},
       look: { ...DEFAULT_LOOK, fog: true, fogNear: 8, fogFar: 44 },
+      // The glow flares up with the bass.
+      lookBindings: { bloom: { source: "bass", amount: 0.8 } },
       elements: [
         createElement("terrainLines", { id: "terrain" }),
         createElement("sun", { id: "sun", position: [0, 2.4, -31.6] }),
@@ -81,17 +98,26 @@ export const TEMPLATES: SceneTemplate[] = [
 
 export const DEFAULT_TEMPLATE = TEMPLATES[0];
 
+function cloneBindings(bindings: Bindings): Bindings {
+  return Object.fromEntries(
+    Object.entries(bindings).map(([key, binding]) => [key, { ...binding }]),
+  );
+}
+
 /** A private copy of a template's scene, safe to edit. */
 export function cloneScene(scene: SceneDocument): SceneDocument {
   return {
     version: 1,
     camera: { ...scene.camera },
+    cameraBindings: cloneBindings(scene.cameraBindings),
     look: { ...scene.look },
+    lookBindings: cloneBindings(scene.lookBindings),
     elements: scene.elements.map((element) => ({
       ...element,
       position: [...element.position],
       rotation: [...element.rotation],
       params: { ...element.params },
+      bindings: cloneBindings(element.bindings),
     })),
   };
 }

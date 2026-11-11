@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 
 const THUMB_RADIUS = 7;
 
@@ -16,6 +16,8 @@ export function SliderRow({
   step,
   onChange,
   unit = "",
+  accessory,
+  children,
 }: {
   label: string;
   value: number;
@@ -24,6 +26,10 @@ export function SliderRow({
   step: number;
   onChange: (value: number) => void;
   unit?: string;
+  /** Small control shown right after the caption (e.g. the audio jack). */
+  accessory?: ReactNode;
+  /** Extra controls belonging to this parameter, shown under the fader. */
+  children?: ReactNode;
 }) {
   const [draft, setDraft] = useState<string | null>(null);
   const decimals = step >= 1 ? 0 : step >= 0.1 ? 1 : 2;
@@ -51,10 +57,13 @@ export function SliderRow({
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-baseline justify-between gap-3">
-        <span className="font-mono text-[11px] tracking-[0.08em] text-steel uppercase">
-          {label}
+        <span className="flex min-w-0 items-center gap-2">
+          <span className="truncate font-mono text-[11px] tracking-[0.08em] text-steel uppercase">
+            {label}
+          </span>
+          {accessory}
         </span>
-        <span className="flex items-baseline font-mono text-[13px] text-cream">
+        <span className="flex shrink-0 items-baseline font-mono text-[13px] text-cream">
           <input
             aria-label={`${label} value`}
             inputMode="decimal"
@@ -120,6 +129,7 @@ export function SliderRow({
           }}
         />
       </div>
+      {children}
     </div>
   );
 }
