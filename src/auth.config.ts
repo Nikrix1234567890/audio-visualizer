@@ -21,9 +21,9 @@ export const authConfig = {
   callbacks: {
     authorized({ auth, request }) {
       const isLoggedIn = !!auth?.user;
-      const isProtectedRoute = request.nextUrl.pathname.startsWith(
-        "/dashboard",
-      );
+      const { pathname } = request.nextUrl;
+      const isProtectedRoute =
+        pathname.startsWith("/dashboard") || pathname.startsWith("/account");
       if (isProtectedRoute && !isLoggedIn) {
         return false;
       }

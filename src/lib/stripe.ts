@@ -57,6 +57,32 @@ export async function createCheckoutUrl({
   return data.url;
 }
 
+/**
+ * The address of the Stripe customer portal for one customer: the page
+ * where they change their payment method, see invoices or cancel.
+ */
+export async function createPortalUrl({
+  customerId,
+  returnUrl,
+}: {
+  customerId: string;
+  returnUrl: string;
+}): Promise<string> {
+  const response = await fetch(`${STRIPE_API}/billing_portal/sessions`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${process.env.STRIPE_SECRET_KEY}`,
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: new URLSearchParams({ customer: customerId, return_url: returnUrl }),
+  });
+  const data = await response.json().catch(() => null);
+  if (!response.ok || typeof data?.url !== "string") {
+    throw new Error(data?.error?.message || "Stripe did not open the portal.");
+  }
+  return data.url;
+}
+
 export type StripeEvent = {
   type: string;
   data: { object: Record<string, unknown> };

@@ -22,9 +22,13 @@ export async function NavBar() {
             <Link href="/dashboard" className="text-muted hover:text-ink">
               Dashboard
             </Link>
-            <span className="font-mono text-xs text-muted">
+            <Link
+              href="/account"
+              title="Your account"
+              className="font-mono text-xs text-muted hover:text-ink"
+            >
               {session.user.email}
-            </span>
+            </Link>
             <form
               action={async () => {
                 "use server";
