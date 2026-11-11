@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { claimFiles, fileOwner, sceneAssetKeys } from "@/lib/fileAccess";
 import { prisma } from "@/lib/prisma";
 import {
   MAX_PROJECTS_PER_USER,
+  TRACK_MISSING,
   parseProjectInput,
   toProjectResponse,
 } from "@/lib/projects";
@@ -35,6 +37,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: input.error }, { status: 400 });
   }
 
+  const audioOwner = await fileOwner(input.audioPath);
+  if (audioOwner && audioOwner !== session.user.id) {
+    return NextResponse.json({ error: TRACK_MISSING }, { status: 400 });
+  }
+
   const count = await prisma.project.count({
     where: { userId: session.user.id },
   });
@@ -50,6 +57,10 @@ export async function POST(request: Request) {
   const project = await prisma.project.create({
     data: { ...input, userId: session.user.id },
   });
+  await claimFiles(
+    [input.audioPath, ...sceneAssetKeys(toProjectResponse(project).scene)],
+    session.user.id,
+  );
 
   return NextResponse.json(toProjectResponse(project), { status: 201 });
 }

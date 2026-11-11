@@ -21,8 +21,10 @@ import {
   cloneScene,
 } from "../../remotion/scene/templates";
 import {
+  DEFAULT_ASPECT,
   DEFAULT_FRAME_RATE,
   DEFAULT_RESOLUTION,
+  type AspectKey,
   type FrameRate,
   type ResolutionKey,
 } from "../../remotion/types";
@@ -35,7 +37,11 @@ import {
 import { Transport } from "@/components/editor/Transport";
 import { ResizeHandle } from "@/components/ui/ResizeHandle";
 import { useStoredState } from "@/lib/useStoredState";
-import { sanitizeFrameRate, sanitizeResolution } from "@/lib/visualizerSettings";
+import {
+  sanitizeAspect,
+  sanitizeFrameRate,
+  sanitizeResolution,
+} from "@/lib/visualizerSettings";
 
 // The preview always runs at 60 frames per second: at 30 fast-moving
 // particles look jerky on any modern screen, however idle the machine is.
@@ -101,6 +107,7 @@ export function Editor({
   );
   const [resolution, setResolution] =
     useState<ResolutionKey>(DEFAULT_RESOLUTION);
+  const [aspect, setAspect] = useState<AspectKey>(DEFAULT_ASPECT);
   const [frameRate, setFrameRate] = useState<FrameRate>(DEFAULT_FRAME_RATE);
   const [isUploading, setIsUploading] = useState(false);
   const [isRendering, setIsRendering] = useState(false);
@@ -211,6 +218,7 @@ export function Editor({
       setTemplateId(null);
       setSelectedId(loadedScene.elements[0]?.id ?? null);
       setResolution(sanitizeResolution(project.resolution));
+      setAspect(sanitizeAspect(project.aspect));
       setFrameRate(sanitizeFrameRate(project.fps));
       setTitle(project.title);
       audioKeyRef.current = project.audioKey;
@@ -275,6 +283,41 @@ export function Editor({
     },
     [templateId, markUnsaved],
   );
+
+  // Warn before edits are lost. An untouched template is not worth a
+  // warning; an edited scene that is not saved is - whether or not the
+  // visitor is logged in.
+  const hasUnsavedEdits = saveStatus !== "saved" && templateId === null;
+  useEffect(() => {
+    if (!hasUnsavedEdits) return;
+
+    // Closing the tab, reloading, typing another address.
+    const onBeforeUnload = (e: BeforeUnloadEvent) => e.preventDefault();
+
+    // Links inside the app (projects page, log in, ...) change the page
+    // without unloading it, so the browser's own warning never appears.
+    // Caught on the document before the link's own handler runs.
+    const onClick = (e: MouseEvent) => {
+      if (e.defaultPrevented || e.button !== 0) return;
+      if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+      const link = (e.target as Element | null)?.closest?.("a[href]");
+      if (!(link instanceof HTMLAnchorElement)) return;
+      if (link.target === "_blank" || link.hasAttribute("download")) return;
+      if (link.origin !== window.location.origin) return;
+      if (window.confirm("Leave the editor? Your unsaved changes will be lost.")) {
+        return;
+      }
+      e.preventDefault();
+      e.stopPropagation();
+    };
+
+    window.addEventListener("beforeunload", onBeforeUnload);
+    document.addEventListener("click", onClick, true);
+    return () => {
+      window.removeEventListener("beforeunload", onBeforeUnload);
+      document.removeEventListener("click", onClick, true);
+    };
+  }, [hasUnsavedEdits]);
 
   // Keep the player's mute state in line with the remembered preference.
   useEffect(() => {
@@ -383,7 +426,13 @@ export function Editor({
       const renderResponse = await fetch("/api/render", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ audioKey, scene, resolution, fps: frameRate }),
+        body: JSON.stringify({
+          audioKey,
+          scene,
+          resolution,
+          aspect,
+          fps: frameRate,
+        }),
       });
       if (!renderResponse.ok) {
         throw new Error(await readError(renderResponse, "Render failed."));
@@ -397,7 +446,7 @@ export function Editor({
     } finally {
       setIsRendering(false);
     }
-  }, [track, scene, resolution, frameRate, ensureAudioKey, pollJobStatus]);
+  }, [track, scene, resolution, aspect, frameRate, ensureAudioKey, pollJobStatus]);
 
   const handleSave = useCallback(async () => {
     if (!track) return;
@@ -417,6 +466,7 @@ export function Editor({
             audioName: track.name,
             scene,
             resolution,
+            aspect,
             fps: frameRate,
           }),
         },
@@ -437,7 +487,7 @@ export function Editor({
       setSaveError(err instanceof Error ? err.message : "Saving failed.");
       setSaveStatus("unsaved");
     }
-  }, [track, projectId, title, scene, resolution, frameRate, ensureAudioKey]);
+  }, [track, projectId, title, scene, resolution, aspect, frameRate, ensureAudioKey]);
 
   const toggleSection = useCallback(
     (id: string) => setCollapsed({ ...collapsed, [id]: !collapsed[id] }),
@@ -487,6 +537,11 @@ export function Editor({
           setResolution(next);
           markUnsaved();
         }}
+        aspect={aspect}
+        onAspectChange={(next) => {
+          setAspect(next);
+          markUnsaved();
+        }}
         frameRate={frameRate}
         onFrameRateChange={(next) => {
           setFrameRate(next);
@@ -521,6 +576,7 @@ export function Editor({
         audioUrl={track?.url ?? null}
         durationInFrames={durationInFrames}
         fps={FPS}
+        aspect={aspect}
         scene={scene}
         initiallyMuted={muted}
         isLoading={isLoadingTrack}

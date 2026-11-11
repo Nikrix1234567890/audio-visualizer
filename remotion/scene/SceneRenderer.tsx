@@ -6,7 +6,7 @@ import {EffectComposer, Bloom, Vignette} from '@react-three/postprocessing';
 import {BlendFunction} from 'postprocessing';
 import {getAudioFrame, type TrackAnalysis} from '../audio/analysis';
 import {resolveParams, resolveTransform} from './bindings';
-import {cameraPosition} from './camera';
+import {cameraPosition, verticalFov} from './camera';
 import {
   CAMERA_PARAMS,
   ELEMENT_DEFS,
@@ -112,19 +112,21 @@ const CameraRig: React.FC<{
   // Read the camera through the store getter: it is a three.js object we
   // are meant to move, not a React value.
   const getState = useThree((state) => state.get);
+  const aspect = useThree((state) => state.size.width / state.size.height);
 
   useLayoutEffect(() => {
     const {camera, invalidate} = getState();
     const [x, y, z] = cameraPosition(settings, time, bass);
     camera.position.set(x, y, z);
     camera.lookAt(0, 0, 0);
-    if (camera instanceof PerspectiveCamera && camera.fov !== settings.fov) {
-      camera.fov = settings.fov;
+    const fov = verticalFov(settings.fov, aspect);
+    if (camera instanceof PerspectiveCamera && camera.fov !== fov) {
+      camera.fov = fov;
       camera.updateProjectionMatrix();
     }
     camera.updateMatrixWorld();
     invalidate();
-  }, [getState, settings, time, bass]);
+  }, [getState, settings, time, bass, aspect]);
 
   return null;
 };

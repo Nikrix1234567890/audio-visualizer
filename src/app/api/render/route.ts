@@ -2,12 +2,18 @@ import { NextResponse } from "next/server";
 import path from "node:path";
 import fs from "node:fs";
 import { mkdir } from "node:fs/promises";
-import { createServer } from "node:net";
+import { getFreePort } from "@/lib/freePort";
 import { renderMedia, selectComposition } from "@remotion/renderer";
-import { getAbsolutePath } from "@/lib/storage";
+import { auth } from "@/auth";
+import { createFileToken, fileOwner } from "@/lib/fileAccess";
+import { fileExists, getAbsolutePath } from "@/lib/storage";
 import { prisma } from "@/lib/prisma";
-import { sanitizeFrameRate, sanitizeResolution } from "@/lib/visualizerSettings";
-import { RESOLUTIONS } from "../../../../remotion/types";
+import {
+  sanitizeAspect,
+  sanitizeFrameRate,
+  sanitizeResolution,
+} from "@/lib/visualizerSettings";
+import { outputSize } from "../../../../remotion/types";
 import type { SceneDocument } from "../../../../remotion/scene/definitions";
 import { sanitizeScene } from "../../../../remotion/scene/sanitize";
 
@@ -17,26 +23,6 @@ import { sanitizeScene } from "../../../../remotion/scene/sanitize";
 const BUNDLE_DIR = path.resolve(process.cwd(), ".remotion-bundle");
 const COMPOSITION_ID = "AudioVisualizer3D";
 
-/**
- * Asks the OS for a free TCP port. Remotion serves the bundle from its own
- * small HTTP server and by default starts looking at port 3000 - the same
- * port this Next.js app usually runs on. On Windows both can end up bound to
- * 3000, and the render browser then loads the Next.js app instead of the
- * Remotion bundle. Handing Remotion an explicit free port avoids that.
- */
-function getFreePort(): Promise<number> {
-  return new Promise((resolve, reject) => {
-    const server = createServer();
-    server.unref();
-    server.on("error", reject);
-    server.listen(0, () => {
-      const address = server.address();
-      const port = typeof address === "object" && address ? address.port : 0;
-      server.close(() => resolve(port));
-    });
-  });
-}
-
 async function runRender(
   jobId: string,
   audioSrc: string,
@@ -44,8 +30,9 @@ async function runRender(
   scene: SceneDocument,
   resolution: { width: number; height: number },
   fps: number,
+  fileToken: string | undefined,
 ) {
-  const inputProps = { audioSrc, scene, appBase };
+  const inputProps = { audioSrc, scene, appBase, fileToken };
   const chromiumOptions = { gl: "angle" as const, disableWebSecurity: true };
 
   try {
@@ -62,9 +49,9 @@ async function runRender(
       port: await getFreePort(),
     });
 
-    // Override the composition's default 720p dimensions with the
-    // user-selected export resolution (aspect ratio stays 16:9 across all
-    // presets, so this never affects framing - only output pixel density).
+    // Override the default 720p landscape size of the composition with the
+    // chosen format and resolution. The camera adapts to the shape of the
+    // picture by itself (see verticalFov in remotion/scene/camera.ts).
     composition.width = resolution.width;
     composition.height = resolution.height;
 
@@ -145,19 +132,37 @@ export async function POST(request: Request) {
   // Clamps and allowlists everything the client sent (see sanitize.ts).
   const scene = sanitizeScene(body?.scene);
   const resolutionKey = sanitizeResolution(body?.resolution);
-  const resolution = RESOLUTIONS[resolutionKey];
+  const aspect = sanitizeAspect(body?.aspect);
+  const resolution = outputSize(aspect, resolutionKey);
   const fps = sanitizeFrameRate(body?.fps);
+
+  // The track must exist and must not belong to somebody else.
+  const session = await auth();
+  const userId = session?.user?.id ?? null;
+  const audioOwner = fileExists(audioKey) ? await fileOwner(audioKey) : null;
+  if (!fileExists(audioKey) || (audioOwner && audioOwner !== userId)) {
+    return NextResponse.json(
+      { error: "The track was not found. Load it again." },
+      { status: 404 },
+    );
+  }
+
+  // The render browser has no login cookie. This token lets it read the
+  // files of the account that started the render - and nobody else's.
+  const fileToken = userId ? createFileToken(userId) : undefined;
+  const tokenQuery = fileToken ? `?t=${encodeURIComponent(fileToken)}` : "";
 
   const origin = new URL(request.url).origin;
   // The headless render browser fetches this over plain HTTP from our own
   // Next.js server - a different origin/port than the Remotion bundle is
   // served from, hence disableWebSecurity in runRender() to avoid CORS.
-  const audioSrc = `${origin}/api/files/${audioKey}`;
+  const audioSrc = `${origin}/api/files/${audioKey}${tokenQuery}`;
 
   const job = await prisma.renderJob.create({
     data: {
       audioKey,
-      settings: JSON.parse(JSON.stringify({ scene, resolution: resolutionKey, fps })),
+      userId,
+      settings: JSON.parse(JSON.stringify({ scene, resolution: resolutionKey, aspect, fps })),
       status: "QUEUED",
     },
   });
@@ -165,7 +170,7 @@ export async function POST(request: Request) {
   // Deliberately not awaited: this is a long-running self-hosted Node
   // process (not serverless), so the render keeps going in the background
   // while the client polls GET /api/render/[jobId] for progress.
-  void runRender(job.id, audioSrc, origin, scene, resolution, fps);
+  void runRender(job.id, audioSrc, origin, scene, resolution, fps, fileToken);
 
   return NextResponse.json({ jobId: job.id });
 }

@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import path from "node:path";
+import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
 import { saveFile } from "@/lib/storage";
 
 const AUDIO_EXTENSIONS = new Set([
@@ -81,6 +83,13 @@ export async function POST(request: Request) {
   const key = `uploads/${id}${extension}`;
   const buffer = Buffer.from(await file.arrayBuffer());
   await saveFile(key, buffer);
+
+  // Remember whose file this is. A file uploaded while logged in is only
+  // handed to that account afterwards (see src/lib/fileAccess.ts).
+  const session = await auth();
+  await prisma.upload.create({
+    data: { key, userId: session?.user?.id ?? null, size: file.size },
+  });
 
   return NextResponse.json({
     key,

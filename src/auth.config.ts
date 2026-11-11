@@ -7,6 +7,12 @@ import type { NextAuthConfig } from "next-auth";
  * and Server Components.
  */
 export const authConfig = {
+  // This app runs as its own Node server (`next start`), not on a platform
+  // that vouches for the host name. Without this, Auth.js refuses every
+  // request in a production build ("UntrustedHost") and nobody can log in.
+  // When deployed behind a reverse proxy, the proxy must set the Host
+  // header itself and not pass on whatever the visitor sent.
+  trustHost: true,
   pages: {
     signIn: "/login",
   },

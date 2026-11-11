@@ -1,6 +1,19 @@
 import type { CameraSettings, Vec3 } from "./definitions";
 
 /**
+ * The vertical field of view of the camera for a picture of the given shape
+ * (width / height). The "Field of view" setting is the vertical angle of a
+ * landscape or square picture. A portrait picture keeps that angle
+ * sideways instead and opens up vertically - otherwise it would cut a
+ * narrow strip out of the middle of the scene and lose its sides.
+ */
+export function verticalFov(fov: number, aspect: number): number {
+  if (aspect >= 1) return fov;
+  const half = Math.atan(Math.tan((fov * Math.PI) / 360) / aspect);
+  return (half * 360) / Math.PI;
+}
+
+/**
  * Where the camera is at a given time. It circles the scene centre (which
  * it always looks at), optionally drifting sideways (sway) and up and down
  * (bob), and shaking with the bass. Depends only on the settings, the time

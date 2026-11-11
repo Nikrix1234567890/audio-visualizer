@@ -8,6 +8,10 @@ import {
   type ElementType,
   type SceneElement,
 } from "../../../remotion/scene/definitions";
+import { Thumbnail } from "@/components/ui/Thumbnail";
+
+/** Elements that show the user's own file - there is no stock picture of them. */
+const FILE_ELEMENTS: ElementType[] = ["image", "model"];
 
 /**
  * Everything in the scene, one row per element: click to select, the eye
@@ -125,23 +129,33 @@ export function ElementList({
       </button>
 
       {isAdding && !isFull && (
-        <ul className="flex flex-col rounded-md border border-hairline bg-chassis">
+        <ul className="grid grid-cols-2 gap-2">
           {ELEMENT_TYPES.map((type) => {
             const def = ELEMENT_DEFS[type];
             return (
-              <li key={type} className="border-b border-hairline last:border-b-0">
+              <li key={type}>
                 <button
                   type="button"
+                  title={def.description}
                   onClick={() => {
                     onAdd(type);
                     setIsAdding(false);
                   }}
-                  className="group flex w-full flex-col gap-0.5 px-3 py-2 text-left outline-none hover:bg-panel-raised focus-visible:bg-panel-raised"
+                  className="group flex h-full w-full flex-col overflow-hidden rounded-md border border-hairline bg-chassis text-left outline-none hover:border-amber-dim focus-visible:border-amber"
                 >
-                  <span className="text-sm text-cream group-hover:text-amber">
+                  {FILE_ELEMENTS.includes(type) ? (
+                    <span className="flex aspect-video w-full items-center justify-center bg-panel font-mono text-[10px] tracking-[0.08em] text-steel uppercase">
+                      Your file
+                    </span>
+                  ) : (
+                    <Thumbnail src={`/thumbnails/elements/${type}.jpg`} dimmed />
+                  )}
+                  <span className="truncate px-2 pt-1.5 text-xs text-cream group-hover:text-amber">
                     {def.label}
                   </span>
-                  <span className="text-xs text-steel">{def.description}</span>
+                  <span className="mx-2 mb-1.5 line-clamp-2 text-[11px] leading-snug text-steel">
+                    {def.description}
+                  </span>
                 </button>
               </li>
             );

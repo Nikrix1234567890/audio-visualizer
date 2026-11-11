@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { readFile } from "node:fs/promises";
+import { auth } from "@/auth";
+import { canReadFile } from "@/lib/fileAccess";
 import { fileExists, getAbsolutePath, getFileSize } from "@/lib/storage";
 
 const CONTENT_TYPES: Record<string, string> = {
@@ -35,7 +37,17 @@ export async function GET(
     return NextResponse.json({ error: "Invalid path." }, { status: 400 });
   }
 
-  if (!exists) {
+  // A file that belongs to an account is only handed to that account (or
+  // to a render it started). Not found and not yours get the same answer.
+  const isAllowed =
+    exists &&
+    (await canReadFile(
+      key,
+      async () => (await auth())?.user?.id ?? null,
+      new URL(request.url).searchParams.get("t"),
+    ));
+
+  if (!isAllowed) {
     return NextResponse.json(
       { error: "File not found." },
       { status: 404 },

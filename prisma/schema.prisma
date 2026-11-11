@@ -29,10 +29,46 @@ model User {
   passwordHash String
   name         String?
   tier         Tier     @default(FREE)
+  // Set once the user has paid through Stripe; lets the payment webhook
+  // find the account again when a subscription ends.
+  stripeCustomerId String? @unique
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  projects Project[]
+  projects   Project[]
+  uploads    Upload[]
+  savedScenes SavedScene[]
+  renderJobs RenderJob[]
+}
+
+// A scene the user kept as their own template. Anyone who has its id (an
+// unguessable address) may load it - that is how a scene is shared by link.
+// It holds no track: only elements, camera and look.
+model SavedScene {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  scene     Json
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+// One row per uploaded file (track, picture, 3D model). It records who the
+// file belongs to: a file with an owner is only handed to that account, a
+// file without one (uploaded while not logged in) to anyone who knows its
+// random address. Files from before this table existed have no row and
+// count as ownerless.
+model Upload {
+  // Storage key, as handed out by /api/upload: "uploads/<uuid>.<ext>".
+  key       String   @id
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  size      Int
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 model Project {
@@ -60,6 +96,11 @@ model RenderJob {
   // be linked for history/quota purposes.
   projectId String?
   project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  // Who started the render, if they were logged in. Their finished video
+  // is then only handed to them.
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   // Denormalized so a job is fully self-contained even without a Project.
   audioKey String

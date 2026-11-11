@@ -23,13 +23,17 @@ import {
 } from "../../../remotion/scene/palettes";
 import { TEMPLATES } from "../../../remotion/scene/templates";
 import {
+  ASPECTS,
   FRAME_RATES,
   RESOLUTIONS,
+  outputSize,
+  type AspectKey,
   type FrameRate,
   type ResolutionKey,
 } from "../../../remotion/types";
 import { BindableSlider } from "@/components/editor/BindableSlider";
 import { ElementList } from "@/components/editor/ElementList";
+import { Thumbnail } from "@/components/ui/Thumbnail";
 import { ParamControls } from "@/components/editor/ParamControls";
 import { SegmentedSelector } from "@/components/ui/SegmentedSelector";
 
@@ -80,6 +84,8 @@ export function Sidebar({
   onSelect,
   resolution,
   onResolutionChange,
+  aspect,
+  onAspectChange,
   frameRate,
   onFrameRateChange,
   collapsed,
@@ -97,6 +103,8 @@ export function Sidebar({
   onSelect: (id: string | null) => void;
   resolution: ResolutionKey;
   onResolutionChange: (value: ResolutionKey) => void;
+  aspect: AspectKey;
+  onAspectChange: (value: AspectKey) => void;
   frameRate: FrameRate;
   onFrameRateChange: (value: FrameRate) => void;
   collapsed: CollapsedSections;
@@ -205,7 +213,7 @@ export function Sidebar({
         "template",
         "Template",
         <>
-          <ul className="grid grid-cols-2 gap-1.5">
+          <ul className="grid grid-cols-2 gap-2">
             {TEMPLATES.map((template) => {
               const isActive = template.id === templateId;
               return (
@@ -214,13 +222,23 @@ export function Sidebar({
                     type="button"
                     aria-pressed={isActive}
                     onClick={() => onLoadTemplate(template.id)}
-                    className={`w-full rounded-full border px-2 py-1.5 font-mono text-[11px] tracking-[0.06em] uppercase outline-none transition-all focus-visible:text-amber ${
+                    className={`group flex w-full flex-col overflow-hidden rounded-md border text-left outline-none transition-all focus-visible:border-amber ${
                       isActive
-                        ? "border-amber-dim bg-panel-raised text-amber shadow-glow-active"
-                        : "border-hairline text-steel hover:text-cream"
+                        ? "border-amber-dim shadow-glow-active"
+                        : "border-hairline hover:border-amber-dim"
                     }`}
                   >
-                    {template.label}
+                    <Thumbnail
+                      src={`/thumbnails/templates/${template.id}.jpg`}
+                      dimmed={!isActive}
+                    />
+                    <span
+                      className={`truncate px-2 py-1.5 font-mono text-[10px] tracking-[0.06em] uppercase ${
+                        isActive ? "text-amber" : "text-steel group-hover:text-cream"
+                      }`}
+                    >
+                      {template.label}
+                    </span>
                   </button>
                 </li>
               );
@@ -336,6 +354,15 @@ export function Sidebar({
         <>
           <SegmentedSelector
             stretch
+            options={Object.entries(ASPECTS).map(([key, a]) => ({
+              value: key as AspectKey,
+              label: a.label,
+            }))}
+            value={aspect}
+            onChange={onAspectChange}
+          />
+          <SegmentedSelector
+            stretch
             options={Object.entries(RESOLUTIONS).map(([key, r]) => ({
               value: key as ResolutionKey,
               label: r.label,
@@ -349,6 +376,10 @@ export function Sidebar({
             value={frameRate}
             onChange={onFrameRateChange}
           />
+          <p className="font-mono text-[11px] tracking-[0.06em] text-steel tabular-nums">
+            {outputSize(aspect, resolution).width} x{" "}
+            {outputSize(aspect, resolution).height} px
+          </p>
           <p className="text-xs text-steel">
             60 fps is as smooth as the preview; 30 fps renders in half the time.
           </p>

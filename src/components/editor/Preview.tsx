@@ -8,11 +8,11 @@ import type {
   SceneEditorHooks,
   TransformTool,
 } from "../../../remotion/scene/SceneRenderer";
+import { ASPECTS, outputSize, type AspectKey } from "../../../remotion/types";
 import { SegmentedSelector } from "@/components/ui/SegmentedSelector";
 
-const COMPOSITION_WIDTH = 1280;
-const COMPOSITION_HEIGHT = 720;
-const ASPECT = COMPOSITION_WIDTH / COMPOSITION_HEIGHT;
+/** The preview is drawn at the smallest export size of the chosen format. */
+const PREVIEW_RESOLUTION = "720p";
 /** Bezel padding (p-2) on both sides, see the scope frame below. */
 const BEZEL = 16;
 
@@ -34,6 +34,7 @@ export function Preview({
   audioUrl,
   durationInFrames,
   fps,
+  aspect,
   scene,
   initiallyMuted,
   isLoading,
@@ -46,6 +47,7 @@ export function Preview({
   audioUrl: string | null;
   durationInFrames: number;
   fps: number;
+  aspect: AspectKey;
   scene: SceneDocument;
   initiallyMuted: boolean;
   isLoading: boolean;
@@ -127,11 +129,14 @@ export function Preview({
     [audioUrl, scene, selectedId, activeTool, onSelect, onTransform],
   );
 
-  // Largest 16:9 box (plus bezel) that fits into the available area.
+  // Largest box of the chosen format (plus bezel) that fits into the
+  // available area.
+  const ratio = ASPECTS[aspect].ratio;
+  const composition = outputSize(aspect, PREVIEW_RESOLUTION);
   const maxWidth = Math.max(0, area.width - BEZEL);
   const maxHeight = Math.max(0, area.height - BEZEL);
-  const width = Math.floor(Math.min(maxWidth, maxHeight * ASPECT));
-  const height = Math.floor(width / ASPECT);
+  const width = Math.floor(Math.min(maxWidth, maxHeight * ratio));
+  const height = Math.floor(width / ratio);
 
   return (
     <section className="editor-area-preview flex min-h-0 min-w-0 flex-col gap-3 p-4">
@@ -172,8 +177,8 @@ export function Preview({
                 component={AudioVisualizer3D}
                 inputProps={inputProps}
                 durationInFrames={durationInFrames}
-                compositionWidth={COMPOSITION_WIDTH}
-                compositionHeight={COMPOSITION_HEIGHT}
+                compositionWidth={composition.width}
+                compositionHeight={composition.height}
                 fps={fps}
                 style={{ width, height, borderRadius: 6, overflow: "hidden" }}
                 controls={false}

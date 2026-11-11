@@ -18,6 +18,7 @@ export const AudioVisualizer3D: React.FC<AudioVisualizerProps> = ({
   audioSrc,
   scene: rawScene,
   appBase,
+  fileToken,
   editor,
 }) => {
   const frame = useCurrentFrame();
@@ -28,8 +29,10 @@ export const AudioVisualizer3D: React.FC<AudioVisualizerProps> = ({
   const scene = useMemo(() => sanitizeScene(rawScene), [rawScene]);
   const background = scene.look.background;
   const assetUrl = useCallback(
-    (key: string) => `${appBase}/api/files/${key}`,
-    [appBase],
+    (key: string) =>
+      `${appBase}/api/files/${key}` +
+      (fileToken ? `?t=${encodeURIComponent(fileToken)}` : ''),
+    [appBase, fileToken],
   );
 
   if (!audioData) {

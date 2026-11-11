@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { claimFiles, fileOwner, sceneAssetKeys } from "@/lib/fileAccess";
 import { prisma } from "@/lib/prisma";
-import { parseProjectInput, toProjectResponse } from "@/lib/projects";
+import {
+  TRACK_MISSING,
+  parseProjectInput,
+  toProjectResponse,
+} from "@/lib/projects";
 
 type Context = { params: Promise<{ id: string }> };
 
@@ -52,10 +57,20 @@ export async function PUT(request: Request, context: Context) {
     return NextResponse.json({ error: input.error }, { status: 400 });
   }
 
+  const userId = found.project.userId;
+  const audioOwner = await fileOwner(input.audioPath);
+  if (audioOwner && audioOwner !== userId) {
+    return NextResponse.json({ error: TRACK_MISSING }, { status: 400 });
+  }
+
   const project = await prisma.project.update({
     where: { id: found.project.id },
     data: input,
   });
+  await claimFiles(
+    [input.audioPath, ...sceneAssetKeys(toProjectResponse(project).scene)],
+    userId,
+  );
   return NextResponse.json(toProjectResponse(project));
 }
 

@@ -19,6 +19,31 @@ export const RESOLUTIONS: Record<
 
 export const DEFAULT_RESOLUTION: ResolutionKey = "1080p";
 
+/** Picture formats: landscape, portrait (phone feeds) and square. */
+export type AspectKey = "16:9" | "9:16" | "1:1";
+
+export const ASPECTS: Record<AspectKey, { label: string; ratio: number }> = {
+  "16:9": { label: "16:9", ratio: 16 / 9 },
+  "9:16": { label: "9:16", ratio: 9 / 16 },
+  "1:1": { label: "1:1", ratio: 1 },
+};
+
+export const DEFAULT_ASPECT: AspectKey = "16:9";
+
+/**
+ * Pixel size of a video. The resolution names the short side ("1080p" is
+ * 1920x1080 in landscape, 1080x1920 in portrait and 1080x1080 as a square).
+ */
+export function outputSize(
+  aspect: AspectKey,
+  resolution: ResolutionKey,
+): { width: number; height: number } {
+  const { width: long, height: short } = RESOLUTIONS[resolution];
+  if (aspect === "9:16") return { width: short, height: long };
+  if (aspect === "1:1") return { width: short, height: short };
+  return { width: long, height: short };
+}
+
 /** Frame rates a video can be exported in. */
 export const FRAME_RATES = [30, 60] as const;
 export type FrameRate = (typeof FRAME_RATES)[number];
@@ -35,6 +60,12 @@ export type AudioVisualizerProps = {
    * during a server render, which runs on a different port.
    */
   appBase: string;
+  /**
+   * Only set during a server render started by a logged-in user: lets the
+   * render browser, which has no login cookie, read that account's
+   * uploaded pictures and models. See src/lib/fileAccess.ts.
+   */
+  fileToken?: string;
   /** Selection and gizmo hooks. Only the editor passes these, never a render. */
   editor?: SceneEditorHooks;
 };

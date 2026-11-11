@@ -10,6 +10,7 @@
     "remotion:studio": "remotion studio remotion/index.ts",
     "remotion:render": "remotion render remotion/index.ts",
     "remotion:bundle": "tsx scripts/bundle-remotion.ts",
+    "thumbnails": "tsx scripts/thumbnails.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {
