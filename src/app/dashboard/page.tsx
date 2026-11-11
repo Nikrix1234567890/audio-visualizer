@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { DeleteButton } from "@/components/DeleteButton";
 import { DeleteProjectButton } from "@/components/DeleteProjectButton";
+import { ProjectThumb } from "@/components/ProjectThumb";
 import { RefreshWhile } from "@/components/RefreshWhile";
 import { TemplateGrid } from "@/components/TemplateGrid";
 import { prisma } from "@/lib/prisma";
@@ -72,6 +73,11 @@ export default async function DashboardPage() {
                 key={project.id}
                 className="flex items-center gap-4 border-b border-line px-4 py-3 last:border-b-0"
               >
+                {/* The address changes with every save, so the browser
+                    never shows the picture of an older version. */}
+                <ProjectThumb
+                  src={`/api/files/thumbs/${project.id}.jpg?v=${project.updatedAt.getTime()}`}
+                />
                 <Link
                   href={`/editor?project=${project.id}`}
                   className="flex min-w-0 flex-1 flex-col gap-0.5 outline-none hover:text-accent focus-visible:text-accent"

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { projectThumbnailKey } from "@/lib/projectThumbnail";
 import { deleteFile } from "@/lib/storage";
 
 const MIN_PASSWORD_LENGTH = 8;
@@ -70,6 +71,12 @@ export async function DELETE(request: Request) {
       { status: 409 },
     );
   }
+
+  const projects = await prisma.project.findMany({
+    where: { userId: user.id },
+    select: { id: true },
+  });
+  for (const project of projects) await deleteFile(projectThumbnailKey(project.id));
 
   const [uploads, jobs] = await Promise.all([
     prisma.upload.findMany({ where: { userId: user.id }, select: { key: true } }),

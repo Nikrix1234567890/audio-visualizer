@@ -19,6 +19,7 @@ import {
 
 const TOKEN_LIFETIME_MS = 6 * 60 * 60 * 1000;
 const RENDER_KEY = /^renders\/([a-z0-9]+)\.mp4$/;
+const THUMB_KEY = /^thumbs\/([a-z0-9]+)\.jpg$/;
 
 function sign(userId: string, expires: number): string {
   const secret = process.env.AUTH_SECRET;
@@ -59,6 +60,16 @@ export async function fileOwner(key: string): Promise<string | null> {
       select: { userId: true },
     });
     return job?.userId ?? null;
+  }
+  // The picture of a project belongs to whoever owns the project.
+  const thumb = THUMB_KEY.exec(key);
+  if (thumb) {
+    const project = await prisma.project.findUnique({
+      where: { id: thumb[1] },
+      select: { userId: true },
+    });
+    // No such project: nobody may read a leftover picture.
+    return project?.userId ?? "nobody";
   }
   const upload = await prisma.upload.findUnique({
     where: { key },

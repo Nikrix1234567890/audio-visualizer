@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { claimFiles, fileOwner, sceneAssetKeys } from "@/lib/fileAccess";
 import { prisma } from "@/lib/prisma";
+import { projectThumbnailKey, queueProjectThumbnail } from "@/lib/projectThumbnail";
+import { deleteFile } from "@/lib/storage";
 import {
   TRACK_MISSING,
   parseProjectInput,
@@ -71,7 +73,15 @@ export async function PUT(request: Request, context: Context) {
     [input.audioPath, ...sceneAssetKeys(toProjectResponse(project).scene)],
     userId,
   );
-  return NextResponse.json(toProjectResponse(project));
+  const saved = toProjectResponse(project);
+  queueProjectThumbnail({
+    projectId: project.id,
+    userId,
+    audioKey: saved.audioKey,
+    scene: saved.scene,
+    origin: new URL(request.url).origin,
+  });
+  return NextResponse.json(saved);
 }
 
 export async function DELETE(_request: Request, context: Context) {
@@ -79,5 +89,6 @@ export async function DELETE(_request: Request, context: Context) {
   if (!found.project) return found.response;
 
   await prisma.project.delete({ where: { id: found.project.id } });
+  await deleteFile(projectThumbnailKey(found.project.id));
   return NextResponse.json({ ok: true });
 }

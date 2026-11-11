@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { claimFiles, fileOwner, sceneAssetKeys } from "@/lib/fileAccess";
 import { prisma } from "@/lib/prisma";
+import { queueProjectThumbnail } from "@/lib/projectThumbnail";
 import {
   MAX_PROJECTS_PER_USER,
   TRACK_MISSING,
@@ -62,5 +63,14 @@ export async function POST(request: Request) {
     session.user.id,
   );
 
-  return NextResponse.json(toProjectResponse(project), { status: 201 });
+  const saved = toProjectResponse(project);
+  queueProjectThumbnail({
+    projectId: project.id,
+    userId: session.user.id,
+    audioKey: saved.audioKey,
+    scene: saved.scene,
+    origin: new URL(request.url).origin,
+  });
+
+  return NextResponse.json(saved, { status: 201 });
 }
