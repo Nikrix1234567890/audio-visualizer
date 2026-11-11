@@ -11,6 +11,7 @@
 // Pure functions of time - the same second always gives the same value, in
 // the preview and in the render.
 
+import { getBeatClock, type TrackAnalysis } from "../audio/analysis";
 import type {
   Keyframe,
   KeyframeEase,
@@ -134,9 +135,22 @@ export function keyframeTimes(keyframes: Keyframes | undefined): number[] {
  *
  * With `amount` 0.6 the motion swings between 160 % and 40 % of its normal
  * speed; with 1 it comes to a brief standstill at the slowest point.
+ *
+ * In "beat" mode the swing follows the track instead: a surge on every
+ * beat, slow motion until the next.
  */
-export function warpTime(time: number, tempo: Tempo | undefined): number {
+export function warpTime(
+  time: number,
+  tempo: Tempo | undefined,
+  analysis?: TrackAnalysis,
+): number {
   if (!tempo || tempo.amount <= 0) return time;
+  if (tempo.mode === "beat") {
+    // Blend real time with the beat clock: at 1 the element moves only as
+    // far as the beats push it.
+    if (!analysis) return time;
+    return time + tempo.amount * (getBeatClock(analysis, time) - time);
+  }
   const wave = (2 * Math.PI) / tempo.period;
   return time + (tempo.amount / wave) * Math.sin(time * wave);
 }

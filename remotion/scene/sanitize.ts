@@ -159,6 +159,7 @@ function sanitizeTempo(input: unknown): Tempo {
   return {
     amount: clamp(raw.amount, DEFAULT_TEMPO.amount, amount.min, amount.max),
     period: clamp(raw.period, DEFAULT_TEMPO.period, period.min, period.max),
+    mode: raw.mode === "beat" ? "beat" : "wave",
   };
 }
 

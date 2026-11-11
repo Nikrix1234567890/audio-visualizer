@@ -252,7 +252,7 @@ export const SceneRenderer: React.FC<{
               analysis={analysis}
               audio={audio}
               // The element's own clock: bent by its tempo swing, if any.
-              time={warpTime(time, element.tempo)}
+              time={warpTime(time, element.tempo, analysis)}
               assetUrl={assetUrl}
               fontBase={fontBase}
             />

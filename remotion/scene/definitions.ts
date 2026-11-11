@@ -141,13 +141,16 @@ export type Keyframes = Record<string, Keyframe[]>;
 export const MAX_KEYFRAMES = 64;
 
 /**
- * Tempo swing: the motion of an element slows down and speeds up again in
- * a wave. `amount` 0 is off, 1 slows to a standstill at the slowest point;
- * `period` is the length of one wave in seconds. See warpTime().
+ * Tempo swing: the motion of an element slows down and speeds up again.
+ * `amount` 0 is off, 1 slows to a standstill at the slowest point.
+ * In "wave" mode it swings evenly, one wave every `period` seconds; in
+ * "beat" mode it surges on every beat of the track and falls into slow
+ * motion in between (`period` is not used). See warpTime().
  */
-export type Tempo = { amount: number; period: number };
+export type TempoMode = "wave" | "beat";
+export type Tempo = { amount: number; period: number; mode: TempoMode };
 
-export const DEFAULT_TEMPO: Tempo = { amount: 0, period: 4 };
+export const DEFAULT_TEMPO: Tempo = { amount: 0, period: 4, mode: "wave" };
 
 export const TEMPO_LIMITS = {
   amount: { min: 0, max: 1, step: 0.01 },

@@ -494,17 +494,17 @@ export const TEMPLATES: SceneTemplate[] = [
 // breathing, slow-motion feel. By template id, then element id.
 const TEMPO_SWINGS: Record<string, Record<string, Tempo>> = {
   hyperdrive: {
-    tunnel: { amount: 0.8, period: 4 },
-    streaks: { amount: 0.8, period: 4 },
+    tunnel: { amount: 0.8, period: 4, mode: "beat" },
+    streaks: { amount: 0.8, period: 4, mode: "beat" },
   },
-  helix: { helix: { amount: 0.6, period: 5 } },
-  galaxy: { galaxy: { amount: 0.7, period: 6 } },
-  orb: { orb: { amount: 0.5, period: 5 } },
-  vortex: { vortex: { amount: 0.75, period: 5 } },
-  solar: { star: { amount: 0.5, period: 8 } },
-  sunflower: { flower: { amount: 0.6, period: 6 } },
-  knot: { knot: { amount: 0.7, period: 6 } },
-  jellyfish: { jelly: { amount: 0.6, period: 4 } },
+  helix: { helix: { amount: 0.6, period: 5, mode: "wave" } },
+  galaxy: { galaxy: { amount: 0.7, period: 6, mode: "wave" } },
+  orb: { orb: { amount: 0.6, period: 5, mode: "beat" } },
+  vortex: { vortex: { amount: 0.8, period: 5, mode: "beat" } },
+  solar: { star: { amount: 0.5, period: 8, mode: "wave" } },
+  sunflower: { flower: { amount: 0.6, period: 6, mode: "wave" } },
+  knot: { knot: { amount: 0.7, period: 6, mode: "wave" } },
+  jellyfish: { jelly: { amount: 0.6, period: 4, mode: "wave" } },
 };
 
 for (const template of TEMPLATES) {

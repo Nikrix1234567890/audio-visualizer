@@ -38,6 +38,7 @@ import {
   type ResolutionKey,
 } from "../../../remotion/types";
 import { BindableSlider } from "@/components/editor/BindableSlider";
+import { CameraMoves } from "@/components/editor/CameraMoves";
 import { ElementList } from "@/components/editor/ElementList";
 import { MyTemplates } from "@/components/editor/MyTemplates";
 import { Thumbnail } from "@/components/ui/Thumbnail";
@@ -369,6 +370,7 @@ export function Sidebar({
       {section(
         "camera",
         "Camera",
+        <>
         <ParamControls
           defs={CAMERA_PARAMS}
           values={scene.camera}
@@ -391,7 +393,9 @@ export function Sidebar({
                 plain === undefined ? scene.camera : { ...scene.camera, [key]: plain },
             })
           }
-        />,
+        />
+        <CameraMoves scene={scene} onSceneChange={onSceneChange} />
+        </>,
       )}
 
       {section(
@@ -596,13 +600,22 @@ function ElementInspector({
       />
 
       <SubHeading>Tempo</SubHeading>
+      <SegmentedSelector
+        stretch
+        options={[
+          { value: "wave" as const, label: "Wave" },
+          { value: "beat" as const, label: "On the beat" },
+        ]}
+        value={tempo.mode}
+        onChange={(mode) => onChange({ tempo: { ...tempo, mode } })}
+      />
       <SliderRow
         label="Tempo swing"
         value={tempo.amount}
         {...TEMPO_LIMITS.amount}
         onChange={(amount) => onChange({ tempo: { ...tempo, amount } })}
       />
-      {tempo.amount > 0 && (
+      {tempo.amount > 0 && tempo.mode === "wave" && (
         <SliderRow
           label="Swing length"
           value={tempo.period}
@@ -612,8 +625,9 @@ function ElementInspector({
         />
       )}
       <p className="text-xs text-muted">
-        Lets the motion slow down and speed up again in a wave. At 1 it
-        comes to a brief standstill.
+        {tempo.mode === "beat"
+          ? "The motion surges on every beat and falls into slow motion until the next."
+          : "Lets the motion slow down and speed up again in a wave. At 1 it comes to a brief standstill."}
       </p>
 
       <SubHeading>Position</SubHeading>

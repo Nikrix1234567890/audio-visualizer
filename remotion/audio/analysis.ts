@@ -64,6 +64,11 @@ export type TrackAnalysis = {
    * distance instead of changing a speed (see getBassTravel).
    */
   bassTravel: Float32Array;
+  /**
+   * A clock that runs with the beat: it rushes ahead on every beat and
+   * idles in between, yet on average keeps real time (see getBeatClock).
+   */
+  beatClock: Float32Array;
 };
 
 export type AudioFrame = {
@@ -334,6 +339,18 @@ function analyzeTrack(audioData: MediaUtilsAudioData): TrackAnalysis {
     travelled += bass[f] * dt;
   }
 
+  // The beat pulse, scaled so that it averages 1 over the track, summed up.
+  // A track without beats gets a clock that simply keeps real time.
+  let beatTotal = 0;
+  for (let f = 0; f < frameCount; f++) beatTotal += beat[f];
+  const beatMean = beatTotal / Math.max(1, frameCount);
+  const beatClock = new Float32Array(frameCount);
+  let ticked = 0;
+  for (let f = 0; f < frameCount; f++) {
+    beatClock[f] = ticked;
+    ticked += (beatMean > 0 ? beat[f] / beatMean : 1) * dt;
+  }
+
   return {
     stepCount: frameCount,
     bands,
@@ -344,6 +361,7 @@ function analyzeTrack(audioData: MediaUtilsAudioData): TrackAnalysis {
     beat,
     beatCount,
     bassTravel,
+    beatClock,
   };
 }
 
@@ -376,6 +394,23 @@ export function getBassTravel(analysis: TrackAnalysis, seconds: number): number 
   const next = Math.min(last, step + 1);
   const from = analysis.bassTravel[step];
   return from + (analysis.bassTravel[next] - from) * Math.min(1, position - step);
+}
+
+/**
+ * The beat clock at a point in time, in seconds. Motion that follows it
+ * surges on each beat and falls into slow motion until the next one.
+ * Interpolated like getBassTravel; past the end of the track it carries on
+ * at normal speed.
+ */
+export function getBeatClock(analysis: TrackAnalysis, seconds: number): number {
+  const position = Math.max(0, seconds * ANALYSIS_RATE);
+  const last = analysis.stepCount - 1;
+  if (position >= last) {
+    return analysis.beatClock[last] + (position - last) / ANALYSIS_RATE;
+  }
+  const step = Math.floor(position);
+  const from = analysis.beatClock[step];
+  return from + (analysis.beatClock[step + 1] - from) * (position - step);
 }
 
 /** Bass / mid / treble / level / beat at a point in time (in seconds). */
