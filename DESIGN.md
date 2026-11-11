@@ -139,6 +139,9 @@ For on/off parameters: caption left, a small pill track right with a round cap t
 ### Colour Swatch
 For colour parameters: caption left, the hex value as an editable mono readout, and a small raised swatch showing the colour. Clicking the swatch opens the system colour picker - the one place a native control is used, because nothing custom beats it.
 
+### Picture Well
+For picture parameters: caption above, then a small recessed square (scope-recessed) showing the chosen picture - empty chassis black when there is none - next to plain mono caps buttons: "Choose picture", then "Replace" and "Remove" once one is set. The picture uploads the moment it is chosen; the button reads "Uploading..." meanwhile, and a one-line hint names the accepted formats until a picture is set.
+
 ### Segmented Selector
 A row of backlit, pill-shaped (`999px`) buttons sharing one Hairline Steel outline, used for Template and Resolution. In the settings rail the segments stretch to share the full width equally. The selected segment fills Panel Graphite Raised with a Patch Amber label and glow-active; unselected segments show Steel Label text on transparent background.
 

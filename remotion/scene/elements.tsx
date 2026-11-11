@@ -5,12 +5,13 @@
 
 import React, {useMemo} from 'react';
 import {Grid, Line, Stars as DreiStars} from '@react-three/drei';
+import {useThree} from '@react-three/fiber';
 import {
   getSpectrum,
   type AudioFrame,
   type TrackAnalysis,
 } from '../audio/analysis';
-import type {ElementType, Params} from './definitions';
+import type {Params} from './definitions';
 
 export type ElementProps = {
   params: Params;
@@ -19,7 +20,18 @@ export type ElementProps = {
   audio: AudioFrame;
   /** Seconds since the start of the track. */
   time: number;
+  /** Turns the storage key of an uploaded file into a URL that can be loaded. */
+  assetUrl: (key: string) => string;
 };
+
+/**
+ * Line widths are given in screen pixels, so a line would look three times
+ * thinner in a 4K export than in the 720p preview. This scales a width
+ * given for a 720p picture to the size actually being drawn.
+ */
+function useLineScale() {
+  return useThree((state) => state.size.height) / 720;
+}
 
 const num = (params: Params, key: string) => Number(params[key]);
 const hsl = (hue: number, saturation: number, lightness: number) =>
@@ -96,6 +108,7 @@ const SphereSwarm: React.FC<ElementProps> = ({params, analysis, time}) => {
   const glow = num(params, 'glow');
   const wobble = num(params, 'wobble');
 
+  const lineScale = useLineScale();
   const basePoints = useMemo(() => fibonacciSpherePoints(count), [count]);
   const spectrum = getSpectrum(analysis, time, count);
 
@@ -117,7 +130,7 @@ const SphereSwarm: React.FC<ElementProps> = ({params, analysis, time}) => {
         <Line
           points={[...points, points[0]]}
           color={hsl((hueStart + hueEnd) / 2, 90, 70)}
-          lineWidth={1}
+          lineWidth={lineScale}
           transparent
           opacity={0.35}
         />
@@ -160,7 +173,7 @@ const TerrainLines: React.FC<ElementProps> = ({params, analysis, time}) => {
   const spacing = num(params, 'spacing');
   const heightScale = num(params, 'height');
   const delay = num(params, 'delay');
-  const lineWidth = num(params, 'lineWidth');
+  const lineWidth = num(params, 'lineWidth') * useLineScale();
   const hueStart = num(params, 'hueStart');
   const hueEnd = num(params, 'hueEnd');
 
@@ -290,7 +303,7 @@ const Stars: React.FC<ElementProps> = ({params}) => {
   );
 };
 
-export const ELEMENT_COMPONENTS: Record<ElementType, React.FC<ElementProps>> = {
+export const BASE_ELEMENT_COMPONENTS = {
   barRing: BarRing,
   sphereSwarm: SphereSwarm,
   terrainLines: TerrainLines,

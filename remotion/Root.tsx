@@ -40,6 +40,7 @@ export const RemotionRoot: React.FC = () => {
         defaultProps={{
           audioSrc: staticFile('audio/demo-track.wav'),
           scene: DEFAULT_TEMPLATE.scene,
+          assetBase: '',
         }}
         calculateMetadata={async ({props}) => {
           const durationInSeconds = await getAudioDurationInSeconds(

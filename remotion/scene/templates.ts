@@ -94,6 +94,43 @@ export const TEMPLATES: SceneTemplate[] = [
       ],
     },
   },
+  {
+    id: "pulseRing",
+    label: "Pulse Ring",
+    focusElementId: "picture",
+    scene: {
+      version: 1,
+      // Straight on, almost still, shaking with the bass.
+      camera: {
+        ...DEFAULT_CAMERA,
+        distance: 10,
+        height: 0,
+        orbit: 0,
+        sway: 0.5,
+        bob: 0.25,
+        drift: 0.3,
+        shake: 0.18,
+      },
+      cameraBindings: {},
+      look: { ...DEFAULT_LOOK, background: "#04030a", bloom: 0.9 },
+      lookBindings: {},
+      elements: [
+        createElement("image", {
+          id: "picture",
+          name: "Centre picture",
+          position: [0, 0, 0.05],
+          params: { size: 4.6, round: true },
+          bindings: { scale: { source: "bass", amount: 0.1 } },
+        }),
+        createElement("spectrumRing", {
+          id: "ring",
+          bindings: { scale: { source: "bass", amount: 0.1 } },
+        }),
+        createElement("particles", { id: "particles" }),
+        createElement("backdrop", { id: "backdrop" }),
+      ],
+    },
+  },
 ];
 
 export const DEFAULT_TEMPLATE = TEMPLATES[0];

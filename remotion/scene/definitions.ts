@@ -26,7 +26,9 @@ export type NumberParamDef = {
 export type ParamDef =
   | NumberParamDef
   | { kind: "toggle"; key: string; label: string }
-  | { kind: "color"; key: string; label: string };
+  | { kind: "color"; key: string; label: string }
+  /** An uploaded picture; the value is its storage key, or "" for none. */
+  | { kind: "image"; key: string; label: string };
 
 export const ELEMENT_TYPES = [
   "barRing",
@@ -37,6 +39,10 @@ export const ELEMENT_TYPES = [
   "sun",
   "gridFloor",
   "stars",
+  "spectrumRing",
+  "particles",
+  "image",
+  "backdrop",
 ] as const;
 
 export type ElementType = (typeof ELEMENT_TYPES)[number];
@@ -84,6 +90,8 @@ export type CameraSettings = {
   /** Speed of the sway and bob movement (radians per second). */
   drift: number;
   fov: number;
+  /** How hard the camera shakes with the bass (0 = steady). */
+  shake: number;
 };
 
 export type LookSettings = {
@@ -218,6 +226,62 @@ export const ELEMENT_DEFS: Record<ElementType, ElementDef> = {
       { kind: "number", key: "size", label: "Star size", min: 0.5, max: 10, step: 0.1 },
     ],
   },
+  spectrumRing: {
+    type: "spectrumRing",
+    label: "Spectrum Ring",
+    description: "A flat circle whose edge bulges with the music. Put an image in its centre.",
+    defaults: { points: 180, radius: 2.4, height: 1.6, range: 0.55, layers: 3, hueStart: 280, hueEnd: 420, mirror: true },
+    params: [
+      { kind: "number", key: "points", label: "Detail", min: 16, max: 512, step: 1, modulate: false },
+      { kind: "number", key: "radius", label: "Radius", min: 0.3, max: 12, step: 0.05 },
+      { kind: "number", key: "height", label: "Height", min: 0, max: 8, step: 0.05 },
+      { kind: "number", key: "range", label: "Spectrum range", min: 0.1, max: 1, step: 0.01 },
+      { kind: "number", key: "layers", label: "Echo layers", min: 1, max: 5, step: 1, modulate: false },
+      hueStart,
+      hueEnd,
+      { kind: "toggle", key: "mirror", label: "Mirror left / right" },
+    ],
+  },
+  particles: {
+    type: "particles",
+    label: "Particles",
+    description: "A field of glowing dots flying toward the viewer, surging with the bass.",
+    defaults: { count: 900, spread: 16, hole: 2, depth: 50, size: 0.14, speed: 1.5, boost: 14, hue: 300, saturation: 0.4, opacity: 0.8 },
+    params: [
+      { kind: "number", key: "count", label: "Particles", min: 50, max: 5000, step: 50, modulate: false },
+      { kind: "number", key: "spread", label: "Spread", min: 1, max: 60, step: 0.5 },
+      { kind: "number", key: "hole", label: "Empty centre", min: 0, max: 30, step: 0.5 },
+      { kind: "number", key: "depth", label: "Depth", min: 5, max: 120, step: 1, modulate: false },
+      { kind: "number", key: "size", label: "Size", min: 0.02, max: 1, step: 0.01 },
+      { kind: "number", key: "speed", label: "Drift speed", min: -10, max: 10, step: 0.1, modulate: false },
+      { kind: "number", key: "boost", label: "Bass surge", min: 0, max: 60, step: 0.5, modulate: false },
+      hue,
+      { kind: "number", key: "saturation", label: "Saturation", min: 0, max: 1, step: 0.01 },
+      { kind: "number", key: "opacity", label: "Opacity", min: 0, max: 1, step: 0.01 },
+    ],
+  },
+  image: {
+    type: "image",
+    label: "Image",
+    description: "Your own picture, cover or logo - rectangular or cropped to a circle.",
+    defaults: { image: "", size: 4, round: false, opacity: 1 },
+    params: [
+      { kind: "image", key: "image", label: "Picture" },
+      { kind: "number", key: "size", label: "Size", min: 0.2, max: 40, step: 0.1 },
+      { kind: "toggle", key: "round", label: "Crop to circle" },
+      { kind: "number", key: "opacity", label: "Opacity", min: 0, max: 1, step: 0.01 },
+    ],
+  },
+  backdrop: {
+    type: "backdrop",
+    label: "Gradient Backdrop",
+    description: "A two-colour gradient filling the whole background.",
+    defaults: { top: "#1a0b3a", bottom: "#04030a" },
+    params: [
+      { kind: "color", key: "top", label: "Top" },
+      { kind: "color", key: "bottom", label: "Bottom" },
+    ],
+  },
 };
 
 /** Limits for the transform every element has. */
@@ -235,6 +299,7 @@ export const CAMERA_PARAMS: ParamDef[] = [
   { kind: "number", key: "bob", label: "Bob", min: 0, max: 20, step: 0.1 },
   { kind: "number", key: "drift", label: "Drift speed", min: 0, max: 2, step: 0.005, modulate: false },
   { kind: "number", key: "fov", label: "Field of view", min: 15, max: 110, step: 1, unit: "°" },
+  { kind: "number", key: "shake", label: "Bass shake", min: 0, max: 2, step: 0.01 },
 ];
 
 export const LOOK_PARAMS: ParamDef[] = [
@@ -254,6 +319,7 @@ export const DEFAULT_CAMERA: CameraSettings = {
   bob: 0.6,
   drift: 0.175,
   fov: 50,
+  shake: 0,
 };
 
 export const DEFAULT_LOOK: LookSettings = {

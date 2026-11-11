@@ -13,7 +13,14 @@ import {
   type CameraSettings,
   type SceneDocument,
 } from './definitions';
-import {ELEMENT_COMPONENTS} from './elements';
+import {BASE_ELEMENT_COMPONENTS, type ElementProps} from './elements';
+import {EXTRA_ELEMENT_COMPONENTS} from './elementsExtra';
+import type {ElementType} from './definitions';
+
+const ELEMENT_COMPONENTS: Record<ElementType, React.FC<ElementProps>> = {
+  ...BASE_ELEMENT_COMPONENTS,
+  ...EXTRA_ELEMENT_COMPONENTS,
+};
 
 const DEG_TO_RAD = Math.PI / 180;
 
@@ -26,17 +33,18 @@ const DEG_TO_RAD = Math.PI / 180;
  * (its frame renderer uses a passive effect), so the picture never shows a
  * camera that belongs to a different frame or scene.
  */
-const CameraRig: React.FC<{settings: CameraSettings; time: number}> = ({
-  settings,
-  time,
-}) => {
+const CameraRig: React.FC<{
+  settings: CameraSettings;
+  time: number;
+  bass: number;
+}> = ({settings, time, bass}) => {
   // Read the camera through the store getter: it is a three.js object we
   // are meant to move, not a React value.
   const getState = useThree((state) => state.get);
 
   useLayoutEffect(() => {
     const {camera, invalidate} = getState();
-    const [x, y, z] = cameraPosition(settings, time);
+    const [x, y, z] = cameraPosition(settings, time, bass);
     camera.position.set(x, y, z);
     camera.lookAt(0, 0, 0);
     if (camera instanceof PerspectiveCamera && camera.fov !== settings.fov) {
@@ -45,7 +53,7 @@ const CameraRig: React.FC<{settings: CameraSettings; time: number}> = ({
     }
     camera.updateMatrixWorld();
     invalidate();
-  }, [getState, settings, time]);
+  }, [getState, settings, time, bass]);
 
   return null;
 };
@@ -58,7 +66,8 @@ export const SceneRenderer: React.FC<{
   scene: SceneDocument;
   analysis: TrackAnalysis;
   time: number;
-}> = ({scene, analysis, time}) => {
+  assetUrl: (key: string) => string;
+}> = ({scene, analysis, time, assetUrl}) => {
   const audio = getAudioFrame(analysis, time);
   // Everything below uses the values for this moment: the user's settings
   // plus whatever their audio bindings add right now.
@@ -72,7 +81,7 @@ export const SceneRenderer: React.FC<{
 
   return (
     <>
-      <CameraRig settings={camera} time={time} />
+      <CameraRig settings={camera} time={time} bass={audio.bass} />
       {look.fog ? (
         <fog attach="fog" args={[look.background, look.fogNear, look.fogFar]} />
       ) : null}
@@ -102,6 +111,7 @@ export const SceneRenderer: React.FC<{
               analysis={analysis}
               audio={audio}
               time={time}
+              assetUrl={assetUrl}
             />
           </group>
         );

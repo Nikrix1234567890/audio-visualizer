@@ -40,10 +40,11 @@ function getFreePort(): Promise<number> {
 async function runRender(
   jobId: string,
   audioSrc: string,
+  assetBase: string,
   scene: SceneDocument,
   resolution: { width: number; height: number },
 ) {
-  const inputProps = { audioSrc, scene };
+  const inputProps = { audioSrc, scene, assetBase };
   const chromiumOptions = { gl: "angle" as const, disableWebSecurity: true };
 
   try {
@@ -142,7 +143,8 @@ export async function POST(request: Request) {
   // The headless render browser fetches this over plain HTTP from our own
   // Next.js server - a different origin/port than the Remotion bundle is
   // served from, hence disableWebSecurity in runRender() to avoid CORS.
-  const audioSrc = `${origin}/api/files/${audioKey}`;
+  const assetBase = `${origin}/api/files/`;
+  const audioSrc = `${assetBase}${audioKey}`;
 
   const job = await prisma.renderJob.create({
     data: {
@@ -155,7 +157,7 @@ export async function POST(request: Request) {
   // Deliberately not awaited: this is a long-running self-hosted Node
   // process (not serverless), so the render keeps going in the background
   // while the client polls GET /api/render/[jobId] for progress.
-  void runRender(job.id, audioSrc, scene, resolution);
+  void runRender(job.id, audioSrc, assetBase, scene, resolution);
 
   return NextResponse.json({ jobId: job.id });
 }

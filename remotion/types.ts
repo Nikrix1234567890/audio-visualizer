@@ -21,4 +21,10 @@ export const DEFAULT_RESOLUTION: ResolutionKey = "1080p";
 export type AudioVisualizerProps = {
   audioSrc: string;
   scene: SceneDocument;
+  /**
+   * Prefix that turns the storage key of an uploaded file (e.g. a picture
+   * used by an Image element) into a loadable URL: "/api/files/" in the
+   * editor, the app's full address during a server render.
+   */
+  assetBase: string;
 };

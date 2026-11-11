@@ -1,4 +1,4 @@
-import React, {useMemo} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {AbsoluteFill, useCurrentFrame, useVideoConfig} from 'remotion';
 import {Audio} from '@remotion/media';
 import {useAudioData} from '@remotion/media-utils';
@@ -15,6 +15,7 @@ import {SceneRenderer} from '../scene/SceneRenderer';
 export const AudioVisualizer3D: React.FC<AudioVisualizerProps> = ({
   audioSrc,
   scene: rawScene,
+  assetBase,
 }) => {
   const frame = useCurrentFrame();
   const {fps, width, height} = useVideoConfig();
@@ -23,6 +24,7 @@ export const AudioVisualizer3D: React.FC<AudioVisualizerProps> = ({
   // older version of the editor.
   const scene = useMemo(() => sanitizeScene(rawScene), [rawScene]);
   const background = scene.look.background;
+  const assetUrl = useCallback((key: string) => `${assetBase}${key}`, [assetBase]);
 
   if (!audioData) {
     return <AbsoluteFill style={{backgroundColor: background}} />;
@@ -37,7 +39,12 @@ export const AudioVisualizer3D: React.FC<AudioVisualizerProps> = ({
       <Audio src={audioSrc} />
       {/* The camera is positioned by the SceneRenderer, see CameraRig there. */}
       <ThreeCanvas width={width} height={height}>
-        <SceneRenderer scene={scene} analysis={analysis} time={time} />
+        <SceneRenderer
+          scene={scene}
+          analysis={analysis}
+          time={time}
+          assetUrl={assetUrl}
+        />
       </ThreeCanvas>
     </AbsoluteFill>
   );

@@ -8,6 +8,7 @@ import type {
 } from "../../../remotion/scene/definitions";
 import { BindableSlider } from "@/components/editor/BindableSlider";
 import { ColorRow } from "@/components/ui/ColorRow";
+import { ImageRow } from "@/components/ui/ImageRow";
 import { SliderRow } from "@/components/ui/SliderRow";
 import { ToggleRow } from "@/components/ui/ToggleRow";
 
@@ -61,6 +62,16 @@ export function ParamControls({
               key={def.key}
               label={def.label}
               value={Boolean(values[def.key])}
+              onChange={(v) => onChange(def.key, v)}
+            />
+          );
+        }
+        if (def.kind === "image") {
+          return (
+            <ImageRow
+              key={def.key}
+              label={def.label}
+              value={String(values[def.key] ?? "")}
               onChange={(v) => onChange(def.key, v)}
             />
           );

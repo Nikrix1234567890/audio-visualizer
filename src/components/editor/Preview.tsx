@@ -74,7 +74,7 @@ export function Preview({
               <Player
                 ref={onPlayer}
                 component={AudioVisualizer3D}
-                inputProps={{ audioSrc: audioUrl, scene }}
+                inputProps={{ audioSrc: audioUrl, scene, assetBase: "/api/files/" }}
                 durationInFrames={durationInFrames}
                 compositionWidth={COMPOSITION_WIDTH}
                 compositionHeight={COMPOSITION_HEIGHT}

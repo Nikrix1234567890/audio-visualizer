@@ -58,6 +58,12 @@ export type TrackAnalysis = {
   beat: Float32Array;
   /** Number of beats detected up to and including this step. */
   beatCount: Uint32Array;
+  /**
+   * Running total of the bass level, in "seconds of full bass" played so
+   * far. Lets motion speed up with the bass without jumping: move by this
+   * distance instead of changing a speed (see getBassTravel).
+   */
+  bassTravel: Float32Array;
 };
 
 export type AudioFrame = {
@@ -321,7 +327,24 @@ function analyzeTrack(audioData: MediaUtilsAudioData): TrackAnalysis {
     beatCount[f] = count;
   }
 
-  return {stepCount: frameCount, bands, bass, mid, treble, level, beat, beatCount};
+  const bassTravel = new Float32Array(frameCount);
+  let travelled = 0;
+  for (let f = 0; f < frameCount; f++) {
+    bassTravel[f] = travelled;
+    travelled += bass[f] * dt;
+  }
+
+  return {
+    stepCount: frameCount,
+    bands,
+    bass,
+    mid,
+    treble,
+    level,
+    beat,
+    beatCount,
+    bassTravel,
+  };
 }
 
 const cache = new WeakMap<MediaUtilsAudioData, TrackAnalysis>();
@@ -339,6 +362,20 @@ export function getTrackAnalysis(audioData: MediaUtilsAudioData): TrackAnalysis 
 function stepAt(analysis: TrackAnalysis, seconds: number): number {
   const step = Math.round(seconds * ANALYSIS_RATE);
   return step < 0 ? 0 : step >= analysis.stepCount ? analysis.stepCount - 1 : step;
+}
+
+/**
+ * How much bass has played up to a point in time, in "seconds of full
+ * bass". Interpolated between analysis steps so motion driven by it stays
+ * smooth at any frame rate.
+ */
+export function getBassTravel(analysis: TrackAnalysis, seconds: number): number {
+  const position = Math.max(0, seconds * ANALYSIS_RATE);
+  const last = analysis.stepCount - 1;
+  const step = Math.min(last, Math.floor(position));
+  const next = Math.min(last, step + 1);
+  const from = analysis.bassTravel[step];
+  return from + (analysis.bassTravel[next] - from) * Math.min(1, position - step);
 }
 
 /** Bass / mid / treble / level / beat at a point in time (in seconds). */

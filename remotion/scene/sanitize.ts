@@ -28,6 +28,8 @@ import {
 import { AUDIO_SOURCES, TRANSFORM_TARGETS, isBindable } from "./bindings";
 
 const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
+/** Storage key of an uploaded picture, exactly as /api/upload hands it out. */
+const IMAGE_KEY = /^uploads\/[0-9a-f-]{36}\.(png|jpg|jpeg|webp)$/;
 const SAFE_ID = /^[a-zA-Z0-9_-]{1,40}$/;
 const MAX_NAME_LENGTH = 40;
 
@@ -46,6 +48,9 @@ function sanitizeParam(def: ParamDef, value: unknown, fallback: ParamValue): Par
   }
   if (def.kind === "toggle") {
     return typeof value === "boolean" ? value : fallback;
+  }
+  if (def.kind === "image") {
+    return typeof value === "string" && IMAGE_KEY.test(value) ? value : "";
   }
   return typeof value === "string" && HEX_COLOR.test(value) ? value : fallback;
 }
