@@ -6,6 +6,7 @@ import { getFreePort } from "@/lib/freePort";
 import { renderMedia, selectComposition } from "@remotion/renderer";
 import { auth } from "@/auth";
 import { createFileToken, fileOwner } from "@/lib/fileAccess";
+import { HOUR, clientIp, rateLimit, tooManyRequests } from "@/lib/rateLimit";
 import { enqueueRender, queueRefusal } from "@/lib/renderQueue";
 import { fileExists, getAbsolutePath } from "@/lib/storage";
 import { TIER_LIMITS, isFrameRateAllowed, isResolutionAllowed } from "@/lib/tiers";
@@ -116,6 +117,10 @@ async function runRender(
 }
 
 export async function POST(request: Request) {
+  if (!rateLimit(`render:${clientIp(request)}`, 30, HOUR)) {
+    return tooManyRequests("renders");
+  }
+
   if (!fs.existsSync(BUNDLE_DIR)) {
     return NextResponse.json(
       {

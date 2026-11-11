@@ -4,6 +4,7 @@ import path from "node:path";
 import { auth } from "@/auth";
 import { cleanUpStorageSometimes } from "@/lib/cleanup";
 import { prisma } from "@/lib/prisma";
+import { HOUR, clientIp, rateLimit, tooManyRequests } from "@/lib/rateLimit";
 import { saveFile } from "@/lib/storage";
 
 const AUDIO_EXTENSIONS = new Set([
@@ -31,6 +32,10 @@ const MAX_MODEL_SIZE_BYTES = 50 * 1024 * 1024; // 50 MB
 const MAX_FILE_SIZE_BYTES = 100 * 1024 * 1024; // 100 MB
 
 export async function POST(request: Request) {
+  if (!rateLimit(`upload:${clientIp(request)}`, 60, HOUR)) {
+    return tooManyRequests("uploads");
+  }
+
   const formData = await request.formData().catch(() => null);
   // The field name says what the file is for: "audio" carries the track,
   // "image" a picture for an Image element, "model" a 3D model.

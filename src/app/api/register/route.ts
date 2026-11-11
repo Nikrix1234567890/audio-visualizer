@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import { sendVerifyLink } from "@/lib/accountMails";
 import { prisma } from "@/lib/prisma";
+import { HOUR, clientIp, rateLimit, tooManyRequests } from "@/lib/rateLimit";
 
 export async function POST(request: Request) {
+  if (!rateLimit(`register:${clientIp(request)}`, 5, HOUR)) {
+    return tooManyRequests("new accounts");
+  }
+
   const body = await request.json().catch(() => null);
 
   const email =
@@ -41,6 +47,12 @@ export async function POST(request: Request) {
       name: name || null,
     },
     select: { id: true, email: true },
+  });
+
+  // The account works right away; the mail only asks to confirm the
+  // address. A mail that fails to send must not fail the registration.
+  sendVerifyLink(user, new URL(request.url).origin).catch((error) => {
+    console.error("Sending the confirmation mail failed:", error);
   });
 
   return NextResponse.json({ user }, { status: 201 });

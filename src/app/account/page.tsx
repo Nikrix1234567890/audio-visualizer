@@ -5,6 +5,7 @@ import {
   DeleteAccountForm,
   ManageSubscriptionButton,
   PasswordForm,
+  ResendConfirmationButton,
 } from "@/components/AccountForms";
 import { prisma } from "@/lib/prisma";
 import { isStripeConfigured } from "@/lib/stripe";
@@ -24,6 +25,7 @@ export default async function AccountPage() {
     where: { id: session.user.id },
     select: {
       email: true,
+      emailVerified: true,
       tier: true,
       createdAt: true,
       stripeCustomerId: true,
@@ -43,6 +45,17 @@ export default async function AccountPage() {
           {user.email} · member since {dateFormat.format(user.createdAt)}
         </p>
       </div>
+
+      {!user.emailVerified && (
+        <section className={`${card} border-accent-dim`}>
+          <h2 className={sectionLabel}>Confirm your address</h2>
+          <p className="max-w-lg text-sm leading-relaxed text-muted">
+            We sent a mail with a link to {user.email}. Confirming it makes
+            sure a forgotten password can be reset.
+          </p>
+          <ResendConfirmationButton />
+        </section>
+      )}
 
       <section className={card}>
         <h2 className={sectionLabel}>Plan</h2>

@@ -158,3 +158,35 @@ export function DeleteAccountForm() {
     </form>
   );
 }
+
+/** Asks for the confirmation mail to be sent again. */
+export function ResendConfirmationButton() {
+  const [state, setState] = useState<"idle" | "sending" | "sent">("idle");
+  const [error, setError] = useState<string | null>(null);
+
+  const send = async () => {
+    setError(null);
+    setState("sending");
+    const response = await fetch("/api/account/verify", { method: "POST" });
+    if (response.ok) {
+      setState("sent");
+      return;
+    }
+    setError(await readError(response, "The mail could not be sent."));
+    setState("idle");
+  };
+
+  return (
+    <div className="flex flex-col gap-2">
+      <button
+        type="button"
+        onClick={send}
+        disabled={state !== "idle"}
+        className={quietButton}
+      >
+        {state === "sending" ? "Sending…" : state === "sent" ? "Mail sent" : "Send the mail again"}
+      </button>
+      {error && <p className="text-xs text-red-400">{error}</p>}
+    </div>
+  );
+}

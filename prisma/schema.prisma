@@ -28,6 +28,8 @@ model User {
   email        String   @unique
   passwordHash String
   name         String?
+  // Set when the user followed the link in the confirmation mail.
+  emailVerified DateTime?
   tier         Tier     @default(FREE)
   // Set once the user has paid through Stripe; lets the payment webhook
   // find the account again when a subscription ends.
