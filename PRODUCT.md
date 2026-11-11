@@ -34,6 +34,15 @@ Single-session workflow: open the site, drag/select an audio file, watch the liv
 - Files of anonymous visitors (uploads and videos) are deleted after three days, automatically while uploading or with `pnpm cleanup` (`--dry-run` lists first). Files that belong to an account are never removed automatically.
 - Keyframes: every fader that can react to audio can also change over time. The diamond next to a fader switches it on; from then on moving the fader sets a keyframe at the playhead, and the value travels between keyframes (linear, smooth or hold). Keyframes of the selected element, the camera and the look show as diamonds in the timeline - click to go there, drag to move. An audio binding is added on top of the keyframed value. Counts and speeds cannot be keyframed, for the same reason they cannot react to audio (`remotion/scene/keyframes.ts`).
 - Tempo swing: every element has its own clock that can slow down and speed up again in a wave (amount and length under "Tempo" in the element's settings). Nine templates use it.
+- The product is called "Pulsefield" for now - a working title kept in `remotion/brand.ts`; nobody has checked whether the name is free.
+- Tempo swing has two modes: an even wave, or "on the beat" (the motion surges on every beat and falls into slow motion in between).
+- Camera moves (push in, pull out, crane, zoom punch, dolly zoom, impact) are buttons that write ordinary camera keyframes starting at the playhead.
+- The timeline can be zoomed (up to 16x) and shows one row of keyframes per animated setting under the waveform; a keyframe can be clicked, dragged, and Alt-dragged to copy.
+- A Lyrics element shows timed lines ("0:12 text", one per row; .lrc times work too) that fade in and out.
+- Renders run one after another in a queue (three unfinished per account, twenty waiting overall); the editor and the dashboard show the position and progress.
+- `/account` shows the plan, changes the password and deletes the account with all its files; with a subscription it opens the Stripe customer portal.
+- Template cards play a short silent loop on hover (`public/previews`, made by `pnpm previews`); the landing page shows a live 3D scene in its hero.
+- `pnpm test` runs the automated checks of the scene logic and the server rules.
 - The template gallery and the element catalogue show preview pictures from `public/thumbnails`, rendered by `pnpm thumbnails` with the same composition as every video. Run it again after changing a template or an element.
 - The preview always plays at 60 frames per second (30 looked jerky with fast particles); the export frame rate is user-selectable, 60 (matches the preview) or 30 (renders in roughly half the time). A small readout above the preview shows the frames actually produced per second while playing.
 - Rendering runs server-side via `@remotion/renderer`, tracked as an async job in a database (Prisma/SQLite locally) with real progress percentage, polled by the client.
