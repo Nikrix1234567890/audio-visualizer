@@ -2,6 +2,7 @@
 
 import { getAudioData, type MediaUtilsAudioData } from "@remotion/media-utils";
 import type { PlayerRef } from "@remotion/player";
+import { useSession } from "next-auth/react";
 import {
   useCallback,
   useEffect,
@@ -13,6 +14,7 @@ import type {
   SceneDocument,
   SceneElement,
 } from "../../remotion/scene/definitions";
+import { sanitizeScene } from "../../remotion/scene/sanitize";
 import {
   DEFAULT_TEMPLATE,
   TEMPLATES,
@@ -20,20 +22,29 @@ import {
 } from "../../remotion/scene/templates";
 import { DEFAULT_RESOLUTION, type ResolutionKey } from "../../remotion/types";
 import { Preview } from "@/components/editor/Preview";
-import { Sidebar, type CollapsedSections } from "@/components/editor/Sidebar";
+import {
+  Sidebar,
+  type CollapsedSections,
+  type SaveStatus,
+} from "@/components/editor/Sidebar";
 import { Transport } from "@/components/editor/Transport";
 import { ResizeHandle } from "@/components/ui/ResizeHandle";
 import { useStoredState } from "@/lib/useStoredState";
+import { sanitizeResolution } from "@/lib/visualizerSettings";
 
 const FPS = 30;
 const SEEK_KEY_SECONDS = 5;
+const DEFAULT_TITLE = "Untitled project";
 
 const SIDEBAR = { min: 240, max: 520, default: 320 };
 const TRANSPORT = { min: 88, max: 320, default: 132 };
 const NO_COLLAPSED_SECTIONS: CollapsedSections = {};
 
 type Track = {
-  file: File;
+  /** Shown in the transport bar. */
+  name: string;
+  /** The chosen file; null when the track came from a saved project. */
+  file: File | null;
   url: string;
   audioData: MediaUtilsAudioData;
   durationInFrames: number;
@@ -47,19 +58,38 @@ function isInteractiveTarget(target: EventTarget | null): boolean {
   );
 }
 
-export function Editor() {
+async function readError(response: Response, fallback: string) {
+  const data = await response.json().catch(() => null);
+  return (data?.error as string | undefined) || fallback;
+}
+
+/**
+ * The editor. `initialProjectId` opens a saved project, `initialTemplateId`
+ * starts from a template; with neither it starts from the default template.
+ * Give it a `key` that changes with those, so switching projects starts
+ * from a clean slate.
+ */
+export function Editor({
+  initialProjectId = null,
+  initialTemplateId = null,
+}: {
+  initialProjectId?: string | null;
+  initialTemplateId?: string | null;
+}) {
+  const startTemplate =
+    TEMPLATES.find((t) => t.id === initialTemplateId) ?? DEFAULT_TEMPLATE;
+  const { status: sessionStatus } = useSession();
+
   const [track, setTrack] = useState<Track | null>(null);
-  const [isLoadingTrack, setIsLoadingTrack] = useState(false);
+  const [isLoadingTrack, setIsLoadingTrack] = useState(Boolean(initialProjectId));
   const [player, setPlayer] = useState<PlayerRef | null>(null);
   const [scene, setScene] = useState<SceneDocument>(() =>
-    cloneScene(DEFAULT_TEMPLATE.scene),
+    cloneScene(startTemplate.scene),
   );
   // Which template the scene still equals; null as soon as it was edited.
-  const [templateId, setTemplateId] = useState<string | null>(
-    DEFAULT_TEMPLATE.id,
-  );
+  const [templateId, setTemplateId] = useState<string | null>(startTemplate.id);
   const [selectedId, setSelectedId] = useState<string | null>(
-    DEFAULT_TEMPLATE.focusElementId,
+    startTemplate.focusElementId,
   );
   const [resolution, setResolution] =
     useState<ResolutionKey>(DEFAULT_RESOLUTION);
@@ -68,6 +98,14 @@ export function Editor() {
   const [renderProgress, setRenderProgress] = useState(0);
   const [renderedUrl, setRenderedUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Saved-project state.
+  const [projectId, setProjectId] = useState<string | null>(initialProjectId);
+  const [title, setTitle] = useState(DEFAULT_TITLE);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>(
+    initialProjectId ? "saved" : "unsaved",
+  );
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   // Layout the user arranged for themselves; remembered across visits.
   const [sidebarWidth, setSidebarWidth] = useStoredState(
@@ -84,50 +122,111 @@ export function Editor() {
   );
   const [muted, setMuted] = useStoredState("editor.muted", false);
 
+  // Storage key of the track once it is on the server (upload or saved project).
   const audioKeyRef = useRef<string | null>(null);
   const loadIdRef = useRef(0);
 
-  const loadFile = useCallback(async (file: File) => {
-    const loadId = ++loadIdRef.current;
-    setError(null);
-    setRenderedUrl(null);
-    setIsLoadingTrack(true);
-    audioKeyRef.current = null;
+  /** Decodes audio from a URL and makes it the current track. */
+  const loadTrack = useCallback(
+    async (source: { name: string; file: File | null; url: string }) => {
+      const loadId = ++loadIdRef.current;
+      setError(null);
+      setRenderedUrl(null);
+      setIsLoadingTrack(true);
 
-    const url = URL.createObjectURL(file);
-    try {
-      // Decoded once here; the preview's composition asks for the same URL
-      // and gets this exact object from Remotion's cache, so the waveform and
-      // the scenes share one audio analysis.
-      const audioData = await getAudioData(url);
-      if (loadId !== loadIdRef.current) return;
+      try {
+        // Decoded once here; the preview's composition asks for the same URL
+        // and gets this exact object from Remotion's cache, so the waveform
+        // and the scenes share one audio analysis.
+        const audioData = await getAudioData(source.url);
+        if (loadId !== loadIdRef.current) return false;
 
-      setTrack((previous) => {
-        if (previous) URL.revokeObjectURL(previous.url);
-        return {
-          file,
-          url,
-          audioData,
-          durationInFrames: Math.max(
-            1,
-            Math.ceil(audioData.durationInSeconds * FPS),
-          ),
-        };
-      });
-    } catch {
-      URL.revokeObjectURL(url);
-      if (loadId === loadIdRef.current) {
-        setError("This file could not be read as audio.");
+        setTrack((previous) => {
+          if (previous?.file) URL.revokeObjectURL(previous.url);
+          return {
+            ...source,
+            audioData,
+            durationInFrames: Math.max(
+              1,
+              Math.ceil(audioData.durationInSeconds * FPS),
+            ),
+          };
+        });
+        return true;
+      } catch {
+        if (source.file) URL.revokeObjectURL(source.url);
+        if (loadId === loadIdRef.current) {
+          setError("This file could not be read as audio.");
+        }
+        return false;
+      } finally {
+        if (loadId === loadIdRef.current) setIsLoadingTrack(false);
       }
-    } finally {
-      if (loadId === loadIdRef.current) setIsLoadingTrack(false);
-    }
-  }, []);
+    },
+    [],
+  );
 
-  const changeScene = useCallback((next: SceneDocument) => {
-    setScene(next);
-    setTemplateId(null);
-  }, []);
+  const loadFile = useCallback(
+    async (file: File) => {
+      audioKeyRef.current = null;
+      const ok = await loadTrack({
+        name: file.name,
+        file,
+        url: URL.createObjectURL(file),
+      });
+      if (ok) setSaveStatus("unsaved");
+    },
+    [loadTrack],
+  );
+
+  // Open a saved project: its scene, its settings and its track.
+  useEffect(() => {
+    if (!initialProjectId) return;
+    let isCancelled = false;
+
+    (async () => {
+      const response = await fetch(`/api/projects/${initialProjectId}`);
+      if (isCancelled) return;
+      if (!response.ok) {
+        setIsLoadingTrack(false);
+        setProjectId(null);
+        setSaveStatus("unsaved");
+        setError(await readError(response, "This project could not be opened."));
+        return;
+      }
+
+      const project = await response.json();
+      if (isCancelled) return;
+      const loadedScene = sanitizeScene(project.scene);
+      setScene(loadedScene);
+      setTemplateId(null);
+      setSelectedId(loadedScene.elements[0]?.id ?? null);
+      setResolution(sanitizeResolution(project.resolution));
+      setTitle(project.title);
+      audioKeyRef.current = project.audioKey;
+
+      await loadTrack({
+        name: project.audioName,
+        file: null,
+        url: `/api/files/${project.audioKey}`,
+      });
+    })();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [initialProjectId, loadTrack]);
+
+  const markUnsaved = useCallback(() => setSaveStatus("unsaved"), []);
+
+  const changeScene = useCallback(
+    (next: SceneDocument) => {
+      setScene(next);
+      setTemplateId(null);
+      markUnsaved();
+    },
+    [markUnsaved],
+  );
 
   // Dragging the gizmo in the picture changes an element's transform.
   const transformElement = useCallback(
@@ -142,8 +241,9 @@ export function Editor() {
         ),
       }));
       setTemplateId(null);
+      markUnsaved();
     },
-    [],
+    [markUnsaved],
   );
 
   const loadTemplate = useCallback(
@@ -161,8 +261,9 @@ export function Editor() {
       setScene(cloneScene(template.scene));
       setTemplateId(template.id);
       setSelectedId(template.focusElementId);
+      markUnsaved();
     },
-    [templateId],
+    [templateId, markUnsaved],
   );
 
   // Keep the player's mute state in line with the remembered preference.
@@ -209,6 +310,28 @@ export function Editor() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [player, durationInFrames]);
 
+  /** The track's storage key - uploading the file first if that has not happened yet. */
+  const ensureAudioKey = useCallback(async () => {
+    if (audioKeyRef.current) return audioKeyRef.current;
+    if (!track?.file) throw new Error("Load a track first.");
+
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("audio", track.file);
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+      if (!response.ok) throw new Error(await readError(response, "Upload failed."));
+      const data = await response.json();
+      audioKeyRef.current = data.key as string;
+      return audioKeyRef.current;
+    } finally {
+      setIsUploading(false);
+    }
+  }, [track]);
+
   const pollJobStatus = useCallback((jobId: string): Promise<string> => {
     return new Promise((resolve, reject) => {
       const poll = async () => {
@@ -244,27 +367,7 @@ export function Editor() {
     setRenderProgress(0);
 
     try {
-      let audioKey = audioKeyRef.current;
-
-      if (!audioKey) {
-        setIsUploading(true);
-        const formData = new FormData();
-        formData.append("audio", track.file);
-        const uploadResponse = await fetch("/api/upload", {
-          method: "POST",
-          body: formData,
-        });
-        setIsUploading(false);
-
-        if (!uploadResponse.ok) {
-          const data = await uploadResponse.json().catch(() => null);
-          throw new Error(data?.error || "Upload failed.");
-        }
-
-        const uploadData = await uploadResponse.json();
-        audioKey = uploadData.key as string;
-        audioKeyRef.current = audioKey;
-      }
+      const audioKey = await ensureAudioKey();
 
       setIsRendering(true);
       const renderResponse = await fetch("/api/render", {
@@ -272,10 +375,8 @@ export function Editor() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ audioKey, scene, resolution }),
       });
-
       if (!renderResponse.ok) {
-        const data = await renderResponse.json().catch(() => null);
-        throw new Error(data?.error || "Render failed.");
+        throw new Error(await readError(renderResponse, "Render failed."));
       }
 
       const { jobId } = await renderResponse.json();
@@ -284,10 +385,48 @@ export function Editor() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error.");
     } finally {
-      setIsUploading(false);
       setIsRendering(false);
     }
-  }, [track, scene, resolution, pollJobStatus]);
+  }, [track, scene, resolution, ensureAudioKey, pollJobStatus]);
+
+  const handleSave = useCallback(async () => {
+    if (!track) return;
+    setSaveError(null);
+    setSaveStatus("saving");
+
+    try {
+      const audioKey = await ensureAudioKey();
+      const response = await fetch(
+        projectId ? `/api/projects/${projectId}` : "/api/projects",
+        {
+          method: projectId ? "PUT" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title,
+            audioKey,
+            audioName: track.name,
+            scene,
+            resolution,
+          }),
+        },
+      );
+      if (!response.ok) {
+        throw new Error(await readError(response, "Saving failed."));
+      }
+
+      const saved = await response.json();
+      setTitle(saved.title);
+      if (!projectId) {
+        setProjectId(saved.id);
+        // Reloading the page now reopens this project.
+        window.history.replaceState(null, "", `/?project=${saved.id}`);
+      }
+      setSaveStatus("saved");
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : "Saving failed.");
+      setSaveStatus("unsaved");
+    }
+  }, [track, projectId, title, scene, resolution, ensureAudioKey]);
 
   const toggleSection = useCallback(
     (id: string) => setCollapsed({ ...collapsed, [id]: !collapsed[id] }),
@@ -314,6 +453,18 @@ export function Editor() {
       }}
     >
       <Sidebar
+        project={{
+          title,
+          onTitleChange: (next) => {
+            setTitle(next);
+            markUnsaved();
+          },
+          isLoggedIn: sessionStatus === "authenticated",
+          hasTrack: Boolean(track),
+          status: saveStatus,
+          error: saveError,
+          onSave: handleSave,
+        }}
         scene={scene}
         onSceneChange={changeScene}
         templateId={templateId}
@@ -321,7 +472,10 @@ export function Editor() {
         selectedId={selectedId}
         onSelect={setSelectedId}
         resolution={resolution}
-        onResolutionChange={setResolution}
+        onResolutionChange={(next) => {
+          setResolution(next);
+          markUnsaved();
+        }}
         collapsed={collapsed}
         onToggleSection={toggleSection}
         render={{
@@ -377,7 +531,7 @@ export function Editor() {
         key={`transport:${track?.url ?? "empty"}`}
         player={track ? player : null}
         audioData={track?.audioData ?? null}
-        fileName={track?.file.name ?? null}
+        fileName={track?.name ?? null}
         durationInFrames={durationInFrames}
         fps={FPS}
         muted={muted}

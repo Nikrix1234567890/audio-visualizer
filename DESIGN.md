@@ -98,7 +98,7 @@ A near-black instrument chassis with one committed amber accent; color intensity
 
 An editor workbench, not a scrolling page. On desktop the editor fills exactly the viewport under the nav bar and never scrolls as a whole:
 
-- **Left - settings rail.** One tall panel of collapsible sections, separated by hairline seams: Template (starting points), Elements (everything in the scene), Selected (the chosen element's parameters and transform), Camera, Look, Output. It scrolls on its own if the sections outgrow it. Output (resolution + Render) sits last - the end of the signal chain.
+- **Left - settings rail.** One tall panel of collapsible sections, separated by hairline seams: Project (title, Save and its status), Template (starting points), Elements (everything in the scene), Selected (the chosen element's parameters and transform), Camera, Look, Output. It scrolls on its own if the sections outgrow it. Output (resolution + Render) sits last - the end of the signal chain.
 - **Right - scope.** The live 3D preview, always the largest thing on screen. It keeps its aspect ratio and is fitted into whatever room the other two areas leave.
 - **Bottom - transport.** Load track, play/pause, time readout, mute, and the waveform across the remaining width. The preview has no player controls of its own; everything that moves through the song lives here.
 
@@ -129,6 +129,12 @@ One parameter per row in the settings rail: the caption plate (Label style) on t
 
 ### Audio Jack (patching a parameter)
 The patch-bay idea made literal. Every fader whose value may react to sound carries a small round jack right after its caption: an unlit Hairline Steel ring with a dim dot when free, a lit Patch Amber ring and dot (with glow-active) when patched. Clicking it plugs the parameter into an audio signal; clicking again unplugs it. While patched, a strip hangs under the fader, tied to it by an amber-dim line on the left: a segmented selector for the signal (Bass, Mid, High, Level, Beat) and an Amount fader in the parameter's own units - how far the signal moves the value at full strength, negative to move it the other way. Counts and speeds have no jack: they cannot change smoothly from frame to frame.
+
+### Project (save status)
+The first rail section: the project title in a recessed text field, a small raised Save button, and a status readout with a signal dot - lit Patch Amber with "SAVED", dim with "NOT SAVED". Save is unlit and disabled while there is nothing new to save or no track is loaded. Signed-out users see one line with a log-in link instead of the button; the editor itself stays fully usable.
+
+### Projects page
+A plain list on the chassis, not a dashboard of cards with statistics: one bordered panel with a row per saved project (title, mono "changed" date, a quiet Delete button that turns red on hover), and below it the templates as simple bordered tiles to start a new project from. Deleting asks once, in a native confirm dialog.
 
 ### Element List
 The scene's contents, one row per element: its name (with the element type as a small mono caption once it has been renamed), an eye toggle and a remove cross. The selected row is the only lit one - Patch Amber name on a Panel Graphite Raised fill with an amber-dim outline; hidden elements dim their name. Below the list a dashed "+ Add element" button opens the catalogue of element types, each with a one-line description. The controls shown under "Selected" are generated from the element type's parameter definitions, so every element gets the same faders, switches and swatches.

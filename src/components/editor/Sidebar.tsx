@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import type { ReactNode } from "react";
 import {
   CAMERA_PARAMS,
@@ -23,6 +24,18 @@ import { ParamControls } from "@/components/editor/ParamControls";
 import { SegmentedSelector } from "@/components/ui/SegmentedSelector";
 
 export type CollapsedSections = Record<string, boolean>;
+
+export type SaveStatus = "unsaved" | "saving" | "saved";
+
+export type ProjectState = {
+  title: string;
+  onTitleChange: (title: string) => void;
+  isLoggedIn: boolean;
+  hasTrack: boolean;
+  status: SaveStatus;
+  error: string | null;
+  onSave: () => void;
+};
 
 export type RenderState = {
   canRender: boolean;
@@ -48,6 +61,7 @@ function withBinding(
 }
 
 export function Sidebar({
+  project,
   scene,
   onSceneChange,
   templateId,
@@ -61,6 +75,7 @@ export function Sidebar({
   render,
   onRender,
 }: {
+  project: ProjectState;
   scene: SceneDocument;
   onSceneChange: (scene: SceneDocument) => void;
   /** The template the scene still matches, or null once it was edited. */
@@ -110,6 +125,68 @@ export function Sidebar({
 
   return (
     <aside className="editor-area-side chassis-grain flex min-h-0 flex-col bg-panel lg:overflow-y-auto">
+      {section(
+        "project",
+        "Project",
+        <>
+          <input
+            aria-label="Project title"
+            value={project.title}
+            maxLength={80}
+            onChange={(e) => project.onTitleChange(e.target.value)}
+            className="rounded-md border border-hairline bg-chassis px-2.5 py-1.5 text-sm text-cream shadow-scope-recessed outline-none focus:border-amber"
+          />
+
+          {project.isLoggedIn ? (
+            <>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={project.onSave}
+                  disabled={!project.hasTrack || project.status !== "unsaved"}
+                  className="rounded-md border border-hairline bg-panel-raised px-4 py-2 font-mono text-[11px] tracking-[0.08em] text-cream uppercase shadow-control-raised outline-none hover:border-amber-dim hover:text-amber focus-visible:border-amber disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-hairline disabled:hover:text-cream"
+                >
+                  {project.status === "saving" ? "Saving…" : "Save"}
+                </button>
+                <span className="flex items-center gap-2 font-mono text-[11px] tracking-[0.06em] text-steel uppercase">
+                  <span
+                    className={`h-2 w-2 rounded-full ${
+                      project.status === "saved"
+                        ? "bg-amber shadow-glow-active"
+                        : "bg-amber-dim"
+                    }`}
+                  />
+                  {project.status === "saved" ? "Saved" : "Not saved"}
+                </span>
+              </div>
+              {!project.hasTrack && (
+                <p className="text-xs text-steel">
+                  Load a track to save - a project keeps its track.
+                </p>
+              )}
+              <Link
+                href="/dashboard"
+                className="text-xs text-steel underline hover:text-amber"
+              >
+                All projects
+              </Link>
+            </>
+          ) : (
+            <p className="text-xs text-steel">
+              <Link href="/login?callbackUrl=/" className="text-amber underline">
+                Log in
+              </Link>{" "}
+              to save this project to your account. Logging in reloads the
+              page, so do it before you start.
+            </p>
+          )}
+
+          {project.error && (
+            <p className="text-xs text-red-400">{project.error}</p>
+          )}
+        </>,
+      )}
+
       {section(
         "template",
         "Template",
