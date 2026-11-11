@@ -20,7 +20,12 @@ import {
   TEMPLATES,
   cloneScene,
 } from "../../remotion/scene/templates";
-import { DEFAULT_RESOLUTION, type ResolutionKey } from "../../remotion/types";
+import {
+  DEFAULT_FRAME_RATE,
+  DEFAULT_RESOLUTION,
+  type FrameRate,
+  type ResolutionKey,
+} from "../../remotion/types";
 import { Preview } from "@/components/editor/Preview";
 import {
   Sidebar,
@@ -30,9 +35,12 @@ import {
 import { Transport } from "@/components/editor/Transport";
 import { ResizeHandle } from "@/components/ui/ResizeHandle";
 import { useStoredState } from "@/lib/useStoredState";
-import { sanitizeResolution } from "@/lib/visualizerSettings";
+import { sanitizeFrameRate, sanitizeResolution } from "@/lib/visualizerSettings";
 
-const FPS = 30;
+// The preview always runs at 60 frames per second: at 30 fast-moving
+// particles look jerky on any modern screen, however idle the machine is.
+// The export frame rate is chosen separately (see `frameRate` below).
+const FPS = 60;
 const SEEK_KEY_SECONDS = 5;
 const DEFAULT_TITLE = "Untitled project";
 
@@ -93,6 +101,7 @@ export function Editor({
   );
   const [resolution, setResolution] =
     useState<ResolutionKey>(DEFAULT_RESOLUTION);
+  const [frameRate, setFrameRate] = useState<FrameRate>(DEFAULT_FRAME_RATE);
   const [isUploading, setIsUploading] = useState(false);
   const [isRendering, setIsRendering] = useState(false);
   const [renderProgress, setRenderProgress] = useState(0);
@@ -202,6 +211,7 @@ export function Editor({
       setTemplateId(null);
       setSelectedId(loadedScene.elements[0]?.id ?? null);
       setResolution(sanitizeResolution(project.resolution));
+      setFrameRate(sanitizeFrameRate(project.fps));
       setTitle(project.title);
       audioKeyRef.current = project.audioKey;
 
@@ -373,7 +383,7 @@ export function Editor({
       const renderResponse = await fetch("/api/render", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ audioKey, scene, resolution }),
+        body: JSON.stringify({ audioKey, scene, resolution, fps: frameRate }),
       });
       if (!renderResponse.ok) {
         throw new Error(await readError(renderResponse, "Render failed."));
@@ -387,7 +397,7 @@ export function Editor({
     } finally {
       setIsRendering(false);
     }
-  }, [track, scene, resolution, ensureAudioKey, pollJobStatus]);
+  }, [track, scene, resolution, frameRate, ensureAudioKey, pollJobStatus]);
 
   const handleSave = useCallback(async () => {
     if (!track) return;
@@ -407,6 +417,7 @@ export function Editor({
             audioName: track.name,
             scene,
             resolution,
+            fps: frameRate,
           }),
         },
       );
@@ -426,7 +437,7 @@ export function Editor({
       setSaveError(err instanceof Error ? err.message : "Saving failed.");
       setSaveStatus("unsaved");
     }
-  }, [track, projectId, title, scene, resolution, ensureAudioKey]);
+  }, [track, projectId, title, scene, resolution, frameRate, ensureAudioKey]);
 
   const toggleSection = useCallback(
     (id: string) => setCollapsed({ ...collapsed, [id]: !collapsed[id] }),
@@ -474,6 +485,11 @@ export function Editor({
         resolution={resolution}
         onResolutionChange={(next) => {
           setResolution(next);
+          markUnsaved();
+        }}
+        frameRate={frameRate}
+        onFrameRateChange={(next) => {
+          setFrameRate(next);
           markUnsaved();
         }}
         collapsed={collapsed}

@@ -60,6 +60,8 @@ export function Preview({
   const [tool, setTool] = useState<TransformTool>("move");
   const [player, setPlayer] = useState<PlayerRef | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  // Frames the preview actually produced during the last second of playback.
+  const [measuredFps, setMeasuredFps] = useState<number | null>(null);
 
   const handlePlayer = useCallback(
     (instance: PlayerRef | null) => {
@@ -72,12 +74,31 @@ export function Preview({
   useEffect(() => {
     if (!player) return;
     const onPlay = () => setIsPlaying(true);
-    const onPause = () => setIsPlaying(false);
+    const onPause = () => {
+      setIsPlaying(false);
+      setMeasuredFps(null);
+    };
+
+    // Count the frames shown per second, so smoothness is a number that can
+    // be read off the screen instead of a feeling.
+    let frames = 0;
+    let since = performance.now();
+    const onFrame = () => {
+      frames++;
+      const now = performance.now();
+      if (now - since < 1000) return;
+      if (player.isPlaying()) setMeasuredFps(Math.round((frames * 1000) / (now - since)));
+      frames = 0;
+      since = now;
+    };
+
     player.addEventListener("play", onPlay);
     player.addEventListener("pause", onPause);
+    player.addEventListener("frameupdate", onFrame);
     return () => {
       player.removeEventListener("play", onPlay);
       player.removeEventListener("pause", onPause);
+      player.removeEventListener("frameupdate", onFrame);
     };
   }, [player]);
 
@@ -124,6 +145,14 @@ export function Preview({
             ? "Pause to edit in the picture."
             : "Click an element to select it, drag the handles to change it."}
         </span>
+        {isPlaying && measuredFps !== null && (
+          <span
+            className="ml-auto font-mono text-[11px] tracking-[0.06em] text-steel uppercase tabular-nums"
+            title="Frames the preview showed in the last second"
+          >
+            {measuredFps} / {fps} fps
+          </span>
+        )}
       </div>
 
       <div

@@ -6,6 +6,8 @@ import { useEffect, useRef, useState } from "react";
 import { formatTime, Waveform } from "./Waveform";
 
 const ACCEPTED_AUDIO = "audio/*,.wav,.mp3,.m4a,.aac,.ogg,.flac";
+/** How often the transport UI follows the playing video. */
+const UI_REFRESH_MS = 80;
 
 /**
  * The bar under the preview: load a track, play/pause, time, mute, and the
@@ -40,9 +42,23 @@ export function Transport({
 
   useEffect(() => {
     if (!player) return;
-    const onFrame = (e: { detail: { frame: number } }) => setFrame(e.detail.frame);
+    // While playing, the time readout and the waveform's playhead are
+    // refreshed a dozen times a second - not for every video frame. Redrawing
+    // them 60 times a second would spend main-thread time the 3D picture
+    // needs, for no visible gain.
+    let lastUpdate = 0;
+    const onFrame = (e: { detail: { frame: number } }) => {
+      const now = performance.now();
+      if (player.isPlaying() && now - lastUpdate < UI_REFRESH_MS) return;
+      lastUpdate = now;
+      setFrame(e.detail.frame);
+    };
     const onPlay = () => setIsPlaying(true);
-    const onPause = () => setIsPlaying(false);
+    const onPause = () => {
+      setIsPlaying(false);
+      // Show the exact position once playback stops.
+      setFrame(player.getCurrentFrame());
+    };
 
     player.addEventListener("frameupdate", onFrame);
     player.addEventListener("play", onPlay);

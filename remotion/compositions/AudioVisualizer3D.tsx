@@ -1,6 +1,5 @@
 import React, {useCallback, useMemo} from 'react';
-import {AbsoluteFill, useCurrentFrame, useVideoConfig} from 'remotion';
-import {Audio} from '@remotion/media';
+import {AbsoluteFill, Html5Audio, useCurrentFrame, useVideoConfig} from 'remotion';
 import {useAudioData} from '@remotion/media-utils';
 import {ThreeCanvas} from '@remotion/three';
 import type {AudioVisualizerProps} from '../types';
@@ -43,12 +42,23 @@ export const AudioVisualizer3D: React.FC<AudioVisualizerProps> = ({
 
   return (
     <AbsoluteFill style={{backgroundColor: background}}>
-      <Audio src={audioSrc} />
+      {/* A plain HTML audio element: the browser plays it on its own audio
+          thread, so the sound keeps running smoothly even when drawing a
+          frame takes a moment too long. (The other Remotion audio component
+          feeds the sound from the main thread, in step with the frames, and
+          stutters whenever that thread is busy.) */}
+      <Html5Audio src={audioSrc} />
       {/* The camera is positioned by the SceneRenderer, see CameraRig there.
           dpr 1: draw exactly width x height pixels. On a high-density
           screen the default would draw four times as many for a preview
-          that is shown scaled down anyway - a large, invisible cost. */}
-      <ThreeCanvas width={width} height={height} dpr={1}>
+          that is shown scaled down anyway - a large, invisible cost.
+          frameloop "demand": draw only when something changed (a new
+          frame, an edited setting, a dragged handle). The default redraws
+          on every screen refresh - on a 144 or 240 Hz monitor that is
+          several full passes of the scene and its glow per video frame,
+          all issued from the browser's one main thread. Ignored during a
+          server render, which always draws exactly once per frame. */}
+      <ThreeCanvas width={width} height={height} dpr={1} frameloop="demand">
         <SceneRenderer
           scene={scene}
           analysis={analysis}

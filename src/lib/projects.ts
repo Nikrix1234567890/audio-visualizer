@@ -1,5 +1,5 @@
 import { fileExists } from "@/lib/storage";
-import { sanitizeResolution } from "@/lib/visualizerSettings";
+import { sanitizeFrameRate, sanitizeResolution } from "@/lib/visualizerSettings";
 import { sanitizeScene } from "../../remotion/scene/sanitize";
 
 /** Storage key of an uploaded track, exactly as /api/upload hands it out. */
@@ -30,7 +30,7 @@ export function parseProjectInput(body: unknown):
   | {
       title: string;
       audioPath: string;
-      settings: { scene: Json; resolution: string; audioName: string };
+      settings: { scene: Json; resolution: string; fps: number; audioName: string };
     } {
   const raw = (body ?? {}) as Record<string, unknown>;
 
@@ -46,6 +46,7 @@ export function parseProjectInput(body: unknown):
       // Through JSON once more: the column wants plain JSON, not typed objects.
       scene: JSON.parse(JSON.stringify(sanitizeScene(raw.scene))) as Json,
       resolution: sanitizeResolution(raw.resolution),
+      fps: sanitizeFrameRate(raw.fps),
       audioName: cleanText(raw.audioName, "Track", MAX_NAME_LENGTH),
     },
   };
@@ -67,6 +68,7 @@ export function toProjectResponse(project: {
     audioName: typeof settings.audioName === "string" ? settings.audioName : "Track",
     scene: sanitizeScene(settings.scene),
     resolution: sanitizeResolution(settings.resolution),
+    fps: sanitizeFrameRate(settings.fps),
     updatedAt: project.updatedAt.toISOString(),
   };
 }

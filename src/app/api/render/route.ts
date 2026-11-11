@@ -6,7 +6,7 @@ import { createServer } from "node:net";
 import { renderMedia, selectComposition } from "@remotion/renderer";
 import { getAbsolutePath } from "@/lib/storage";
 import { prisma } from "@/lib/prisma";
-import { sanitizeResolution } from "@/lib/visualizerSettings";
+import { sanitizeFrameRate, sanitizeResolution } from "@/lib/visualizerSettings";
 import { RESOLUTIONS } from "../../../../remotion/types";
 import type { SceneDocument } from "../../../../remotion/scene/definitions";
 import { sanitizeScene } from "../../../../remotion/scene/sanitize";
@@ -43,6 +43,7 @@ async function runRender(
   appBase: string,
   scene: SceneDocument,
   resolution: { width: number; height: number },
+  fps: number,
 ) {
   const inputProps = { audioSrc, scene, appBase };
   const chromiumOptions = { gl: "angle" as const, disableWebSecurity: true };
@@ -66,6 +67,13 @@ async function runRender(
     // presets, so this never affects framing - only output pixel density).
     composition.width = resolution.width;
     composition.height = resolution.height;
+
+    // And its frame rate with the chosen one. The scene is a function of
+    // time, not of frame numbers, so this only changes how often the same
+    // motion is sampled.
+    const seconds = composition.durationInFrames / composition.fps;
+    composition.fps = fps;
+    composition.durationInFrames = Math.max(1, Math.floor(seconds * fps));
 
     const outputKey = `renders/${jobId}.mp4`;
     const outputPath = getAbsolutePath(outputKey);
@@ -138,6 +146,7 @@ export async function POST(request: Request) {
   const scene = sanitizeScene(body?.scene);
   const resolutionKey = sanitizeResolution(body?.resolution);
   const resolution = RESOLUTIONS[resolutionKey];
+  const fps = sanitizeFrameRate(body?.fps);
 
   const origin = new URL(request.url).origin;
   // The headless render browser fetches this over plain HTTP from our own
@@ -148,7 +157,7 @@ export async function POST(request: Request) {
   const job = await prisma.renderJob.create({
     data: {
       audioKey,
-      settings: JSON.parse(JSON.stringify({ scene, resolution: resolutionKey })),
+      settings: JSON.parse(JSON.stringify({ scene, resolution: resolutionKey, fps })),
       status: "QUEUED",
     },
   });
@@ -156,7 +165,7 @@ export async function POST(request: Request) {
   // Deliberately not awaited: this is a long-running self-hosted Node
   // process (not serverless), so the render keeps going in the background
   // while the client polls GET /api/render/[jobId] for progress.
-  void runRender(job.id, audioSrc, origin, scene, resolution);
+  void runRender(job.id, audioSrc, origin, scene, resolution, fps);
 
   return NextResponse.json({ jobId: job.id });
 }

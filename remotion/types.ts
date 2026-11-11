@@ -19,6 +19,12 @@ export const RESOLUTIONS: Record<
 
 export const DEFAULT_RESOLUTION: ResolutionKey = "1080p";
 
+/** Frame rates a video can be exported in. */
+export const FRAME_RATES = [30, 60] as const;
+export type FrameRate = (typeof FRAME_RATES)[number];
+/** 60 matches the editor preview; 30 renders in half the time. */
+export const DEFAULT_FRAME_RATE: FrameRate = 60;
+
 export type AudioVisualizerProps = {
   audioSrc: string;
   scene: SceneDocument;

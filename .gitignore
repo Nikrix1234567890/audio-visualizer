@@ -53,3 +53,4 @@ next-env.d.ts
 # pre-built Remotion bundle used by the server-side render API route
 # (regenerate with `pnpm remotion:bundle`)
 /.remotion-bundle/
+/.next-prod/

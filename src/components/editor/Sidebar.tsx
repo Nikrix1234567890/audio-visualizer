@@ -22,7 +22,12 @@ import {
   paletteGradient,
 } from "../../../remotion/scene/palettes";
 import { TEMPLATES } from "../../../remotion/scene/templates";
-import { RESOLUTIONS, type ResolutionKey } from "../../../remotion/types";
+import {
+  FRAME_RATES,
+  RESOLUTIONS,
+  type FrameRate,
+  type ResolutionKey,
+} from "../../../remotion/types";
 import { BindableSlider } from "@/components/editor/BindableSlider";
 import { ElementList } from "@/components/editor/ElementList";
 import { ParamControls } from "@/components/editor/ParamControls";
@@ -75,6 +80,8 @@ export function Sidebar({
   onSelect,
   resolution,
   onResolutionChange,
+  frameRate,
+  onFrameRateChange,
   collapsed,
   onToggleSection,
   render,
@@ -90,6 +97,8 @@ export function Sidebar({
   onSelect: (id: string | null) => void;
   resolution: ResolutionKey;
   onResolutionChange: (value: ResolutionKey) => void;
+  frameRate: FrameRate;
+  onFrameRateChange: (value: FrameRate) => void;
   collapsed: CollapsedSections;
   onToggleSection: (id: string) => void;
   render: RenderState;
@@ -334,6 +343,15 @@ export function Sidebar({
             value={resolution}
             onChange={onResolutionChange}
           />
+          <SegmentedSelector
+            stretch
+            options={FRAME_RATES.map((fps) => ({ value: fps, label: `${fps} fps` }))}
+            value={frameRate}
+            onChange={onFrameRateChange}
+          />
+          <p className="text-xs text-steel">
+            60 fps is as smooth as the preview; 30 fps renders in half the time.
+          </p>
 
           <button
             type="button"
