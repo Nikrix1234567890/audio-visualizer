@@ -80,16 +80,19 @@ async function readError(response: Response, fallback: string) {
 
 /**
  * The editor. `initialProjectId` opens a saved project, `initialTemplateId`
- * starts from a template; with neither it starts from the default template.
+ * starts from a built-in template, `initialSceneId` from a saved (shared)
+ * one; with none of them it starts from the default template.
  * Give it a `key` that changes with those, so switching projects starts
  * from a clean slate.
  */
 export function Editor({
   initialProjectId = null,
   initialTemplateId = null,
+  initialSceneId = null,
 }: {
   initialProjectId?: string | null;
   initialTemplateId?: string | null;
+  initialSceneId?: string | null;
 }) {
   const startTemplate =
     TEMPLATES.find((t) => t.id === initialTemplateId) ?? DEFAULT_TEMPLATE;
@@ -235,6 +238,32 @@ export function Editor({
     };
   }, [initialProjectId, loadTrack, resetScene]);
 
+  // Start from a saved template somebody shared by link.
+  useEffect(() => {
+    if (!initialSceneId || initialProjectId) return;
+    let isCancelled = false;
+
+    (async () => {
+      const response = await fetch(`/api/scenes/${initialSceneId}`);
+      if (isCancelled) return;
+      if (!response.ok) {
+        setError(await readError(response, "This template could not be opened."));
+        return;
+      }
+      const shared = await response.json();
+      if (isCancelled) return;
+      const loadedScene = sanitizeScene(shared.scene);
+      resetScene(loadedScene);
+      setTemplateId(null);
+      setSelectedId(loadedScene.elements[0]?.id ?? null);
+      setTitle(shared.title);
+    })();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [initialSceneId, initialProjectId, resetScene]);
+
   const markUnsaved = useCallback(() => setSaveStatus("unsaved"), []);
 
   const changeScene = useCallback(
@@ -271,7 +300,7 @@ export function Editor({
       if (
         templateId === null &&
         !window.confirm(
-          "Replace your current scene with this template? Your changes will be lost.",
+          "Replace your current scene with this template? You can undo it.",
         )
       ) {
         return;
@@ -320,6 +349,26 @@ export function Editor({
       document.removeEventListener("click", onClick, true);
     };
   }, [hasUnsavedEdits]);
+
+  // One of the user's own templates replaces the scene (undoable).
+  const loadScene = useCallback(
+    (next: SceneDocument) => {
+      if (
+        templateId === null &&
+        !window.confirm(
+          "Replace your current scene with this template? You can undo it.",
+        )
+      ) {
+        return;
+      }
+      const loadedScene = sanitizeScene(next);
+      recordScene(loadedScene, { merge: false });
+      setTemplateId(null);
+      setSelectedId(loadedScene.elements[0]?.id ?? null);
+      markUnsaved();
+    },
+    [templateId, markUnsaved, recordScene],
+  );
 
   // Undo and redo. After either, the scene no longer equals a template.
   const { undo: undoScene, redo: redoScene, canUndo, canRedo } = history;
@@ -522,7 +571,7 @@ export function Editor({
       if (!projectId) {
         setProjectId(saved.id);
         // Reloading the page now reopens this project.
-        window.history.replaceState(null, "", `/?project=${saved.id}`);
+        window.history.replaceState(null, "", `/editor?project=${saved.id}`);
       }
       setSaveStatus("saved");
     } catch (err) {
@@ -572,6 +621,7 @@ export function Editor({
         onSceneChange={changeScene}
         templateId={templateId}
         onLoadTemplate={loadTemplate}
+        onLoadScene={loadScene}
         selectedId={selectedId}
         onSelect={setSelectedId}
         resolution={resolution}

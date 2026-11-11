@@ -10,6 +10,12 @@ export async function NavBar() {
         Audio<span className="text-amber">Visualizer</span>
       </Link>
       <div className="flex items-center gap-4">
+        <Link href="/editor" className="text-steel hover:text-cream">
+          Editor
+        </Link>
+        <Link href="/pricing" className="text-steel hover:text-cream">
+          Pricing
+        </Link>
         {session?.user ? (
           <>
             <Link href="/dashboard" className="text-steel hover:text-cream">

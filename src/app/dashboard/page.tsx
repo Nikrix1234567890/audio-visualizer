@@ -41,7 +41,7 @@ export default async function DashboardPage() {
                 className="flex items-center gap-4 border-b border-hairline px-4 py-3 last:border-b-0"
               >
                 <Link
-                  href={`/?project=${project.id}`}
+                  href={`/editor?project=${project.id}`}
                   className="flex min-w-0 flex-1 flex-col gap-0.5 outline-none hover:text-amber focus-visible:text-amber"
                 >
                   <span className="truncate text-sm text-cream">
@@ -66,7 +66,7 @@ export default async function DashboardPage() {
           {TEMPLATES.map((template) => (
             <li key={template.id}>
               <Link
-                href={`/?template=${template.id}`}
+                href={`/editor?template=${template.id}`}
                 className="flex flex-col gap-1 rounded-[10px] border border-hairline bg-panel px-4 py-3 outline-none hover:border-amber-dim focus-visible:border-amber"
               >
                 <span className="text-sm text-cream">{template.label}</span>

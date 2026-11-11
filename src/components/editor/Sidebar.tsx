@@ -35,6 +35,7 @@ import {
 } from "../../../remotion/types";
 import { BindableSlider } from "@/components/editor/BindableSlider";
 import { ElementList } from "@/components/editor/ElementList";
+import { MyTemplates } from "@/components/editor/MyTemplates";
 import { Thumbnail } from "@/components/ui/Thumbnail";
 import { ParamControls } from "@/components/editor/ParamControls";
 import { SegmentedSelector } from "@/components/ui/SegmentedSelector";
@@ -82,6 +83,7 @@ export function Sidebar({
   onSceneChange,
   templateId,
   onLoadTemplate,
+  onLoadScene,
   selectedId,
   onSelect,
   resolution,
@@ -101,6 +103,8 @@ export function Sidebar({
   /** The template the scene still matches, or null once it was edited. */
   templateId: string | null;
   onLoadTemplate: (id: string) => void;
+  /** Replaces the scene with one of the user's own templates. */
+  onLoadScene: (scene: SceneDocument) => void;
   selectedId: string | null;
   onSelect: (id: string | null) => void;
   resolution: ResolutionKey;
@@ -225,7 +229,7 @@ export function Sidebar({
             </>
           ) : (
             <p className="text-xs text-steel">
-              <Link href="/login?callbackUrl=/" className="text-amber underline">
+              <Link href="/login?callbackUrl=/editor" className="text-amber underline">
                 Log in
               </Link>{" "}
               to save this project to your account. Logging in reloads the
@@ -278,6 +282,9 @@ export function Sidebar({
             A template is a starting point. Add, remove and change its
             elements below.
           </p>
+          {project.isLoggedIn && (
+            <MyTemplates scene={scene} onLoad={onLoadScene} />
+          )}
         </>,
       )}
 
