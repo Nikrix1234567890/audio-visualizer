@@ -33,6 +33,8 @@ export type ParamDef =
   | { kind: "model"; key: string; label: string }
   /** A short single line of text. */
   | { kind: "text"; key: string; label: string }
+  /** Several rows of text (timed lyrics). */
+  | { kind: "lines"; key: string; label: string; placeholder?: string }
   /** One of a fixed list of choices; the value is the chosen option's value. */
   | {
       kind: "select";
@@ -69,6 +71,8 @@ export function fontFile(value: unknown): string {
 
 /** Longest text a text parameter may hold. */
 export const MAX_TEXT_LENGTH = 120;
+/** Longest text a "lines" parameter may hold - enough for a long song. */
+export const MAX_LINES_LENGTH = 6000;
 
 export const ELEMENT_TYPES = [
   "barRing",
@@ -86,6 +90,7 @@ export const ELEMENT_TYPES = [
   "model",
   "text",
   "trackTitle",
+  "lyrics",
   "waveSurface",
   "particleDisc",
   "tunnel",
@@ -769,6 +774,34 @@ export const ELEMENT_DEFS: Record<ElementType, ElementDef> = {
       { kind: "color", key: "artistColor", label: "Artist colour" },
       { kind: "number", key: "glow", label: "Glow", min: 0, max: 4, step: 0.05 },
       { kind: "number", key: "spacing", label: "Letter spacing", min: -0.1, max: 1, step: 0.01, modulate: false },
+    ],
+  },
+  lyrics: {
+    type: "lyrics",
+    label: "Lyrics",
+    description: "Lines of text that appear at their own time - lyrics, captions.",
+    defaults: {
+      lines: "0:00 First line of the song\n0:04 Second line\n0:08 And so on",
+      font: "montserrat",
+      size: 0.7,
+      color: "#ffffff",
+      glow: 1,
+      spacing: 0.03,
+      fade: 0.3,
+    },
+    params: [
+      {
+        kind: "lines",
+        key: "lines",
+        label: "Lines (time, then text)",
+        placeholder: "0:12 First line\n0:16.5 Second line\n0:21",
+      },
+      FONT_PARAM,
+      { kind: "number", key: "size", label: "Size", min: 0.1, max: 10, step: 0.05 },
+      { kind: "color", key: "color", label: "Colour" },
+      { kind: "number", key: "glow", label: "Glow", min: 0, max: 4, step: 0.05 },
+      { kind: "number", key: "spacing", label: "Letter spacing", min: -0.1, max: 1, step: 0.01, modulate: false },
+      { kind: "number", key: "fade", label: "Fade", min: 0, max: 2, step: 0.05, unit: "s", modulate: false },
     ],
   },
   backdrop: {

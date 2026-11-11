@@ -13,6 +13,7 @@ import {
   LOOK_PARAMS,
   MAX_ELEMENTS,
   MAX_KEYFRAMES,
+  MAX_LINES_LENGTH,
   MAX_TEXT_LENGTH,
   TEMPO_LIMITS,
   TRANSFORM_LIMITS,
@@ -64,6 +65,15 @@ function sanitizeParam(def: ParamDef, value: unknown, fallback: ParamValue): Par
   }
   if (def.kind === "model") {
     return typeof value === "string" && MODEL_KEY.test(value) ? value : "";
+  }
+  if (def.kind === "lines") {
+    // Line breaks stay - they separate the rows; other control characters go.
+    return typeof value === "string"
+      ? value
+          .replace(/\r\n?/g, "\n")
+          .replace(/[\u0000-\u0009\u000b-\u001f\u007f]/g, "")
+          .slice(0, MAX_LINES_LENGTH)
+      : fallback;
   }
   if (def.kind === "select") {
     return def.options.some((option) => option.value === value)

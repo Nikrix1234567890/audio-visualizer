@@ -18,8 +18,13 @@ export type ElementProps = {
   analysis: TrackAnalysis;
   /** Bass / mid / treble / level / beat right now. */
   audio: AudioFrame;
-  /** Seconds since the start of the track. */
+  /**
+   * The element's own clock in seconds: the time since the start of the
+   * track, bent by the element's tempo swing. Drive motion with this.
+   */
   time: number;
+  /** The real time since the start of the track, for anything tied to the song itself. */
+  trackTime: number;
   /** Turns the storage key of an uploaded file into a URL that can be loaded. */
   assetUrl: (key: string) => string;
   /** Address of the folder the text fonts are loaded from. */

@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  MAX_LINES_LENGTH,
   MAX_TEXT_LENGTH,
   type Binding,
   type Bindings,
@@ -12,6 +13,7 @@ import {
 import { BindableSlider } from "@/components/editor/BindableSlider";
 import { ColorRow } from "@/components/ui/ColorRow";
 import { AssetRow } from "@/components/ui/AssetRow";
+import { LinesRow } from "@/components/ui/LinesRow";
 import { SelectRow } from "@/components/ui/SelectRow";
 import { TextRow } from "@/components/ui/TextRow";
 import { SliderRow } from "@/components/ui/SliderRow";
@@ -87,6 +89,18 @@ export function ParamControls({
               kind={def.kind}
               label={def.label}
               value={String(values[def.key] ?? "")}
+              onChange={(v) => onChange(def.key, v)}
+            />
+          );
+        }
+        if (def.kind === "lines") {
+          return (
+            <LinesRow
+              key={def.key}
+              label={def.label}
+              value={String(values[def.key] ?? "")}
+              maxLength={MAX_LINES_LENGTH}
+              placeholder={def.placeholder}
               onChange={(v) => onChange(def.key, v)}
             />
           );

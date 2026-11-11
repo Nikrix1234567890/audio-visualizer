@@ -3,7 +3,7 @@
 // hold a server render back until the result is really in the picture -
 // see useRenderHold.
 
-import React, {useCallback, useEffect, useLayoutEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState} from 'react';
 import {Text as DreiText} from '@react-three/drei';
 import {useThree} from '@react-three/fiber';
 import {useDelayRender, useRemotionEnvironment} from 'remotion';
@@ -24,6 +24,7 @@ import {RoomEnvironment} from 'three/examples/jsm/environments/RoomEnvironment.j
 import {MeshoptDecoder} from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
 import {fontFile} from './definitions';
+import {lyricAt, parseLyrics} from './lyrics';
 import type {ElementProps} from './elements';
 
 const num = (params: ElementProps['params'], key: string) => Number(params[key]);
@@ -256,7 +257,8 @@ const TextLine: React.FC<{
   color: Color;
   y?: number;
   anchorY?: 'middle' | 'top' | 'bottom';
-}> = ({text, fontUrl, spacing, size, color, y = 0, anchorY = 'middle'}) => {
+  opacity?: number;
+}> = ({text, fontUrl, spacing, size, color, y = 0, anchorY = 'middle', opacity = 1}) => {
   const {hold, drawn} = useRenderHold();
 
   // Everything that makes the text lay itself out again.
@@ -280,7 +282,12 @@ const TextLine: React.FC<{
       onSync={drawn}
     >
       {text}
-      <meshBasicMaterial color={color} toneMapped={false} />
+      <meshBasicMaterial
+        color={color}
+        toneMapped={false}
+        transparent={opacity < 1}
+        opacity={opacity}
+      />
     </DreiText>
   );
 };
@@ -294,6 +301,24 @@ const TextElement: React.FC<ElementProps> = ({params, fontBase}) => (
     color={new Color(String(params.color)).multiplyScalar(num(params, 'glow'))}
   />
 );
+
+/** Timed lines: shows whichever line belongs to this moment of the track. */
+const Lyrics: React.FC<ElementProps> = ({params, fontBase, trackTime}) => {
+  const source = String(params.lines ?? '');
+  const lines = useMemo(() => parseLyrics(source), [source]);
+  const {text, opacity} = lyricAt(lines, trackTime, num(params, 'fade'));
+
+  return (
+    <TextLine
+      text={text}
+      fontUrl={`${fontBase}/${fontFile(params.font)}`}
+      spacing={num(params, 'spacing')}
+      size={num(params, 'size')}
+      color={new Color(String(params.color)).multiplyScalar(num(params, 'glow'))}
+      opacity={opacity}
+    />
+  );
+};
 
 /** A song title with the artist underneath, sharing one font. */
 const TrackTitle: React.FC<ElementProps> = ({params, fontBase}) => {
@@ -331,4 +356,5 @@ export const ASSET_ELEMENT_COMPONENTS = {
   model: Model,
   text: TextElement,
   trackTitle: TrackTitle,
+  lyrics: Lyrics,
 };
