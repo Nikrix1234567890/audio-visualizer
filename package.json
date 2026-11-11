@@ -11,6 +11,8 @@
     "remotion:render": "remotion render remotion/index.ts",
     "remotion:bundle": "tsx scripts/bundle-remotion.ts",
     "thumbnails": "tsx scripts/thumbnails.ts",
+    "tier": "tsx scripts/set-tier.ts",
+    "cleanup": "tsx scripts/cleanup-storage.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {

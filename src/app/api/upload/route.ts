@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import path from "node:path";
 import { auth } from "@/auth";
+import { cleanUpStorageSometimes } from "@/lib/cleanup";
 import { prisma } from "@/lib/prisma";
 import { saveFile } from "@/lib/storage";
 
@@ -90,6 +91,9 @@ export async function POST(request: Request) {
   await prisma.upload.create({
     data: { key, userId: session?.user?.id ?? null, size: file.size },
   });
+
+  // Storage is being filled - a good moment to tidy up old leftovers.
+  cleanUpStorageSometimes();
 
   return NextResponse.json({
     key,

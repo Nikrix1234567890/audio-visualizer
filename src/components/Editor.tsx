@@ -36,6 +36,7 @@ import {
 } from "@/components/editor/Sidebar";
 import { Transport } from "@/components/editor/Transport";
 import { ResizeHandle } from "@/components/ui/ResizeHandle";
+import { TIER_LIMITS, clampToTier, type TierName } from "@/lib/tiers";
 import { useSceneHistory } from "@/lib/useSceneHistory";
 import { useStoredState } from "@/lib/useStoredState";
 import {
@@ -108,10 +109,35 @@ export function Editor({
   const [selectedId, setSelectedId] = useState<string | null>(
     startTemplate.focusElementId,
   );
-  const [resolution, setResolution] =
+  // What the user chose. What is actually used is lowered to what their
+  // plan allows (see `resolution` / `frameRate` below), so a project saved
+  // on Premium opens fine on the free plan and gets its settings back
+  // after an upgrade.
+  const [chosenResolution, setResolution] =
     useState<ResolutionKey>(DEFAULT_RESOLUTION);
   const [aspect, setAspect] = useState<AspectKey>(DEFAULT_ASPECT);
-  const [frameRate, setFrameRate] = useState<FrameRate>(DEFAULT_FRAME_RATE);
+  const [chosenFrameRate, setFrameRate] = useState<FrameRate>(DEFAULT_FRAME_RATE);
+  // The visitor's plan. Free until the server says otherwise.
+  const [tier, setTier] = useState<TierName>("FREE");
+  const { resolution, fps: frameRate } = clampToTier(
+    tier,
+    chosenResolution,
+    chosenFrameRate,
+  );
+
+  useEffect(() => {
+    if (sessionStatus === "loading") return;
+    let isCancelled = false;
+    fetch("/api/me")
+      .then((response) => (response.ok ? response.json() : null))
+      .then((me) => {
+        if (!isCancelled && me?.tier === "PREMIUM") setTier("PREMIUM");
+      })
+      .catch(() => {});
+    return () => {
+      isCancelled = true;
+    };
+  }, [sessionStatus]);
   const [isUploading, setIsUploading] = useState(false);
   const [isRendering, setIsRendering] = useState(false);
   const [renderProgress, setRenderProgress] = useState(0);
@@ -634,6 +660,7 @@ export function Editor({
           setAspect(next);
           markUnsaved();
         }}
+        tier={tier}
         frameRate={frameRate}
         onFrameRateChange={(next) => {
           setFrameRate(next);
@@ -669,6 +696,7 @@ export function Editor({
         durationInFrames={durationInFrames}
         fps={FPS}
         aspect={aspect}
+        watermark={TIER_LIMITS[tier].watermark}
         scene={scene}
         initiallyMuted={muted}
         isLoading={isLoadingTrack}

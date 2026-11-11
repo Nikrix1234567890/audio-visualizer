@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readdir, rm, writeFile } from "node:fs/promises";
 import { createReadStream, existsSync, statSync } from "node:fs";
 import path from "node:path";
 
@@ -50,4 +50,23 @@ export function readFileStream(key: string) {
 
 export function getAbsolutePath(key: string): string {
   return resolveSafePath(key);
+}
+
+export async function deleteFile(key: string): Promise<void> {
+  await rm(resolveSafePath(key), { force: true });
+}
+
+/** Every file directly inside a storage folder ("uploads", "renders"). */
+export async function listFiles(
+  folder: string,
+): Promise<{ key: string; modifiedAt: Date }[]> {
+  const directory = resolveSafePath(folder);
+  if (!existsSync(directory)) return [];
+  const entries = await readdir(directory, { withFileTypes: true });
+  return entries
+    .filter((entry) => entry.isFile())
+    .map((entry) => ({
+      key: `${folder}/${entry.name}`,
+      modifiedAt: statSync(path.join(directory, entry.name)).mtime,
+    }));
 }

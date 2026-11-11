@@ -7,6 +7,8 @@ import { renderMedia, selectComposition } from "@remotion/renderer";
 import { auth } from "@/auth";
 import { createFileToken, fileOwner } from "@/lib/fileAccess";
 import { fileExists, getAbsolutePath } from "@/lib/storage";
+import { TIER_LIMITS, isFrameRateAllowed, isResolutionAllowed } from "@/lib/tiers";
+import { getTier } from "@/lib/userTier";
 import { prisma } from "@/lib/prisma";
 import {
   sanitizeAspect,
@@ -31,8 +33,9 @@ async function runRender(
   resolution: { width: number; height: number },
   fps: number,
   fileToken: string | undefined,
+  watermark: boolean,
 ) {
-  const inputProps = { audioSrc, scene, appBase, fileToken };
+  const inputProps = { audioSrc, scene, appBase, fileToken, watermark };
   const chromiumOptions = { gl: "angle" as const, disableWebSecurity: true };
 
   try {
@@ -147,6 +150,19 @@ export async function POST(request: Request) {
     );
   }
 
+  // The plan decides what may be exported. Checked here, whatever the
+  // editor showed: the request could come from anywhere.
+  const tier = await getTier(userId);
+  if (!isResolutionAllowed(tier, resolutionKey) || !isFrameRateAllowed(tier, fps)) {
+    return NextResponse.json(
+      {
+        error: `The free plan exports up to ${TIER_LIMITS.FREE.maxResolution} at ${TIER_LIMITS.FREE.frameRates.join(" or ")} fps. Upgrade to Premium for more.`,
+      },
+      { status: 403 },
+    );
+  }
+  const watermark = TIER_LIMITS[tier].watermark;
+
   // The render browser has no login cookie. This token lets it read the
   // files of the account that started the render - and nobody else's.
   const fileToken = userId ? createFileToken(userId) : undefined;
@@ -162,7 +178,7 @@ export async function POST(request: Request) {
     data: {
       audioKey,
       userId,
-      settings: JSON.parse(JSON.stringify({ scene, resolution: resolutionKey, aspect, fps })),
+      settings: JSON.parse(JSON.stringify({ scene, resolution: resolutionKey, aspect, fps, watermark })),
       status: "QUEUED",
     },
   });
@@ -170,7 +186,16 @@ export async function POST(request: Request) {
   // Deliberately not awaited: this is a long-running self-hosted Node
   // process (not serverless), so the render keeps going in the background
   // while the client polls GET /api/render/[jobId] for progress.
-  void runRender(job.id, audioSrc, origin, scene, resolution, fps, fileToken);
+  void runRender(
+    job.id,
+    audioSrc,
+    origin,
+    scene,
+    resolution,
+    fps,
+    fileToken,
+    watermark,
+  );
 
   return NextResponse.json({ jobId: job.id });
 }

@@ -35,6 +35,7 @@ export function Preview({
   durationInFrames,
   fps,
   aspect,
+  watermark,
   scene,
   initiallyMuted,
   isLoading,
@@ -52,6 +53,8 @@ export function Preview({
   durationInFrames: number;
   fps: number;
   aspect: AspectKey;
+  /** Shows the free plan's mark, exactly where a render would have it. */
+  watermark: boolean;
   scene: SceneDocument;
   initiallyMuted: boolean;
   isLoading: boolean;
@@ -132,9 +135,10 @@ export function Preview({
       audioSrc: audioUrl ?? "",
       scene,
       appBase: "",
+      watermark,
       editor: { selectedId, tool: activeTool, onSelect, onTransform },
     }),
-    [audioUrl, scene, selectedId, activeTool, onSelect, onTransform],
+    [audioUrl, scene, watermark, selectedId, activeTool, onSelect, onTransform],
   );
 
   // Largest box of the chosen format (plus bezel) that fits into the

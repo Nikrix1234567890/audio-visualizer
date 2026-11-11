@@ -66,6 +66,11 @@ export type AudioVisualizerProps = {
    * uploaded pictures and models. See src/lib/fileAccess.ts.
    */
   fileToken?: string;
+  /**
+   * Draws the app's mark in a corner - the free plan. Decided by the server
+   * for a render and by the editor for the preview, so both look the same.
+   */
+  watermark?: boolean;
   /** Selection and gizmo hooks. Only the editor passes these, never a render. */
   editor?: SceneEditorHooks;
 };

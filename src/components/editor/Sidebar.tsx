@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import {
   CAMERA_PARAMS,
   ELEMENT_DEFS,
@@ -39,6 +39,12 @@ import { MyTemplates } from "@/components/editor/MyTemplates";
 import { Thumbnail } from "@/components/ui/Thumbnail";
 import { ParamControls } from "@/components/editor/ParamControls";
 import { SegmentedSelector } from "@/components/ui/SegmentedSelector";
+import {
+  TIER_LIMITS,
+  isFrameRateAllowed,
+  isResolutionAllowed,
+  type TierName,
+} from "@/lib/tiers";
 
 export type CollapsedSections = Record<string, boolean>;
 
@@ -90,6 +96,7 @@ export function Sidebar({
   onResolutionChange,
   aspect,
   onAspectChange,
+  tier,
   frameRate,
   onFrameRateChange,
   collapsed,
@@ -111,6 +118,8 @@ export function Sidebar({
   onResolutionChange: (value: ResolutionKey) => void;
   aspect: AspectKey;
   onAspectChange: (value: AspectKey) => void;
+  /** The visitor's plan: decides which output options are locked. */
+  tier: TierName;
   frameRate: FrameRate;
   onFrameRateChange: (value: FrameRate) => void;
   collapsed: CollapsedSections;
@@ -127,6 +136,9 @@ export function Sidebar({
       {children}
     </Section>
   );
+
+  // Set when a locked output option was clicked: points at the upgrade.
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
   const selected = scene.elements.find((e) => e.id === selectedId) ?? null;
 
@@ -405,23 +417,45 @@ export function Sidebar({
             options={Object.entries(RESOLUTIONS).map(([key, r]) => ({
               value: key as ResolutionKey,
               label: r.label,
+              locked: !isResolutionAllowed(tier, key as ResolutionKey),
             }))}
             value={resolution}
             onChange={onResolutionChange}
+            onLocked={() => setShowUpgrade(true)}
           />
           <SegmentedSelector
             stretch
-            options={FRAME_RATES.map((fps) => ({ value: fps, label: `${fps} fps` }))}
+            options={FRAME_RATES.map((fps) => ({
+              value: fps,
+              label: `${fps} fps`,
+              locked: !isFrameRateAllowed(tier, fps),
+            }))}
             value={frameRate}
             onChange={onFrameRateChange}
+            onLocked={() => setShowUpgrade(true)}
           />
           <p className="font-mono text-[11px] tracking-[0.06em] text-steel tabular-nums">
             {outputSize(aspect, resolution).width} x{" "}
             {outputSize(aspect, resolution).height} px
           </p>
-          <p className="text-xs text-steel">
-            60 fps is as smooth as the preview; 30 fps renders in half the time.
-          </p>
+          {tier === "FREE" ? (
+            <p
+              className={`text-xs ${showUpgrade ? "text-cream" : "text-steel"}`}
+            >
+              Free plan: up to {TIER_LIMITS.FREE.maxResolution},{" "}
+              {TIER_LIMITS.FREE.frameRates.join(" / ")} fps, with a small
+              watermark.{" "}
+              <Link href="/pricing" className="text-amber underline">
+                Go Premium
+              </Link>{" "}
+              for 4K, 60 fps and no watermark.
+            </p>
+          ) : (
+            <p className="text-xs text-steel">
+              60 fps is as smooth as the preview; 30 fps renders in half the
+              time.
+            </p>
+          )}
 
           <button
             type="button"

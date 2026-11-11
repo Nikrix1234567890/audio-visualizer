@@ -19,6 +19,7 @@ export const AudioVisualizer3D: React.FC<AudioVisualizerProps> = ({
   scene: rawScene,
   appBase,
   fileToken,
+  watermark,
   editor,
 }) => {
   const frame = useCurrentFrame();
@@ -71,6 +72,31 @@ export const AudioVisualizer3D: React.FC<AudioVisualizerProps> = ({
           editor={editor}
         />
       </ThreeCanvas>
+      {watermark ? (
+        // Sized from the picture's short side, so it takes the same share
+        // of a 720p preview and a larger render, in every format.
+        <AbsoluteFill
+          style={{
+            justifyContent: 'flex-end',
+            alignItems: 'flex-end',
+            padding: Math.min(width, height) * 0.035,
+            pointerEvents: 'none',
+          }}
+        >
+          <div
+            style={{
+              fontFamily: 'Arial, Helvetica, sans-serif',
+              fontWeight: 700,
+              fontSize: Math.min(width, height) * 0.034,
+              letterSpacing: '0.02em',
+              color: 'rgba(255, 255, 255, 0.6)',
+              textShadow: '0 1px 4px rgba(0, 0, 0, 0.7)',
+            }}
+          >
+            Audio<span style={{color: 'rgba(255, 138, 61, 0.85)'}}>Visualizer</span>
+          </div>
+        </AbsoluteFill>
+      ) : null}
     </AbsoluteFill>
   );
 };

@@ -1,16 +1,33 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { DeleteButton } from "@/components/DeleteButton";
 import { DeleteProjectButton } from "@/components/DeleteProjectButton";
+import { TemplateGrid } from "@/components/TemplateGrid";
 import { prisma } from "@/lib/prisma";
-import { TEMPLATES } from "../../../remotion/scene/templates";
+import { sanitizeAspect, sanitizeResolution } from "@/lib/visualizerSettings";
+import { outputSize } from "../../../remotion/types";
+
+/** Finished videos shown in the history. */
+const MAX_VIDEOS = 30;
 
 const dateFormat = new Intl.DateTimeFormat("en", {
   dateStyle: "medium",
   timeStyle: "short",
 });
 
-/** The signed-in user's saved projects, plus the templates to start a new one from. */
+/** What a finished video is: its size and frame rate, read from the job. */
+function describeVideo(settings: unknown): string {
+  const raw = (settings ?? {}) as Record<string, unknown>;
+  const { width, height } = outputSize(
+    sanitizeAspect(raw.aspect),
+    sanitizeResolution(raw.resolution),
+  );
+  const fps = typeof raw.fps === "number" ? raw.fps : 30;
+  return `${width} x ${height} · ${fps} fps`;
+}
+
+/** The signed-in user's saved projects and videos, plus the templates to start a new project from. */
 export default async function DashboardPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login?callbackUrl=/dashboard");
@@ -21,8 +38,15 @@ export default async function DashboardPage() {
     select: { id: true, title: true, updatedAt: true },
   });
 
+  const videos = await prisma.renderJob.findMany({
+    where: { userId: session.user.id, status: "DONE", outputPath: { not: null } },
+    orderBy: { createdAt: "desc" },
+    take: MAX_VIDEOS,
+    select: { id: true, outputPath: true, settings: true, completedAt: true, createdAt: true },
+  });
+
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-10 px-6 py-10">
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-10 px-6 py-10">
       <section className="flex flex-col gap-4">
         <h1 className="font-sans text-2xl font-semibold tracking-tight text-cream">
           Your projects
@@ -60,23 +84,50 @@ export default async function DashboardPage() {
 
       <section className="flex flex-col gap-4">
         <h2 className="font-mono text-[11px] tracking-[0.12em] text-steel uppercase">
+          Your videos
+        </h2>
+        {videos.length === 0 ? (
+          <p className="text-sm text-steel">
+            Videos you render while logged in are kept here, ready to
+            download again.
+          </p>
+        ) : (
+          <ul className="flex flex-col rounded-[10px] border border-hairline bg-panel">
+            {videos.map((video) => (
+              <li
+                key={video.id}
+                className="flex items-center gap-4 border-b border-hairline px-4 py-3 last:border-b-0"
+              >
+                <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                  <span className="text-sm text-cream tabular-nums">
+                    {describeVideo(video.settings)}
+                  </span>
+                  <span className="font-mono text-[11px] tracking-[0.06em] text-steel uppercase">
+                    Rendered {dateFormat.format(video.completedAt ?? video.createdAt)}
+                  </span>
+                </div>
+                <a
+                  href={`/api/files/${video.outputPath}`}
+                  download
+                  className="shrink-0 rounded-md border border-hairline px-2.5 py-1.5 font-mono text-[11px] tracking-[0.06em] text-cream uppercase outline-none hover:border-amber-dim hover:text-amber focus-visible:border-amber"
+                >
+                  Download
+                </a>
+                <DeleteButton
+                  url={`/api/render/${video.id}`}
+                  question="Delete this video? This cannot be undone."
+                />
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="font-mono text-[11px] tracking-[0.12em] text-steel uppercase">
           Start a new project
         </h2>
-        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {TEMPLATES.map((template) => (
-            <li key={template.id}>
-              <Link
-                href={`/editor?template=${template.id}`}
-                className="flex flex-col gap-1 rounded-[10px] border border-hairline bg-panel px-4 py-3 outline-none hover:border-amber-dim focus-visible:border-amber"
-              >
-                <span className="text-sm text-cream">{template.label}</span>
-                <span className="text-xs text-steel">
-                  {template.scene.elements.map((e) => e.name).join(" · ")}
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <TemplateGrid />
       </section>
     </div>
   );
