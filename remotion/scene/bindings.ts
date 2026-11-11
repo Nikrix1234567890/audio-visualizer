@@ -5,20 +5,27 @@
 // amount of 2 moves between 4 (silence) and 6 (full bass). The result is
 // clamped to the parameter's allowed range.
 //
-// Pure functions of (values, bindings, audio) - the same frame always
-// resolves to the same numbers, in the preview and in the render.
+// A parameter can also be keyframed (see ./keyframes.ts). Then the binding
+// is added to the keyframed value of that moment instead of the plain
+// setting.
+//
+// Pure functions of (values, keyframes, bindings, audio, time) - the same
+// frame always resolves to the same numbers, in the preview and in the
+// render.
 
 import type { AudioFrame } from "../audio/analysis";
 import {
   TRANSFORM_LIMITS,
   type AudioSource,
   type Bindings,
+  type Keyframes,
   type NumberParamDef,
   type ParamDef,
   type ParamValue,
   type SceneElement,
   type Vec3,
 } from "./definitions";
+import { baseValue } from "./keyframes";
 
 export const AUDIO_SOURCES: { id: AudioSource; label: string }[] = [
   { id: "bass", label: "Bass" },
@@ -61,20 +68,27 @@ function modulated(
   return Math.min(limits.max, Math.max(limits.min, value));
 }
 
-/** The parameter values for this moment, with every binding applied. */
+/**
+ * The parameter values for this moment: keyframes first, then every
+ * binding on top.
+ */
 export function resolveParams<T extends Record<string, ParamValue>>(
   defs: ParamDef[],
   values: T,
   bindings: Bindings,
   audio: AudioFrame,
+  keyframes?: Keyframes,
+  time = 0,
 ): T {
   let resolved: Record<string, ParamValue> | null = null;
 
   for (const def of defs) {
-    if (!isBindable(def) || !bindings[def.key]) continue;
+    if (!isBindable(def)) continue;
+    const isKeyframed = Boolean(keyframes?.[def.key]?.length);
+    if (!isKeyframed && !bindings[def.key]) continue;
     resolved ??= { ...values };
     resolved[def.key] = modulated(
-      Number(values[def.key]),
+      baseValue(Number(values[def.key]), def.key, keyframes, time),
       def.key,
       def,
       bindings,
@@ -85,30 +99,36 @@ export function resolveParams<T extends Record<string, ParamValue>>(
   return (resolved as T | null) ?? values;
 }
 
+type Transform = { position: Vec3; rotation: Vec3; scale: number };
+
+/**
+ * Position, rotation and scale for this moment as the user set them:
+ * keyframes applied, audio bindings not.
+ */
+export function baseTransform(element: SceneElement, time: number): Transform {
+  const axis = (key: "position" | "rotation", i: number) =>
+    baseValue(element[key][i], `${key}.${i}`, element.keyframes, time);
+  return {
+    position: [axis("position", 0), axis("position", 1), axis("position", 2)],
+    rotation: [axis("rotation", 0), axis("rotation", 1), axis("rotation", 2)],
+    scale: baseValue(element.scale, "scale", element.keyframes, time),
+  };
+}
+
 /** Position, rotation and scale for this moment, with every binding applied. */
 export function resolveTransform(
   element: SceneElement,
   audio: AudioFrame,
-): { position: Vec3; rotation: Vec3; scale: number } {
+  time = 0,
+): Transform {
   const { bindings } = element;
+  const base = baseTransform(element, time);
   const axis = (key: "position" | "rotation", i: number) =>
-    modulated(
-      element[key][i],
-      `${key}.${i}`,
-      TRANSFORM_LIMITS[key],
-      bindings,
-      audio,
-    );
+    modulated(base[key][i], `${key}.${i}`, TRANSFORM_LIMITS[key], bindings, audio);
 
   return {
     position: [axis("position", 0), axis("position", 1), axis("position", 2)],
     rotation: [axis("rotation", 0), axis("rotation", 1), axis("rotation", 2)],
-    scale: modulated(
-      element.scale,
-      "scale",
-      TRANSFORM_LIMITS.scale,
-      bindings,
-      audio,
-    ),
+    scale: modulated(base.scale, "scale", TRANSFORM_LIMITS.scale, bindings, audio),
   };
 }

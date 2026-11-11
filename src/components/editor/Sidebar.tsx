@@ -5,19 +5,23 @@ import { useState, type ReactNode } from "react";
 import {
   CAMERA_PARAMS,
   ELEMENT_DEFS,
+  DEFAULT_TEMPO,
   LOOK_PARAMS,
   MAX_ELEMENTS,
+  TEMPO_LIMITS,
   TRANSFORM_LIMITS,
   createElement,
   createElementId,
   type Binding,
   type Bindings,
   type ElementType,
+  type Keyframe,
   type ParamValue,
   type SceneDocument,
   type SceneElement,
   type Vec3,
 } from "../../../remotion/scene/definitions";
+import { withKeyframes } from "../../../remotion/scene/keyframes";
 import {
   PALETTES,
   applyPalette,
@@ -39,6 +43,7 @@ import { MyTemplates } from "@/components/editor/MyTemplates";
 import { Thumbnail } from "@/components/ui/Thumbnail";
 import { ParamControls } from "@/components/editor/ParamControls";
 import { SegmentedSelector } from "@/components/ui/SegmentedSelector";
+import { SliderRow } from "@/components/ui/SliderRow";
 import {
   TIER_LIMITS,
   isFrameRateAllowed,
@@ -167,6 +172,7 @@ export function Sidebar({
       rotation: [...original.rotation],
       params: { ...original.params },
       bindings: { ...original.bindings },
+      keyframes: { ...original.keyframes },
     };
     const elements = [...scene.elements];
     elements.splice(index + 1, 0, copy);
@@ -375,6 +381,15 @@ export function Sidebar({
               cameraBindings: withBinding(scene.cameraBindings, key, binding),
             })
           }
+          keyframes={scene.cameraKeyframes}
+          onKeyframesChange={(key, keys, plain) =>
+            onSceneChange({
+              ...scene,
+              cameraKeyframes: withKeyframes(scene.cameraKeyframes, key, keys),
+              camera:
+                plain === undefined ? scene.camera : { ...scene.camera, [key]: plain },
+            })
+          }
         />,
       )}
 
@@ -394,6 +409,14 @@ export function Sidebar({
             onSceneChange({
               ...scene,
               lookBindings: withBinding(scene.lookBindings, key, binding),
+            })
+          }
+          keyframes={scene.lookKeyframes}
+          onKeyframesChange={(key, keys, plain) =>
+            onSceneChange({
+              ...scene,
+              lookKeyframes: withKeyframes(scene.lookKeyframes, key, keys),
+              look: plain === undefined ? scene.look : { ...scene.look, [key]: plain },
             })
           }
         />,
@@ -523,6 +546,25 @@ function ElementInspector({
   const setBinding = (key: string, binding: Binding | null) =>
     onChange({ bindings: withBinding(element.bindings, key, binding) });
 
+  /** Sets a target's keyframes and, when the animation ends, its plain value. */
+  const setKeyframes = (key: string, keys: Keyframe[] | null, plain?: number) => {
+    const patch: Partial<SceneElement> = {
+      keyframes: withKeyframes(element.keyframes, key, keys),
+    };
+    if (plain !== undefined) {
+      const [name, axis] = key.split(".");
+      if (name === "scale") patch.scale = plain;
+      else if (name === "position" || name === "rotation") {
+        const next = [...element[name]] as Vec3;
+        next[Number(axis)] = plain;
+        patch[name] = next;
+      } else patch.params = { ...element.params, [key]: plain };
+    }
+    onChange(patch);
+  };
+
+  const tempo = element.tempo ?? DEFAULT_TEMPO;
+
   return (
     <>
       <label className="flex items-center justify-between gap-3">
@@ -548,7 +590,30 @@ function ElementInspector({
         }
         bindings={element.bindings}
         onBindingChange={setBinding}
+        keyframes={element.keyframes}
+        onKeyframesChange={setKeyframes}
       />
+
+      <SubHeading>Tempo</SubHeading>
+      <SliderRow
+        label="Tempo swing"
+        value={tempo.amount}
+        {...TEMPO_LIMITS.amount}
+        onChange={(amount) => onChange({ tempo: { ...tempo, amount } })}
+      />
+      {tempo.amount > 0 && (
+        <SliderRow
+          label="Swing length"
+          value={tempo.period}
+          {...TEMPO_LIMITS.period}
+          unit="s"
+          onChange={(period) => onChange({ tempo: { ...tempo, period } })}
+        />
+      )}
+      <p className="text-xs text-steel">
+        Lets the motion slow down and speed up again in a wave. At 1 it
+        comes to a brief standstill.
+      </p>
 
       <SubHeading>Position</SubHeading>
       {AXES.map((axis, i) => (
@@ -560,6 +625,8 @@ function ElementInspector({
           onChange={(v) => setAxis("position", i, v)}
           binding={element.bindings[`position.${i}`]}
           onBindingChange={(b) => setBinding(`position.${i}`, b)}
+          keyframes={element.keyframes?.[`position.${i}`]}
+          onKeyframesChange={(keys, plain) => setKeyframes(`position.${i}`, keys, plain)}
         />
       ))}
 
@@ -574,6 +641,8 @@ function ElementInspector({
           onChange={(v) => setAxis("rotation", i, v)}
           binding={element.bindings[`rotation.${i}`]}
           onBindingChange={(b) => setBinding(`rotation.${i}`, b)}
+          keyframes={element.keyframes?.[`rotation.${i}`]}
+          onKeyframesChange={(keys, plain) => setKeyframes(`rotation.${i}`, keys, plain)}
         />
       ))}
 
@@ -586,6 +655,8 @@ function ElementInspector({
         onChange={(v) => onChange({ scale: v })}
         binding={element.bindings.scale}
         onBindingChange={(b) => setBinding("scale", b)}
+        keyframes={element.keyframes?.scale}
+        onKeyframesChange={(keys, plain) => setKeyframes("scale", keys, plain)}
       />
     </>
   );

@@ -128,6 +128,32 @@ export type Binding = { source: AudioSource; amount: number };
 /** Bindings by target: a parameter key, or "position.0" / "rotation.1" / "scale". */
 export type Bindings = Record<string, Binding>;
 
+/** How the value moves from one keyframe to the next. */
+export type KeyframeEase = "linear" | "smooth" | "hold";
+
+/** "At second `t` the value is `v`" - see ./keyframes.ts. */
+export type Keyframe = { t: number; v: number; ease: KeyframeEase };
+
+/** Keyframes by target - the same targets a binding can have. */
+export type Keyframes = Record<string, Keyframe[]>;
+
+/** Most keyframes one parameter may have. */
+export const MAX_KEYFRAMES = 64;
+
+/**
+ * Tempo swing: the motion of an element slows down and speeds up again in
+ * a wave. `amount` 0 is off, 1 slows to a standstill at the slowest point;
+ * `period` is the length of one wave in seconds. See warpTime().
+ */
+export type Tempo = { amount: number; period: number };
+
+export const DEFAULT_TEMPO: Tempo = { amount: 0, period: 4 };
+
+export const TEMPO_LIMITS = {
+  amount: { min: 0, max: 1, step: 0.01 },
+  period: { min: 0.5, max: 16, step: 0.1 },
+};
+
 export type SceneElement = {
   id: string;
   type: ElementType;
@@ -139,6 +165,10 @@ export type SceneElement = {
   scale: number;
   params: Params;
   bindings: Bindings;
+  /** Values that change over time. Left out means none. */
+  keyframes?: Keyframes;
+  /** Left out means a steady tempo. */
+  tempo?: Tempo;
 };
 
 export type CameraSettings = {
@@ -172,6 +202,9 @@ export type SceneDocument = {
   cameraBindings: Bindings;
   look: LookSettings;
   lookBindings: Bindings;
+  /** Camera and look values that change over time. Left out means none. */
+  cameraKeyframes?: Keyframes;
+  lookKeyframes?: Keyframes;
   elements: SceneElement[];
 };
 
@@ -819,5 +852,7 @@ export function createElement(
     scale: overrides.scale ?? 1,
     params: { ...def.defaults, ...overrides.params },
     bindings: { ...overrides.bindings },
+    keyframes: { ...overrides.keyframes },
+    tempo: { ...DEFAULT_TEMPO, ...overrides.tempo },
   };
 }

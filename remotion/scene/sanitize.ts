@@ -7,23 +7,29 @@ import {
   CAMERA_PARAMS,
   DEFAULT_CAMERA,
   DEFAULT_LOOK,
+  DEFAULT_TEMPO,
   ELEMENT_DEFS,
   ELEMENT_TYPES,
   LOOK_PARAMS,
   MAX_ELEMENTS,
+  MAX_KEYFRAMES,
   MAX_TEXT_LENGTH,
+  TEMPO_LIMITS,
   TRANSFORM_LIMITS,
   createElementId,
   type AudioSource,
   type Bindings,
   type CameraSettings,
   type ElementType,
+  type Keyframe,
+  type Keyframes,
   type LookSettings,
   type ParamDef,
   type ParamValue,
   type Params,
   type SceneDocument,
   type SceneElement,
+  type Tempo,
   type Vec3,
 } from "./definitions";
 import { AUDIO_SOURCES, TRANSFORM_TARGETS, isBindable } from "./bindings";
@@ -106,6 +112,56 @@ function sanitizeBindings(
   return out;
 }
 
+/** Longest track a keyframe can be placed in: two hours. */
+const MAX_KEYFRAME_SECONDS = 7200;
+const EASES = ["linear", "smooth", "hold"];
+
+/**
+ * Keeps only keyframes of targets that can have them, with times and
+ * values in range, sorted, and at most one per moment.
+ */
+function sanitizeKeyframes(
+  targets: Record<string, { min: number; max: number }>,
+  input: unknown,
+): Keyframes {
+  const raw = isRecord(input) ? input : {};
+  const out: Keyframes = {};
+
+  for (const [key, limits] of Object.entries(targets)) {
+    const list = raw[key];
+    if (!Array.isArray(list)) continue;
+    const keys: Keyframe[] = [];
+    for (const item of list) {
+      if (!isRecord(item)) continue;
+      if (typeof item.t !== "number" || typeof item.v !== "number") continue;
+      if (!Number.isFinite(item.t) || !Number.isFinite(item.v)) continue;
+      keys.push({
+        t: Math.round(clamp(item.t, 0, 0, MAX_KEYFRAME_SECONDS) * 1000) / 1000,
+        v: clamp(item.v, limits.min, limits.min, limits.max),
+        ease: EASES.includes(item.ease as string)
+          ? (item.ease as Keyframe["ease"])
+          : "linear",
+      });
+    }
+    keys.sort((a, b) => a.t - b.t);
+    const distinct = keys
+      .filter((k, i) => i === 0 || k.t - keys[i - 1].t >= 0.005)
+      .slice(0, MAX_KEYFRAMES);
+    if (distinct.length > 0) out[key] = distinct;
+  }
+
+  return out;
+}
+
+function sanitizeTempo(input: unknown): Tempo {
+  const raw = isRecord(input) ? input : {};
+  const { amount, period } = TEMPO_LIMITS;
+  return {
+    amount: clamp(raw.amount, DEFAULT_TEMPO.amount, amount.min, amount.max),
+    period: clamp(raw.period, DEFAULT_TEMPO.period, period.min, period.max),
+  };
+}
+
 function bindableTargets(defs: ParamDef[]) {
   const targets: Record<string, { min: number; max: number }> = {};
   for (const def of defs) if (isBindable(def)) targets[def.key] = def;
@@ -150,6 +206,11 @@ function sanitizeElement(input: unknown, usedIds: Set<string>): SceneElement | n
       { ...bindableTargets(def.params), ...TRANSFORM_TARGETS },
       input.bindings,
     ),
+    keyframes: sanitizeKeyframes(
+      { ...bindableTargets(def.params), ...TRANSFORM_TARGETS },
+      input.keyframes,
+    ),
+    tempo: sanitizeTempo(input.tempo),
   };
 }
 
@@ -185,6 +246,11 @@ export function sanitizeScene(input: unknown): SceneDocument {
     ),
     look,
     lookBindings: sanitizeBindings(bindableTargets(LOOK_PARAMS), raw.lookBindings),
+    cameraKeyframes: sanitizeKeyframes(
+      bindableTargets(CAMERA_PARAMS),
+      raw.cameraKeyframes,
+    ),
+    lookKeyframes: sanitizeKeyframes(bindableTargets(LOOK_PARAMS), raw.lookKeyframes),
     elements,
   };
 }

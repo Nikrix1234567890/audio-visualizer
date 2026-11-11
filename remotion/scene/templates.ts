@@ -5,8 +5,8 @@ import {
   DEFAULT_CAMERA,
   DEFAULT_LOOK,
   createElement,
-  type Bindings,
   type SceneDocument,
+  type Tempo,
 } from "./definitions";
 
 export type SceneTemplate = {
@@ -489,28 +489,34 @@ export const TEMPLATES: SceneTemplate[] = [
   },
 ];
 
-export const DEFAULT_TEMPLATE = TEMPLATES[0];
+// Tempo swings: the motion of these elements slows down and speeds up
+// again in a wave (see warpTime in ./keyframes.ts), which gives a scene a
+// breathing, slow-motion feel. By template id, then element id.
+const TEMPO_SWINGS: Record<string, Record<string, Tempo>> = {
+  hyperdrive: {
+    tunnel: { amount: 0.8, period: 4 },
+    streaks: { amount: 0.8, period: 4 },
+  },
+  helix: { helix: { amount: 0.6, period: 5 } },
+  galaxy: { galaxy: { amount: 0.7, period: 6 } },
+  orb: { orb: { amount: 0.5, period: 5 } },
+  vortex: { vortex: { amount: 0.75, period: 5 } },
+  solar: { star: { amount: 0.5, period: 8 } },
+  sunflower: { flower: { amount: 0.6, period: 6 } },
+  knot: { knot: { amount: 0.7, period: 6 } },
+  jellyfish: { jelly: { amount: 0.6, period: 4 } },
+};
 
-function cloneBindings(bindings: Bindings): Bindings {
-  return Object.fromEntries(
-    Object.entries(bindings).map(([key, binding]) => [key, { ...binding }]),
-  );
+for (const template of TEMPLATES) {
+  for (const element of template.scene.elements) {
+    const tempo = TEMPO_SWINGS[template.id]?.[element.id];
+    if (tempo) element.tempo = tempo;
+  }
 }
 
-/** A private copy of a template's scene, safe to edit. */
+export const DEFAULT_TEMPLATE = TEMPLATES[0];
+
+/** A private copy of a scene, safe to edit. A scene is plain data, so a deep copy is exact. */
 export function cloneScene(scene: SceneDocument): SceneDocument {
-  return {
-    version: 1,
-    camera: { ...scene.camera },
-    cameraBindings: cloneBindings(scene.cameraBindings),
-    look: { ...scene.look },
-    lookBindings: cloneBindings(scene.lookBindings),
-    elements: scene.elements.map((element) => ({
-      ...element,
-      position: [...element.position],
-      rotation: [...element.rotation],
-      params: { ...element.params },
-      bindings: cloneBindings(element.bindings),
-    })),
-  };
+  return structuredClone(scene);
 }

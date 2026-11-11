@@ -4,6 +4,8 @@ import {
   MAX_TEXT_LENGTH,
   type Binding,
   type Bindings,
+  type Keyframe,
+  type Keyframes,
   type ParamDef,
   type ParamValue,
 } from "../../../remotion/scene/definitions";
@@ -27,12 +29,17 @@ export function ParamControls({
   onChange,
   bindings,
   onBindingChange,
+  keyframes,
+  onKeyframesChange,
 }: {
   defs: ParamDef[];
   values: Record<string, ParamValue>;
   onChange: (key: string, value: ParamValue) => void;
   bindings: Bindings;
   onBindingChange: (key: string, binding: Binding | null) => void;
+  keyframes: Keyframes | undefined;
+  /** See BindableSlider: null stops the animation, `plain` sets the plain value with it. */
+  onKeyframesChange: (key: string, keyframes: Keyframe[] | null, plain?: number) => void;
 }) {
   return (
     <>
@@ -56,6 +63,10 @@ export function ParamControls({
               {...common}
               binding={bindings[def.key]}
               onBindingChange={(b) => onBindingChange(def.key, b)}
+              keyframes={keyframes?.[def.key]}
+              onKeyframesChange={(keys, plain) =>
+                onKeyframesChange(def.key, keys, plain)
+              }
             />
           );
         }

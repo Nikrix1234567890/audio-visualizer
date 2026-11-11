@@ -15,6 +15,13 @@ const COLOR_UNPLAYED = "#3d3d48";
 const COLOR_BEAT = "rgba(242, 237, 226, 0.45)";
 const COLOR_PLAYHEAD = "#f2ede2";
 
+/** Whose keyframe a timeline marker stands for. */
+export type MarkerOwner = "element" | "camera" | "look";
+export type TimelineMarker = { owner: MarkerOwner; label: string; t: number };
+
+/** A marker dragged less far than this (in pixels) was clicked, not moved. */
+const DRAG_THRESHOLD = 3;
+
 export function formatTime(seconds: number): string {
   const total = Math.max(0, Math.floor(seconds));
   return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
@@ -59,7 +66,8 @@ function computeBeats(audioData: MediaUtilsAudioData): number[] {
 /**
  * The track as a waveform you navigate with: click or drag to seek. Small
  * ticks along the bottom mark the beats the visualizer reacts to (the same
- * analysis the scenes use, see remotion/audio/analysis.ts).
+ * analysis the scenes use, see remotion/audio/analysis.ts). Diamonds along
+ * the top are keyframes: click one to go there, drag it to another moment.
  */
 export function Waveform({
   audioData,
@@ -67,13 +75,23 @@ export function Waveform({
   durationInFrames,
   fps,
   onSeek,
+  markers,
+  onMoveMarker,
 }: {
   audioData: MediaUtilsAudioData | null;
   frame: number;
   durationInFrames: number;
   fps: number;
   onSeek: (frame: number) => void;
+  markers: TimelineMarker[];
+  onMoveMarker: (owner: MarkerOwner, from: number, to: number) => void;
 }) {
+  // The marker being dragged and the moment it is currently held at.
+  const [drag, setDrag] = useState<{
+    marker: TimelineMarker;
+    startX: number;
+    t: number | null;
+  } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
@@ -184,6 +202,62 @@ export function Waveform({
       }}
     >
       <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
+      {audioData &&
+        markers
+          .filter((marker) => marker.t <= duration)
+          .map((marker) => {
+            const isDragged = drag?.marker === marker && drag.t !== null;
+            const t = isDragged ? (drag.t as number) : marker.t;
+            const timeAt = (clientX: number, target: HTMLElement) => {
+              const rect = (target.parentElement as HTMLElement).getBoundingClientRect();
+              const position = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+              return Math.round(position * duration * 1000) / 1000;
+            };
+            return (
+              <button
+                key={`${marker.owner}:${marker.t}`}
+                type="button"
+                aria-label={`${marker.label} keyframe at ${t.toFixed(1)} seconds`}
+                title={`${marker.label} · ${t.toFixed(2)} s - click to go there, drag to move`}
+                style={{ left: `${(t / duration) * 100}%` }}
+                className="group/marker absolute top-0 flex h-4 w-4 -translate-x-1/2 cursor-ew-resize touch-none items-center justify-center outline-none"
+                onPointerDown={(e) => {
+                  // Not a seek: the marker handles its own click and drag.
+                  e.stopPropagation();
+                  e.currentTarget.setPointerCapture(e.pointerId);
+                  setDrag({ marker, startX: e.clientX, t: null });
+                }}
+                onPointerMove={(e) => {
+                  if (!drag || drag.marker !== marker) return;
+                  if (drag.t === null && Math.abs(e.clientX - drag.startX) < DRAG_THRESHOLD) {
+                    return;
+                  }
+                  setDrag({ ...drag, t: timeAt(e.clientX, e.currentTarget) });
+                }}
+                onPointerUp={() => {
+                  if (!drag || drag.marker !== marker) return;
+                  if (drag.t === null) onSeek(Math.round(marker.t * fps));
+                  else if (drag.t !== marker.t) onMoveMarker(marker.owner, marker.t, drag.t);
+                  setDrag(null);
+                }}
+                onPointerCancel={() => setDrag(null)}
+                onKeyDown={(e) => {
+                  if (e.key !== "Enter" && e.key !== " ") return;
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onSeek(Math.round(marker.t * fps));
+                }}
+              >
+                <span
+                  className={`h-2 w-2 rotate-45 border group-hover/marker:scale-125 group-focus-visible/marker:scale-125 ${
+                    marker.owner === "element"
+                      ? "border-amber bg-amber"
+                      : "border-cream bg-chassis"
+                  }`}
+                />
+              </button>
+            );
+          })}
       {!audioData && (
         <span className="absolute inset-0 flex items-center justify-center font-mono text-[11px] tracking-[0.08em] text-steel uppercase">
           No track loaded

@@ -3,7 +3,12 @@
 import type { MediaUtilsAudioData } from "@remotion/media-utils";
 import type { PlayerRef } from "@remotion/player";
 import { useEffect, useRef, useState } from "react";
-import { formatTime, Waveform } from "./Waveform";
+import {
+  formatTime,
+  Waveform,
+  type MarkerOwner,
+  type TimelineMarker,
+} from "./Waveform";
 
 const ACCEPTED_AUDIO = "audio/*,.wav,.mp3,.m4a,.aac,.ogg,.flac";
 /** How often the transport UI follows the playing video. */
@@ -26,6 +31,8 @@ export function Transport({
   muted,
   onToggleMute,
   onPickFile,
+  markers,
+  onMoveMarker,
 }: {
   player: PlayerRef | null;
   audioData: MediaUtilsAudioData | null;
@@ -35,6 +42,9 @@ export function Transport({
   muted: boolean;
   onToggleMute: () => void;
   onPickFile: (file: File) => void;
+  /** Keyframes to show in the timeline. */
+  markers: TimelineMarker[];
+  onMoveMarker: (owner: MarkerOwner, from: number, to: number) => void;
 }) {
   const [frame, setFrame] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -164,6 +174,8 @@ export function Transport({
           durationInFrames={durationInFrames}
           fps={fps}
           onSeek={(target) => player?.seekTo(target)}
+          markers={markers}
+          onMoveMarker={onMoveMarker}
         />
       </div>
     </div>

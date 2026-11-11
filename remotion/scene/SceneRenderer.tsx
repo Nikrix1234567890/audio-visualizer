@@ -5,7 +5,8 @@ import {PerspectiveCamera, type Group} from 'three';
 import {EffectComposer, Bloom, Vignette} from '@react-three/postprocessing';
 import {BlendFunction} from 'postprocessing';
 import {getAudioFrame, type TrackAnalysis} from '../audio/analysis';
-import {resolveParams, resolveTransform} from './bindings';
+import {baseTransform, resolveParams, resolveTransform} from './bindings';
+import {warpTime} from './keyframes';
 import {cameraPosition, verticalFov} from './camera';
 import {
   CAMERA_PARAMS,
@@ -148,12 +149,21 @@ export const SceneRenderer: React.FC<{
   const audio = getAudioFrame(analysis, time);
   // Everything below uses the values for this moment: the user's settings
   // plus whatever their audio bindings add right now.
-  const look = resolveParams(LOOK_PARAMS, scene.look, scene.lookBindings, audio);
+  const look = resolveParams(
+    LOOK_PARAMS,
+    scene.look,
+    scene.lookBindings,
+    audio,
+    scene.lookKeyframes,
+    time,
+  );
   const camera = resolveParams(
     CAMERA_PARAMS,
     scene.camera,
     scene.cameraBindings,
     audio,
+    scene.cameraKeyframes,
+    time,
   );
 
   // The three.js group of the selected element, for the gizmo to hold on to.
@@ -166,22 +176,25 @@ export const SceneRenderer: React.FC<{
   const applyGizmo = () => {
     if (!editor || !selected || !selectedGroup) return;
     // What is on screen is "own value + audio binding". The drag changes
-    // what is on screen, so the difference goes onto the own value.
-    const shown = resolveTransform(selected, audio);
+    // what is on screen, so the difference goes onto the own value - which
+    // is the keyframed value of this moment, if the transform is keyframed
+    // (the editor then moves or adds a keyframe here).
+    const shown = resolveTransform(selected, audio, time);
+    const own = baseTransform(selected, time);
 
     if (editor.tool === 'move') {
       const moved = selectedGroup.position.toArray();
       editor.onTransform(selected.id, {
-        position: selected.position.map((own, i) =>
-          round(clamp(own + moved[i] - shown.position[i], TRANSFORM_LIMITS.position)),
+        position: own.position.map((value, i) =>
+          round(clamp(value + moved[i] - shown.position[i], TRANSFORM_LIMITS.position)),
         ) as Vec3,
       });
     } else if (editor.tool === 'rotate') {
       const {x, y, z} = selectedGroup.rotation;
       const turned = [x, y, z].map((radians) => radians / DEG_TO_RAD);
       editor.onTransform(selected.id, {
-        rotation: selected.rotation.map((own, i) =>
-          Math.round(wrapDegrees(own + turned[i] - shown.rotation[i])),
+        rotation: own.rotation.map((value, i) =>
+          Math.round(wrapDegrees(value + turned[i] - shown.rotation[i])),
         ) as Vec3,
       });
     } else if (editor.tool === 'scale') {
@@ -190,7 +203,7 @@ export const SceneRenderer: React.FC<{
         .toArray()
         .reduce((a, b) => (Math.abs(b - shown.scale) > Math.abs(a - shown.scale) ? b : a));
       editor.onTransform(selected.id, {
-        scale: round(clamp(selected.scale + scaled - shown.scale, TRANSFORM_LIMITS.scale)),
+        scale: round(clamp(own.scale + scaled - shown.scale, TRANSFORM_LIMITS.scale)),
       });
     }
   };
@@ -207,7 +220,7 @@ export const SceneRenderer: React.FC<{
       {scene.elements.map((element) => {
         if (!element.visible) return null;
         const Component = ELEMENT_COMPONENTS[element.type];
-        const {position, rotation, scale} = resolveTransform(element, audio);
+        const {position, rotation, scale} = resolveTransform(element, audio, time);
         const [rx, ry, rz] = rotation;
         const isSelected = Boolean(editor && element.id === editor.selectedId);
 
@@ -233,10 +246,13 @@ export const SceneRenderer: React.FC<{
                 element.params,
                 element.bindings,
                 audio,
+                element.keyframes,
+                time,
               )}
               analysis={analysis}
               audio={audio}
-              time={time}
+              // The element's own clock: bent by its tempo swing, if any.
+              time={warpTime(time, element.tempo)}
               assetUrl={assetUrl}
               fontBase={fontBase}
             />

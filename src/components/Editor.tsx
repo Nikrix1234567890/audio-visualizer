@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type CSSProperties,
@@ -14,6 +15,11 @@ import type {
   SceneDocument,
   SceneElement,
 } from "../../remotion/scene/definitions";
+import {
+  keyframeTimes,
+  moveKeyframes,
+  withTransform,
+} from "../../remotion/scene/keyframes";
 import { sanitizeScene } from "../../remotion/scene/sanitize";
 import {
   DEFAULT_TEMPLATE,
@@ -28,6 +34,7 @@ import {
   type FrameRate,
   type ResolutionKey,
 } from "../../remotion/types";
+import { PlayheadProvider, usePlayheadStore } from "@/components/editor/Playhead";
 import { Preview } from "@/components/editor/Preview";
 import {
   Sidebar,
@@ -35,6 +42,7 @@ import {
   type SaveStatus,
 } from "@/components/editor/Sidebar";
 import { Transport } from "@/components/editor/Transport";
+import type { MarkerOwner, TimelineMarker } from "@/components/editor/Waveform";
 import { ResizeHandle } from "@/components/ui/ResizeHandle";
 import { TIER_LIMITS, clampToTier, type TierName } from "@/lib/tiers";
 import { useSceneHistory } from "@/lib/useSceneHistory";
@@ -307,16 +315,64 @@ export function Editor({
       id: string,
       patch: Partial<Pick<SceneElement, "position" | "rotation" | "scale">>,
     ) => {
+      // A keyframed value gets a keyframe at the playhead instead.
+      const time = player
+        ? Math.round((player.getCurrentFrame() / FPS) * 1000) / 1000
+        : 0;
       recordScene((current) => ({
         ...current,
         elements: current.elements.map((element) =>
-          element.id === id ? { ...element, ...patch } : element,
+          element.id === id ? withTransform(element, patch, time) : element,
         ),
       }));
       setTemplateId(null);
       markUnsaved();
     },
-    [markUnsaved, recordScene],
+    [markUnsaved, recordScene, player],
+  );
+
+  // Keyframes shown as markers in the timeline: the selected element's,
+  // the camera's and the look's.
+  const markers = useMemo<TimelineMarker[]>(() => {
+    const selected = scene.elements.find((e) => e.id === selectedId);
+    const group = (owner: MarkerOwner, label: string, times: number[]) =>
+      times.map((t) => ({ owner, label, t }));
+    return [
+      ...group("element", selected?.name ?? "", keyframeTimes(selected?.keyframes)),
+      ...group("camera", "Camera", keyframeTimes(scene.cameraKeyframes)),
+      ...group("look", "Look", keyframeTimes(scene.lookKeyframes)),
+    ];
+  }, [scene, selectedId]);
+
+  // Dragging a marker moves every keyframe its owner has at that moment.
+  const moveMarker = useCallback(
+    (owner: MarkerOwner, from: number, to: number) => {
+      recordScene((current) => {
+        if (owner === "camera") {
+          return {
+            ...current,
+            cameraKeyframes: moveKeyframes(current.cameraKeyframes, from, to),
+          };
+        }
+        if (owner === "look") {
+          return {
+            ...current,
+            lookKeyframes: moveKeyframes(current.lookKeyframes, from, to),
+          };
+        }
+        return {
+          ...current,
+          elements: current.elements.map((element) =>
+            element.id === selectedId
+              ? { ...element, keyframes: moveKeyframes(element.keyframes, from, to) }
+              : element,
+          ),
+        };
+      });
+      setTemplateId(null);
+      markUnsaved();
+    },
+    [markUnsaved, recordScene, selectedId],
   );
 
   const loadTemplate = useCallback(
@@ -616,7 +672,10 @@ export function Editor({
     "--transport-h": `${transportHeight}px`,
   } as CSSProperties;
 
+  const playhead = usePlayheadStore(track ? player : null, FPS);
+
   return (
+    <PlayheadProvider value={playhead}>
     <div
       className="editor-grid"
       style={layout}
@@ -733,7 +792,10 @@ export function Editor({
         muted={muted}
         onToggleMute={() => setMuted(!muted)}
         onPickFile={loadFile}
+        markers={markers}
+        onMoveMarker={moveMarker}
       />
     </div>
+    </PlayheadProvider>
   );
 }
