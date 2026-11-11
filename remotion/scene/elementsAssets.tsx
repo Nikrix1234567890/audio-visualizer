@@ -23,6 +23,7 @@ import {
 import {RoomEnvironment} from 'three/examples/jsm/environments/RoomEnvironment.js';
 import {MeshoptDecoder} from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
+import {fontFile} from './definitions';
 import type {ElementProps} from './elements';
 
 const num = (params: ElementProps['params'], key: string) => Number(params[key]);
@@ -247,9 +248,15 @@ const Model: React.FC<ElementProps> = ({params, time, assetUrl}) => {
  * rather than a font size: scaling is instant, while a new font size would
  * make the text lay itself out again in the background and arrive late.
  */
-const TextElement: React.FC<ElementProps> = ({params, fontUrl}) => {
-  const text = String(params.text ?? '');
-  const spacing = num(params, 'spacing');
+const TextLine: React.FC<{
+  text: string;
+  fontUrl: string;
+  spacing: number;
+  size: number;
+  color: Color;
+  y?: number;
+  anchorY?: 'middle' | 'top' | 'bottom';
+}> = ({text, fontUrl, spacing, size, color, y = 0, anchorY = 'middle'}) => {
   const {hold, drawn} = useRenderHold();
 
   // Everything that makes the text lay itself out again.
@@ -261,16 +268,15 @@ const TextElement: React.FC<ElementProps> = ({params, fontUrl}) => {
 
   if (!text) return null;
 
-  const color = new Color(String(params.color)).multiplyScalar(num(params, 'glow'));
-
   return (
     <DreiText
       font={fontUrl}
       fontSize={1}
-      scale={num(params, 'size')}
+      scale={size}
+      position={[0, y, 0]}
       letterSpacing={spacing}
       anchorX="center"
-      anchorY="middle"
+      anchorY={anchorY}
       onSync={drawn}
     >
       {text}
@@ -279,7 +285,50 @@ const TextElement: React.FC<ElementProps> = ({params, fontUrl}) => {
   );
 };
 
+const TextElement: React.FC<ElementProps> = ({params, fontBase}) => (
+  <TextLine
+    text={String(params.text ?? '')}
+    fontUrl={`${fontBase}/${fontFile(params.font)}`}
+    spacing={num(params, 'spacing')}
+    size={num(params, 'size')}
+    color={new Color(String(params.color)).multiplyScalar(num(params, 'glow'))}
+  />
+);
+
+/** A song title with the artist underneath, sharing one font. */
+const TrackTitle: React.FC<ElementProps> = ({params, fontBase}) => {
+  const fontUrl = `${fontBase}/${fontFile(params.font)}`;
+  const glow = num(params, 'glow');
+  const size = num(params, 'size');
+  const gap = num(params, 'gap') * size;
+  const spacing = num(params, 'spacing');
+
+  return (
+    <>
+      <TextLine
+        text={String(params.title ?? '')}
+        fontUrl={fontUrl}
+        spacing={spacing}
+        size={size}
+        color={new Color(String(params.color)).multiplyScalar(glow)}
+        y={gap / 2}
+        anchorY="bottom"
+      />
+      <TextLine
+        text={String(params.artist ?? '')}
+        fontUrl={fontUrl}
+        spacing={spacing}
+        size={size * num(params, 'artistSize')}
+        color={new Color(String(params.artistColor)).multiplyScalar(glow)}
+        y={-gap / 2}
+        anchorY="top"
+      />
+    </>
+  );
+};
+
 export const ASSET_ELEMENT_COMPONENTS = {
   model: Model,
   text: TextElement,
+  trackTitle: TrackTitle,
 };

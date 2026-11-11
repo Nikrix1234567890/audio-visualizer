@@ -22,8 +22,8 @@ export type ElementProps = {
   time: number;
   /** Turns the storage key of an uploaded file into a URL that can be loaded. */
   assetUrl: (key: string) => string;
-  /** Address of the font file used by Text elements. */
-  fontUrl: string;
+  /** Address of the folder the text fonts are loaded from. */
+  fontBase: string;
 };
 
 /**

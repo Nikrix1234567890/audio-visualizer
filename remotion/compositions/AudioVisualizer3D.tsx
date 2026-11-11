@@ -7,8 +7,8 @@ import {getTrackAnalysis} from '../audio/analysis';
 import {sanitizeScene} from '../scene/sanitize';
 import {SceneRenderer} from '../scene/SceneRenderer';
 
-/** The font used by Text elements, shipped with the app in public/fonts. */
-const FONT_PATH = 'fonts/Geist-Regular.ttf';
+/** Where the text fonts live, shipped with the app in public/fonts. */
+const FONT_FOLDER = 'fonts';
 
 /**
  * The one composition behind both the live preview and the final render:
@@ -67,7 +67,7 @@ export const AudioVisualizer3D: React.FC<AudioVisualizerProps> = ({
           analysis={analysis}
           time={time}
           assetUrl={assetUrl}
-          fontUrl={`${appBase}/${FONT_PATH}`}
+          fontBase={`${appBase}/${FONT_FOLDER}`}
           editor={editor}
         />
       </ThreeCanvas>

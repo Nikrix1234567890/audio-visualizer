@@ -10,6 +10,7 @@ import {
 import { BindableSlider } from "@/components/editor/BindableSlider";
 import { ColorRow } from "@/components/ui/ColorRow";
 import { AssetRow } from "@/components/ui/AssetRow";
+import { SelectRow } from "@/components/ui/SelectRow";
 import { TextRow } from "@/components/ui/TextRow";
 import { SliderRow } from "@/components/ui/SliderRow";
 import { ToggleRow } from "@/components/ui/ToggleRow";
@@ -75,6 +76,17 @@ export function ParamControls({
               kind={def.kind}
               label={def.label}
               value={String(values[def.key] ?? "")}
+              onChange={(v) => onChange(def.key, v)}
+            />
+          );
+        }
+        if (def.kind === "select") {
+          return (
+            <SelectRow
+              key={def.key}
+              label={def.label}
+              value={String(values[def.key] ?? "")}
+              options={def.options}
               onChange={(v) => onChange(def.key, v)}
             />
           );

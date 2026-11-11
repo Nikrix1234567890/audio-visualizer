@@ -142,9 +142,9 @@ export const SceneRenderer: React.FC<{
   analysis: TrackAnalysis;
   time: number;
   assetUrl: (key: string) => string;
-  fontUrl: string;
+  fontBase: string;
   editor?: SceneEditorHooks;
-}> = ({scene, analysis, time, assetUrl, fontUrl, editor}) => {
+}> = ({scene, analysis, time, assetUrl, fontBase, editor}) => {
   const audio = getAudioFrame(analysis, time);
   // Everything below uses the values for this moment: the user's settings
   // plus whatever their audio bindings add right now.
@@ -238,7 +238,7 @@ export const SceneRenderer: React.FC<{
               audio={audio}
               time={time}
               assetUrl={assetUrl}
-              fontUrl={fontUrl}
+              fontBase={fontBase}
             />
           </group>
         );

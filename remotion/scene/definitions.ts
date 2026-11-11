@@ -32,7 +32,40 @@ export type ParamDef =
   /** An uploaded 3D model (.glb); the value is its storage key, or "". */
   | { kind: "model"; key: string; label: string }
   /** A short single line of text. */
-  | { kind: "text"; key: string; label: string };
+  | { kind: "text"; key: string; label: string }
+  /** One of a fixed list of choices; the value is the chosen option's value. */
+  | {
+      kind: "select";
+      key: string;
+      label: string;
+      options: { value: string; label: string }[];
+    };
+
+/**
+ * Typefaces for text. The files live in public/fonts and are loaded from
+ * there by the preview and by the server render alike (see the README in
+ * that folder for sources and licences).
+ */
+export const FONTS = [
+  { value: "geist", label: "Geist", file: "Geist-Regular.ttf" },
+  { value: "montserrat", label: "Montserrat Bold", file: "montserrat-latin-700-normal.woff" },
+  { value: "bebas", label: "Bebas Neue", file: "bebas-neue-latin-400-normal.woff" },
+  { value: "orbitron", label: "Orbitron", file: "orbitron-latin-700-normal.woff" },
+  { value: "playfair", label: "Playfair Display", file: "playfair-display-latin-700-normal.woff" },
+  { value: "spacemono", label: "Space Mono", file: "space-mono-latin-400-normal.woff" },
+] as const;
+
+const FONT_PARAM: ParamDef = {
+  kind: "select",
+  key: "font",
+  label: "Font",
+  options: FONTS.map(({ value, label }) => ({ value, label })),
+};
+
+/** File name of a font, falling back to the first one for unknown values. */
+export function fontFile(value: unknown): string {
+  return (FONTS.find((font) => font.value === value) ?? FONTS[0]).file;
+}
 
 /** Longest text a text parameter may hold. */
 export const MAX_TEXT_LENGTH = 120;
@@ -52,6 +85,7 @@ export const ELEMENT_TYPES = [
   "backdrop",
   "model",
   "text",
+  "trackTitle",
   "waveSurface",
   "particleDisc",
   "tunnel",
@@ -662,11 +696,41 @@ export const ELEMENT_DEFS: Record<ElementType, ElementDef> = {
     type: "text",
     label: "Text",
     description: "A line of text - a title, an artist name.",
-    defaults: { text: "YOUR TITLE", size: 1, color: "#ffffff", glow: 1, spacing: 0.05 },
+    defaults: { text: "YOUR TITLE", font: "geist", size: 1, color: "#ffffff", glow: 1, spacing: 0.05 },
     params: [
       { kind: "text", key: "text", label: "Text" },
+      FONT_PARAM,
       { kind: "number", key: "size", label: "Size", min: 0.1, max: 10, step: 0.05 },
       { kind: "color", key: "color", label: "Colour" },
+      { kind: "number", key: "glow", label: "Glow", min: 0, max: 4, step: 0.05 },
+      { kind: "number", key: "spacing", label: "Letter spacing", min: -0.1, max: 1, step: 0.01, modulate: false },
+    ],
+  },
+  trackTitle: {
+    type: "trackTitle",
+    label: "Track Title",
+    description: "Song title with the artist underneath, ready to fill in.",
+    defaults: {
+      title: "SONG TITLE",
+      artist: "Artist Name",
+      font: "montserrat",
+      size: 1,
+      artistSize: 0.45,
+      gap: 0.25,
+      color: "#ffffff",
+      artistColor: "#b9b6c9",
+      glow: 1,
+      spacing: 0.04,
+    },
+    params: [
+      { kind: "text", key: "title", label: "Title" },
+      { kind: "text", key: "artist", label: "Artist" },
+      FONT_PARAM,
+      { kind: "number", key: "size", label: "Size", min: 0.1, max: 10, step: 0.05 },
+      { kind: "number", key: "artistSize", label: "Artist size", min: 0.1, max: 1.5, step: 0.01, modulate: false },
+      { kind: "number", key: "gap", label: "Gap", min: 0, max: 2, step: 0.01, modulate: false },
+      { kind: "color", key: "color", label: "Title colour" },
+      { kind: "color", key: "artistColor", label: "Artist colour" },
       { kind: "number", key: "glow", label: "Glow", min: 0, max: 4, step: 0.05 },
       { kind: "number", key: "spacing", label: "Letter spacing", min: -0.1, max: 1, step: 0.01, modulate: false },
     ],

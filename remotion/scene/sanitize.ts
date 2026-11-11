@@ -59,6 +59,11 @@ function sanitizeParam(def: ParamDef, value: unknown, fallback: ParamValue): Par
   if (def.kind === "model") {
     return typeof value === "string" && MODEL_KEY.test(value) ? value : "";
   }
+  if (def.kind === "select") {
+    return def.options.some((option) => option.value === value)
+      ? (value as string)
+      : fallback;
+  }
   if (def.kind === "text") {
     return typeof value === "string"
       ? value.replace(CONTROL_CHARACTERS, "").slice(0, MAX_TEXT_LENGTH)
