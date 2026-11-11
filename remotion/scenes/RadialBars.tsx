@@ -1,12 +1,12 @@
 import React from 'react';
 import {Grid} from '@react-three/drei';
-import {visualizeAudio} from '@remotion/media-utils';
+import {getAudioFrame, getSpectrum} from '../audio/analysis';
 import type {SceneProps} from './types';
 import {PostFX} from './PostFX';
 
-/** Radial ring of bars, each driven by one frequency bin. */
+/** Radial ring of bars, each driven by one frequency band. */
 export const RadialBars: React.FC<SceneProps> = ({
-  audioData,
+  analysis,
   frame,
   fps,
   settings,
@@ -14,12 +14,8 @@ export const RadialBars: React.FC<SceneProps> = ({
   const {barCount, radius, barWidth, heightScale, hueStart, hueEnd} = settings;
   const time = frame / fps;
 
-  const spectrum = visualizeAudio({
-    audioData,
-    frame,
-    fps,
-    numberOfSamples: barCount,
-  });
+  const spectrum = getSpectrum(analysis, time, barCount);
+  const {bass, beat} = getAudioFrame(analysis, time);
 
   return (
     <>
@@ -42,7 +38,7 @@ export const RadialBars: React.FC<SceneProps> = ({
         <meshBasicMaterial
           color={`hsl(${(hueStart + hueEnd) / 2 % 360}, 90%, 55%)`}
           transparent
-          opacity={0.06}
+          opacity={0.05 + bass * 0.1 + beat * 0.2}
         />
       </mesh>
       {spectrum.map((amplitude, i) => {
@@ -50,9 +46,8 @@ export const RadialBars: React.FC<SceneProps> = ({
         const x = Math.cos(angle) * radius;
         const z = Math.sin(angle) * radius;
 
-        // Raw FFT amplitude is heavily skewed toward the bass end, so we
-        // apply a soft compression curve to make mid/high bands visible.
-        const compressed = Math.sqrt(amplitude);
+        // Already normalised, loudness-scaled and smoothed (0..1).
+        const compressed = amplitude;
         const height = 0.15 + compressed * heightScale;
         const hue = (hueStart + (i / barCount) * (hueEnd - hueStart)) % 360;
 

@@ -4,6 +4,7 @@ import {Audio} from '@remotion/media';
 import {useAudioData} from '@remotion/media-utils';
 import {ThreeCanvas} from '@remotion/three';
 import type {AudioVisualizerProps} from '../types';
+import {getTrackAnalysis} from '../audio/analysis';
 import {RadialBars, radialBarsCameraPosition} from '../scenes/RadialBars';
 import {SphereSwarm, sphereSwarmCameraPosition} from '../scenes/SphereSwarm';
 import {TerrainWave, terrainWaveCameraPosition} from '../scenes/TerrainWave';
@@ -20,7 +21,9 @@ export const AudioVisualizer3D: React.FC<AudioVisualizerProps> = (props) => {
     return <AbsoluteFill style={{backgroundColor: BACKGROUND}} />;
   }
 
-  const sceneProps = {audioData, frame, fps, settings: props};
+  // Cached per audio file, so this only costs time on the very first frame.
+  const analysis = getTrackAnalysis(audioData);
+  const sceneProps = {analysis, frame, fps, settings: props};
 
   const cameraPosition =
     scene === 'sphereSwarm'

@@ -1,6 +1,6 @@
 import React, {useMemo} from 'react';
 import {Line} from '@react-three/drei';
-import {visualizeAudio} from '@remotion/media-utils';
+import {getAudioFrame, getSpectrum} from '../audio/analysis';
 import type {SceneProps} from './types';
 import {PostFX} from './PostFX';
 
@@ -27,7 +27,7 @@ function fibonacciSpherePoints(count: number): [number, number, number][] {
  * core sells the "energy source" read even before bloom is added.
  */
 export const SphereSwarm: React.FC<SceneProps> = ({
-  audioData,
+  analysis,
   frame,
   fps,
   settings,
@@ -36,18 +36,14 @@ export const SphereSwarm: React.FC<SceneProps> = ({
 
   const basePoints = useMemo(() => fibonacciSpherePoints(barCount), [barCount]);
 
-  const spectrum = visualizeAudio({
-    audioData,
-    frame,
-    fps,
-    numberOfSamples: barCount,
-  });
-
   const time = frame / fps;
+  const spectrum = getSpectrum(analysis, time, barCount);
+  const {bass, beat} = getAudioFrame(analysis, time);
+  // The core breathes with the bass and kicks outward on every beat.
+  const coreScale = 1 + bass * 0.25 + beat * 0.35;
 
   const displacedPoints = basePoints.map(([nx, ny, nz], i) => {
-    const amplitude = spectrum[i] ?? 0;
-    const compressed = Math.sqrt(amplitude);
+    const compressed = spectrum[i] ?? 0;
     const displacement = radius + compressed * heightScale * 1.4;
     const wobble = Math.sin(time * 1.5 + i) * 0.05 * radius;
     const d = displacement + wobble;
@@ -60,13 +56,13 @@ export const SphereSwarm: React.FC<SceneProps> = ({
   return (
     <>
       {/* Glowing core - the "energy source" the swarm orbits. */}
-      <mesh>
+      <mesh scale={coreScale}>
         <sphereGeometry args={[radius * 0.35, 24, 24]} />
         <meshBasicMaterial color={`hsl(${midHue % 360}, 95%, 65%)`} />
       </mesh>
       <pointLight
         color={`hsl(${midHue % 360}, 95%, 60%)`}
-        intensity={4}
+        intensity={3 + beat * 4}
         distance={radius * 6}
       />
 
@@ -79,8 +75,7 @@ export const SphereSwarm: React.FC<SceneProps> = ({
       />
 
       {displacedPoints.map(([x, y, z], i) => {
-        const amplitude = spectrum[i] ?? 0;
-        const compressed = Math.sqrt(amplitude);
+        const compressed = spectrum[i] ?? 0;
         const hue = (hueStart + (i / barCount) * (hueEnd - hueStart)) % 360;
         const size = 0.08 + barWidth * 0.4 + compressed * 0.18;
 

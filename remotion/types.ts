@@ -26,7 +26,7 @@ export const DEFAULT_RESOLUTION: ResolutionKey = "1080p";
 
 export type VisualizerSettings = {
   scene: SceneId;
-  /** Must be a power of two (16, 32, 64, 128, ...) - required by visualizeAudio(). */
+  /** Number of bars / particles / points per row, depending on the active scene. */
   barCount: number;
   /** Overall scale of the scene (ring radius / sphere radius / grid size, depending on the active scene). */
   radius: number;
