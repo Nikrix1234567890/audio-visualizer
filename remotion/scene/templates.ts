@@ -632,6 +632,106 @@ export const TEMPLATES: SceneTemplate[] = [
       ],
     },
   },
+  {
+    id: "oscilloscope",
+    label: "Oscilloscope",
+    focusElementId: "scope",
+    scene: {
+      version: 1,
+      camera: { ...DEFAULT_CAMERA, distance: 11, height: 0.5, orbit: 0, sway: 1.5, bob: 0.4, drift: 0.2, fov: 45 },
+      cameraBindings: {},
+      look: { ...DEFAULT_LOOK, background: "#010604", bloom: 1.4, vignette: 0.75 },
+      lookBindings: {},
+      elements: [
+        createElement("oscilloscope", { id: "scope" }),
+        createElement("oscilloscope", {
+          id: "echo",
+          name: "Echo",
+          position: [0, 0, -2.5],
+          params: { glow: 0.35, height: 1.6, speed: 1.1, hueStart: 170, hueEnd: 220 },
+        }),
+        createElement("gridFloor", { id: "floor", position: [0, -2.6, 0] }),
+      ],
+    },
+  },
+  {
+    id: "halo",
+    label: "Halo",
+    focusElementId: "halo",
+    scene: {
+      version: 1,
+      camera: { ...DEFAULT_CAMERA, distance: 11, height: 0, orbit: 0, sway: 0.6, bob: 0.3, drift: 0.25, fov: 45 },
+      cameraBindings: { shake: { source: "bass", amount: 0.12 } },
+      look: { ...DEFAULT_LOOK, background: "#04020c", bloom: 1.2, vignette: 0.7 },
+      lookBindings: { bloom: { source: "beat", amount: 0.4 } },
+      elements: [
+        createElement("halo", {
+          id: "halo",
+          bindings: { scale: { source: "bass", amount: 0.12 } },
+        }),
+        createElement("trackTitle", {
+          id: "title",
+          position: [0, 0, 0.1],
+          params: { size: 0.42, artistSize: 0.5 },
+        }),
+        createElement("particles", {
+          id: "dust",
+          name: "Dust",
+          params: { count: 500, spread: 16, hole: 5, depth: 40, size: 0.14, speed: 0.4, boost: 3, hue: 260, saturation: 0.6, opacity: 0.5 },
+        }),
+        createElement("backdrop", { id: "backdrop", params: { top: "#160a36", bottom: "#030208" } }),
+      ],
+    },
+  },
+  {
+    id: "fireworks",
+    label: "Fireworks",
+    focusElementId: "fireworks",
+    scene: {
+      version: 1,
+      camera: { ...DEFAULT_CAMERA, distance: 18, height: 1, orbit: 0.03, bob: 0.8, drift: 0.1, fov: 50 },
+      cameraBindings: {},
+      look: { ...DEFAULT_LOOK, background: "#02020a", bloom: 1.3, vignette: 0.7 },
+      lookBindings: {},
+      elements: [
+        createElement("fireworks", {
+          id: "fireworks",
+          position: [0, 2, 0],
+          tempo: { amount: 0.7, period: 4, mode: "beat" },
+        }),
+        createElement("stars", { id: "stars", params: { count: 2000, size: 3 } }),
+      ],
+    },
+  },
+  {
+    id: "nightCity",
+    label: "Night City",
+    focusElementId: "city",
+    scene: {
+      version: 1,
+      camera: { ...DEFAULT_CAMERA, distance: 15, height: 3, orbit: 0, sway: 4, bob: 0.5, drift: 0.12, fov: 50 },
+      cameraBindings: {},
+      // Rises from street level to above the roofs.
+      cameraKeyframes: {
+        height: [
+          { t: 0, v: 0.5, ease: "smooth" },
+          { t: 10, v: 5, ease: "smooth" },
+        ],
+      },
+      look: { ...DEFAULT_LOOK, background: "#03030b", bloom: 1.1, vignette: 0.7 },
+      lookBindings: {},
+      elements: [
+        createElement("skyline", {
+          id: "city",
+          position: [0, FLOOR_Y, 0],
+          params: { buildings: 24, height: 9, react: 1.8, glow: 1.7, pointSize: 0.15, depth: 4 },
+        }),
+        createElement("sun", { id: "moon", position: [10, 10, -24], scale: 0.3 }),
+        createElement("stars", { id: "stars", params: { count: 2500, size: 3 } }),
+        createElement("gridFloor", { id: "floor", position: [0, FLOOR_Y, 0] }),
+      ],
+    },
+  },
 ];
 
 // Tempo swings: the motion of these elements slows down and speeds up

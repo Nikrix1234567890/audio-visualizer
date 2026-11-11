@@ -1,5 +1,6 @@
 // A fourth family of elements: nebula, black hole, Lissajous curve,
-// fountain, spectrum waves and shockwave.
+// fountain, spectrum waves, shockwave, oscilloscope, halo, fireworks and
+// skyline.
 //
 // All of them are point clouds drawn by the graphics card through GpuCloud
 // (see ./gpuCloud.tsx): the points are placed by a few lines of shader code
@@ -281,6 +282,202 @@ const Shockwave: React.FC<ElementProps> = (props) => {
   );
 };
 
+// ----------------------------------------------------------------- Oscilloscope
+
+// aSeed: position along the line, two numbers of thickness jitter.
+const SCOPE_BODY = /* glsl */ `
+  float x = aSeed.x;
+  // A trace built from eight waves, each as strong as its part of the
+  // spectrum: bass makes slow swells, highs a fine ripple on top.
+  float y = 0.0;
+  for (int k = 0; k < 8; k++) {
+    float fk = float(k);
+    y += sin(x * (4.0 + fk * 7.0) + uFlow * (1.0 + fk * 0.6))
+      * levelAt(fk / 8.0) / (1.0 + fk * 0.35);
+  }
+  // Pinned at both ends, like a plucked string.
+  float envelope = sin(x * 3.14159);
+
+  p = vec3(
+    (x - 0.5) * uWidth,
+    y * uHeight * envelope + (aSeed.y - 0.5) * uThickness,
+    (aSeed.z - 0.5) * uThickness);
+  c = hsl(mix(uHueStart, uHueEnd, x), 0.95, 0.55) * (0.6 + abs(y)) * uGlow;
+`;
+
+/** A glowing trace like the line on an oscilloscope, shaped by the spectrum. */
+const Oscilloscope: React.FC<ElementProps> = (props) => {
+  const {params} = props;
+  return (
+    <GpuCloud
+      element={props}
+      count={Math.round(num(params, 'count'))}
+      seed={4707}
+      body={SCOPE_BODY}
+      uniforms={{
+        uWidth: num(params, 'width'),
+        uHeight: num(params, 'height'),
+        uThickness: num(params, 'thickness'),
+        uFlow: flow(props),
+      }}
+      {...look(params)}
+    />
+  );
+};
+
+// ------------------------------------------------------------------------- Halo
+
+// aSeed: which bar, how far out along the bar, sideways jitter.
+const HALO_BODY = /* glsl */ `
+  float bar = floor(aSeed.x * uBars);
+  float angle = (bar + 0.5 + (aSeed.z - 0.5) * uFill) / uBars * TAU + uTurn;
+  // Mirrored: bass at the top, highs at the bottom, the same left and right.
+  float across = abs(mod(angle - uTurn, TAU) / 3.14159 - 1.0);
+  float level = levelAt(1.0 - across);
+  float r = uRadius * (1.0 + uBeat * uPulse * 0.06) + aSeed.y * (0.05 + level) * uReach;
+
+  p = vec3(sin(angle) * r, cos(angle) * r, 0.0);
+  c = hsl(mix(uHueStart, uHueEnd, across), 0.95, 0.55)
+    * (0.4 + level * 1.4) * (1.0 - aSeed.y * 0.5) * uGlow;
+`;
+
+/**
+ * A ring of bars that face the viewer and shoot outwards with the
+ * spectrum, mirrored left and right - the classic music-channel look.
+ */
+const Halo: React.FC<ElementProps> = (props) => {
+  const {params, time} = props;
+  return (
+    <GpuCloud
+      element={props}
+      count={Math.round(num(params, 'count'))}
+      seed={4808}
+      body={HALO_BODY}
+      uniforms={{
+        uBars: Math.round(num(params, 'bars')),
+        uRadius: num(params, 'radius'),
+        uReach: num(params, 'reach'),
+        uFill: num(params, 'fill'),
+        uPulse: num(params, 'pulse'),
+        uTurn: time * num(params, 'speed'),
+      }}
+      {...look(params)}
+    />
+  );
+};
+
+// -------------------------------------------------------------------- Fireworks
+
+const FIREWORK_FUNCTIONS = /* glsl */ `
+  // A repeatable "random" number 0..1 from any number.
+  float hash(float n) {
+    return fract(sin(n * 12.9898) * 43758.5453);
+  }
+`;
+
+// aSeed: which burst, direction (two numbers), speed. aSeed2.x: sparkle.
+const FIREWORK_BODY = /* glsl */ `
+  float burst = floor(aSeed.x * uBursts);
+  // Bursts go off one after another; each has its own place in the cycle.
+  float clock = uFlow + burst * 0.6180339;
+  float phase = fract(clock);
+  float round = floor(clock);
+  // A new spot in the sky for every time a burst goes off.
+  vec3 centre = vec3(
+    (hash(burst * 7.1 + round * 3.3) - 0.5) * uSpread,
+    (hash(burst * 2.7 + round * 5.9) - 0.3) * uSpread * 0.5,
+    (hash(burst * 4.3 + round * 1.7) - 0.5) * uSpread * 0.4);
+
+  float theta = aSeed.y * TAU;
+  float cosPhi = aSeed.z * 2.0 - 1.0;
+  vec3 direction = vec3(cos(theta) * sqrt(1.0 - cosPhi * cosPhi), cosPhi, sin(theta) * sqrt(1.0 - cosPhi * cosPhi));
+  // Fast at first, then slowing; and sinking as it fades.
+  float out1 = 1.0 - pow(1.0 - phase, 3.0);
+  p = centre + direction * out1 * uRadius * (0.5 + aSeed.w * 0.5) * (0.8 + uBass * 0.4);
+  p.y -= phase * phase * uRadius * 0.5;
+
+  float fade = pow(1.0 - phase, 1.5);
+  float sparkle = 0.6 + 0.4 * sin(aSeed2.x * 40.0 + uFlow * 60.0);
+  c = hsl(uHueStart + hash(burst * 1.3 + round) * (uHueEnd - uHueStart), 0.95, 0.6)
+    * fade * sparkle * (0.8 + uBeat * 0.8) * uGlow;
+  size = uSize * (0.5 + fade);
+`;
+
+/** Bursts of sparks going off around the scene, one after another. */
+const Fireworks: React.FC<ElementProps> = (props) => {
+  const {params} = props;
+  return (
+    <GpuCloud
+      element={props}
+      count={Math.round(num(params, 'count'))}
+      seed={4909}
+      functions={FIREWORK_FUNCTIONS}
+      body={FIREWORK_BODY}
+      uniforms={{
+        uBursts: Math.round(num(params, 'bursts')),
+        uRadius: num(params, 'radius'),
+        uSpread: num(params, 'spread'),
+        uFlow: flow(props),
+      }}
+      {...look(params)}
+    />
+  );
+};
+
+// ---------------------------------------------------------------------- Skyline
+
+// aSeed: which building, across its front, up its height, which row.
+const SKYLINE_BODY = /* glsl */ `
+  float building = floor(aSeed.x * uBuildings);
+  float row = floor(aSeed.w * uRows);
+  float id = building + row * 97.0;
+  float where = (building + 0.5) / uBuildings;
+  // Every building has its own height; the music makes it grow. Bass in
+  // the middle of the row, highs at both ends.
+  float level = levelAt(abs(where * 2.0 - 1.0));
+  float tall = (0.25 + hash(id) * 0.75) * uHeight * (0.45 + level * uReact);
+
+  // Points sit on a grid of windows on the front of the building.
+  float columns = 5.0;
+  float floors = max(2.0, floor(tall * 3.0));
+  float column = floor(aSeed.y * columns);
+  float level2 = floor(aSeed.z * floors);
+  float widthEach = uWidth / uBuildings;
+
+  p = vec3(
+    (where - 0.5) * uWidth + ((column + 0.5) / columns - 0.5) * widthEach * 0.75,
+    (level2 + 0.5) / floors * tall,
+    -row * uDepth + hash(id * 3.1) * uDepth * 0.5);
+  // Some windows are dark, and a few flicker with the highs.
+  float lit = step(0.35, hash(id * 13.0 + column * 7.0 + level2 * 3.0));
+  float flicker = 0.7 + 0.3 * sin(uTime * 3.0 + hash(id + column + level2) * TAU) * uTreble;
+  c = hsl(mix(uHueStart, uHueEnd, (level2 + 0.5) / floors), 0.9, 0.55)
+    * lit * flicker * (0.5 + level * 1.2) * (1.0 - row / max(1.0, uRows) * 0.6) * uGlow;
+`;
+
+/** A city skyline of lit windows whose towers grow with the spectrum. */
+const Skyline: React.FC<ElementProps> = (props) => {
+  const {params} = props;
+  return (
+    <GpuCloud
+      element={props}
+      count={Math.round(num(params, 'count'))}
+      seed={5010}
+      functions={FIREWORK_FUNCTIONS}
+      body={SKYLINE_BODY}
+      uniforms={{
+        uBuildings: Math.round(num(params, 'buildings')),
+        uRows: Math.round(num(params, 'rows')),
+        uWidth: num(params, 'width'),
+        uHeight: num(params, 'height'),
+        uDepth: num(params, 'depth'),
+        uReact: num(params, 'react'),
+      }}
+      {...look(params)}
+    />
+  );
+};
+
 export const NOVA_ELEMENT_COMPONENTS = {
   nebula: Nebula,
   blackHole: BlackHole,
@@ -288,4 +485,8 @@ export const NOVA_ELEMENT_COMPONENTS = {
   fountain: Fountain,
   spectrumWaves: SpectrumWaves,
   shockwave: Shockwave,
+  oscilloscope: Oscilloscope,
+  halo: Halo,
+  fireworks: Fireworks,
+  skyline: Skyline,
 };
