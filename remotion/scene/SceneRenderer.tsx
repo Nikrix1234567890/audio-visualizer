@@ -20,12 +20,16 @@ import {
 } from './definitions';
 import {BASE_ELEMENT_COMPONENTS, type ElementProps} from './elements';
 import {ASSET_ELEMENT_COMPONENTS} from './elementsAssets';
+import {DENSE_ELEMENT_COMPONENTS} from './elementsDense';
 import {EXTRA_ELEMENT_COMPONENTS} from './elementsExtra';
+import {SHAPE_ELEMENT_COMPONENTS} from './elementsShapes';
 
 const ELEMENT_COMPONENTS: Record<ElementType, React.FC<ElementProps>> = {
   ...BASE_ELEMENT_COMPONENTS,
   ...EXTRA_ELEMENT_COMPONENTS,
   ...ASSET_ELEMENT_COMPONENTS,
+  ...DENSE_ELEMENT_COMPONENTS,
+  ...SHAPE_ELEMENT_COMPONENTS,
 };
 
 const DEG_TO_RAD = Math.PI / 180;
@@ -64,6 +68,12 @@ const CLICKABLE = new Set<ElementType>([
   'image',
   'model',
   'text',
+  'waveSurface',
+  'particleDisc',
+  'helix',
+  'galaxy',
+  'spikeOrb',
+  'rippleRings',
 ]);
 
 const GIZMO_MODE = {move: 'translate', rotate: 'rotate', scale: 'scale'} as const;

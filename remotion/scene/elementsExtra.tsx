@@ -126,7 +126,7 @@ const SpectrumRing: React.FC<ElementProps> = ({params, analysis, time}) => {
 // -------------------------------------------------------------------- Particles
 
 /** Small deterministic random generator, so particle positions never change between renders. */
-function seededRandom(seed: number) {
+export function seededRandom(seed: number) {
   let a = seed;
   return () => {
     a = (a + 0x6d2b79f5) | 0;
@@ -139,7 +139,7 @@ function seededRandom(seed: number) {
 let softDot: DataTexture | null = null;
 
 /** A round, soft-edged dot used as the sprite for every particle. */
-function getSoftDot(): DataTexture {
+export function getSoftDot(): DataTexture {
   if (softDot) return softDot;
   const size = 32;
   const data = new Uint8Array(size * size * 4);

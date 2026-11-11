@@ -98,7 +98,7 @@ A near-black instrument chassis with one committed amber accent; color intensity
 
 An editor workbench, not a scrolling page. On desktop the editor fills exactly the viewport under the nav bar and never scrolls as a whole:
 
-- **Left - settings rail.** One tall panel of collapsible sections, separated by hairline seams: Project (title, Save and its status), Template (starting points), Elements (everything in the scene), Selected (the chosen element's parameters and transform), Camera, Look, Output. It scrolls on its own if the sections outgrow it. Output (resolution + Render) sits last - the end of the signal chain.
+- **Left - settings rail.** One tall panel of collapsible sections, separated by hairline seams: Project (title, Save and its status), Template (starting points), Colours (palettes), Elements (everything in the scene), Selected (the chosen element's parameters and transform), Camera, Look, Output. It scrolls on its own if the sections outgrow it. Output (resolution + Render) sits last - the end of the signal chain.
 - **Right - scope.** The live 3D preview, always the largest thing on screen. It keeps its aspect ratio and is fitted into whatever room the other two areas leave.
 - **Bottom - transport.** Load track, play/pause, time readout, mute, and the waveform across the remaining width. The preview has no player controls of its own; everything that moves through the song lives here.
 
@@ -136,6 +136,12 @@ The first rail section: the project title in a recessed text field, a small rais
 ### Projects page
 A plain list on the chassis, not a dashboard of cards with statistics: one bordered panel with a row per saved project (title, mono "changed" date, a quiet Delete button that turns red on hover), and below it the templates as simple bordered tiles to start a new project from. Deleting asks once, in a native confirm dialog.
 
+### Template Grid
+Templates are offered as a two-column grid of pill buttons (the selector-switch shape, one per template) rather than one long segmented selector - there are too many to share a single row. The template the scene still equals is lit; as soon as the scene is edited none is.
+
+### Palette Swatches
+A four-column grid of small raised swatches, each a gradient of the palette's colours with its name in mono caps below. One click recolours every element in the scene. This is the one place in the interface that shows saturated colours other than Patch Amber - they are content (the scene's colours), not interface accents, and they never light up as a state.
+
 ### Element List
 The scene's contents, one row per element: its name (with the element type as a small mono caption once it has been renamed), an eye toggle and a remove cross. The selected row is the only lit one - Patch Amber name on a Panel Graphite Raised fill with an amber-dim outline; hidden elements dim their name. Below the list a dashed "+ Add element" button opens the catalogue of element types, each with a one-line description. The controls shown under "Selected" are generated from the element type's parameter definitions, so every element gets the same faders, switches and swatches.
 
@@ -152,7 +158,7 @@ For short text parameters: caption above, a single-line field in a recessed well
 For picture parameters: caption above, then a small recessed square (scope-recessed) showing the chosen picture - empty chassis black when there is none - next to plain mono caps buttons: "Choose picture", then "Replace" and "Remove" once one is set. The picture uploads the moment it is chosen; the button reads "Uploading..." meanwhile, and a one-line hint names the accepted formats until a picture is set. 3D model files use the same row without the thumbnail: a signal dot (lit amber once a model is loaded) takes its place.
 
 ### Segmented Selector
-A row of backlit, pill-shaped (`999px`) buttons sharing one Hairline Steel outline, used for Template and Resolution. In the settings rail the segments stretch to share the full width equally. The selected segment fills Panel Graphite Raised with a Patch Amber label and glow-active; unselected segments show Steel Label text on transparent background.
+A row of backlit, pill-shaped (`999px`) buttons sharing one Hairline Steel outline, used for Resolution, the transform tool and audio signals. In the settings rail the segments stretch to share the full width equally. The selected segment fills Panel Graphite Raised with a Patch Amber label and glow-active; unselected segments show Steel Label text on transparent background.
 
 ### Input Jack (upload zone)
 While no track is loaded, the scope shows a circular dashed-ring drop target styled like a jack socket, with a small centered plug glyph. Dropping an audio file anywhere on the editor also loads it. Once a track is loaded, the jack's role moves to the transport: a small raised button with a signal-present dot (Patch Amber when loaded, dim otherwise) and the filename in mono.

@@ -16,6 +16,11 @@ import {
   type SceneElement,
   type Vec3,
 } from "../../../remotion/scene/definitions";
+import {
+  PALETTES,
+  applyPalette,
+  paletteGradient,
+} from "../../../remotion/scene/palettes";
 import { TEMPLATES } from "../../../remotion/scene/templates";
 import { RESOLUTIONS, type ResolutionKey } from "../../../remotion/types";
 import { BindableSlider } from "@/components/editor/BindableSlider";
@@ -191,15 +196,60 @@ export function Sidebar({
         "template",
         "Template",
         <>
-          <SegmentedSelector
-            stretch
-            options={TEMPLATES.map((t) => ({ value: t.id, label: t.label }))}
-            value={templateId ?? ""}
-            onChange={onLoadTemplate}
-          />
+          <ul className="grid grid-cols-2 gap-1.5">
+            {TEMPLATES.map((template) => {
+              const isActive = template.id === templateId;
+              return (
+                <li key={template.id}>
+                  <button
+                    type="button"
+                    aria-pressed={isActive}
+                    onClick={() => onLoadTemplate(template.id)}
+                    className={`w-full rounded-full border px-2 py-1.5 font-mono text-[11px] tracking-[0.06em] uppercase outline-none transition-all focus-visible:text-amber ${
+                      isActive
+                        ? "border-amber-dim bg-panel-raised text-amber shadow-glow-active"
+                        : "border-hairline text-steel hover:text-cream"
+                    }`}
+                  >
+                    {template.label}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
           <p className="text-xs text-steel">
             A template is a starting point. Add, remove and change its
             elements below.
+          </p>
+        </>,
+      )}
+
+      {section(
+        "colours",
+        "Colours",
+        <>
+          <ul className="grid grid-cols-4 gap-2">
+            {PALETTES.map((palette) => (
+              <li key={palette.id}>
+                <button
+                  type="button"
+                  title={`Recolour the scene: ${palette.label}`}
+                  onClick={() => onSceneChange(applyPalette(scene, palette))}
+                  className="group flex w-full flex-col items-center gap-1 outline-none"
+                >
+                  <span
+                    className="h-7 w-full rounded-md border border-hairline shadow-control-raised group-hover:border-amber-dim group-focus-visible:border-amber"
+                    style={{ background: paletteGradient(palette) }}
+                  />
+                  <span className="font-mono text-[10px] tracking-[0.06em] text-steel uppercase group-hover:text-cream">
+                    {palette.label}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+          <p className="text-xs text-steel">
+            Recolours every element at once. Fine-tune single elements below.
           </p>
         </>,
       )}
