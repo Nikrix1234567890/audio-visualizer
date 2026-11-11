@@ -4,6 +4,7 @@ import {getAudioDurationInSeconds} from '@remotion/media-utils';
 import {HelloWorld} from './compositions/HelloWorld';
 import {Demo3D} from './compositions/Demo3D';
 import {AudioVisualizer3D} from './compositions/AudioVisualizer3D';
+import {LoopPreview} from './compositions/LoopPreview';
 import {DEFAULT_TEMPLATE} from './scene/templates';
 
 const FPS = 30;
@@ -52,6 +53,23 @@ export const RemotionRoot: React.FC = () => {
               Math.floor(durationInSeconds * FPS),
             ),
           };
+        }}
+      />
+      {/* Seamless loops for template cards, rendered by scripts/previews.ts. */}
+      <Composition
+        id="LoopPreview"
+        component={LoopPreview}
+        fps={FPS}
+        width={480}
+        height={270}
+        durationInFrames={12 * FPS}
+        defaultProps={{
+          audioSrc: staticFile('audio/demo-track.wav'),
+          scene: DEFAULT_TEMPLATE.scene,
+          appBase: '',
+          loopStart: 4 * FPS,
+          loopFrames: 4 * FPS,
+          fadeFrames: 20,
         }}
       />
     </>

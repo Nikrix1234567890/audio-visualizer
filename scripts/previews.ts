@@ -13,11 +13,16 @@ import { getFreePort } from "../src/lib/freePort";
 
 const BUNDLE_DIR = path.resolve(process.cwd(), ".remotion-bundle");
 const OUT_DIR = path.resolve(process.cwd(), "public/previews");
-const COMPOSITION_ID = "AudioVisualizer3D";
+const COMPOSITION_ID = "LoopPreview";
 const FPS = 30;
-/** The stretch of the demo track that is shown: seconds 4 to 8. */
+/**
+ * The stretch of the demo track that is shown: seconds 4 to 8. Its last
+ * FADE_FRAMES melt into the frames just before second 4, so the clip loops
+ * without a jump (see remotion/compositions/LoopPreview.tsx).
+ */
 const FROM_SECOND = 4;
 const SECONDS = 4;
+const FADE_FRAMES = 20;
 /** Templates that also get a portrait loop. */
 const PORTRAIT = ["galaxy", "pulseRing", "jellyfish", "helix"];
 
@@ -49,6 +54,9 @@ async function main() {
       const inputProps = {
         scene: job.t.scene,
         appBase: `http://localhost:${port}/public`,
+        loopStart: FROM_SECOND * FPS,
+        loopFrames: SECONDS * FPS,
+        fadeFrames: FADE_FRAMES,
       };
       const composition = await selectComposition({
         serveUrl: BUNDLE_DIR,
@@ -60,9 +68,8 @@ async function main() {
       });
       composition.width = job.width;
       composition.height = job.height;
-      const seconds = composition.durationInFrames / composition.fps;
       composition.fps = FPS;
-      composition.durationInFrames = Math.floor(seconds * FPS);
+      composition.durationInFrames = (FROM_SECOND + SECONDS) * FPS;
 
       await renderMedia({
         composition,
