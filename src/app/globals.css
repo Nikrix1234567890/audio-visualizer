@@ -54,3 +54,68 @@ body {
   );
   background-size: 3px 3px;
 }
+
+/* Editor shell. Small screens: preview, transport and settings stacked in
+   that order. Large screens: settings left, preview right, transport along
+   the bottom, with draggable seams between them (sizes come from the
+   --sidebar-w / --transport-h variables set by the Editor component). */
+.editor-grid {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.editor-area-preview {
+  order: 1;
+}
+
+.editor-area-transport {
+  order: 2;
+}
+
+.editor-area-side {
+  order: 3;
+  scrollbar-color: var(--hairline-steel) transparent;
+  scrollbar-width: thin;
+}
+
+.editor-handle {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .editor-grid {
+    display: grid;
+    grid-template-columns: var(--sidebar-w) 7px minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) 7px var(--transport-h);
+    grid-template-areas:
+      "side vh prev"
+      "hh hh hh"
+      "trans trans trans";
+  }
+
+  .editor-area-side {
+    grid-area: side;
+  }
+
+  .editor-area-preview {
+    grid-area: prev;
+  }
+
+  .editor-area-transport {
+    grid-area: trans;
+  }
+
+  .editor-handle {
+    display: block;
+  }
+
+  .editor-handle-v {
+    grid-area: vh;
+  }
+
+  .editor-handle-h {
+    grid-area: hh;
+  }
+}

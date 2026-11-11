@@ -1,40 +1,56 @@
 "use client";
 
-import { Player } from "@remotion/player";
-import { useCallback, useRef, useState } from "react";
-import { AudioVisualizer3D } from "../../remotion/compositions/AudioVisualizer3D";
+import { getAudioData, type MediaUtilsAudioData } from "@remotion/media-utils";
+import type { PlayerRef } from "@remotion/player";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import {
   DEFAULT_RESOLUTION,
   DEFAULT_VISUALIZER_SETTINGS,
-  RESOLUTIONS,
-  SCENES,
   type ResolutionKey,
   type VisualizerSettings,
 } from "../../remotion/types";
-import { Knob } from "@/components/ui/Knob";
-import { Panel } from "@/components/ui/Panel";
-import { SegmentedSelector } from "@/components/ui/SegmentedSelector";
+import { Preview } from "@/components/editor/Preview";
+import {
+  Sidebar,
+  type CollapsedSections,
+  type SectionId,
+} from "@/components/editor/Sidebar";
+import { Transport } from "@/components/editor/Transport";
+import { ResizeHandle } from "@/components/ui/ResizeHandle";
+import { useStoredState } from "@/lib/useStoredState";
 
 const FPS = 30;
-const BAR_COUNT_OPTIONS = [16, 32, 64, 128];
+const SEEK_KEY_SECONDS = 5;
 
-function probeAudioDuration(url: string): Promise<number> {
-  return new Promise((resolve, reject) => {
-    const audio = document.createElement("audio");
-    audio.preload = "metadata";
-    audio.onloadedmetadata = () => resolve(audio.duration);
-    audio.onerror = () =>
-      reject(new Error("Could not read this audio file."));
-    audio.src = url;
-  });
+const SIDEBAR = { min: 240, max: 520, default: 320 };
+const TRANSPORT = { min: 88, max: 320, default: 132 };
+const NO_COLLAPSED_SECTIONS: CollapsedSections = {};
+
+type Track = {
+  file: File;
+  url: string;
+  audioData: MediaUtilsAudioData;
+  durationInFrames: number;
+};
+
+/** True while the user is typing or operating a control that uses the keys itself. */
+function isInteractiveTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  return Boolean(
+    target.closest("input, textarea, select, button, a, [role=slider], [role=separator]"),
+  );
 }
 
 export function Editor() {
-  const [audioFile, setAudioFile] = useState<File | null>(null);
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const [durationInFrames, setDurationInFrames] = useState<number | null>(
-    null,
-  );
+  const [track, setTrack] = useState<Track | null>(null);
+  const [isLoadingTrack, setIsLoadingTrack] = useState(false);
+  const [player, setPlayer] = useState<PlayerRef | null>(null);
   const [settings, setSettings] = useState<VisualizerSettings>(
     DEFAULT_VISUALIZER_SETTINGS,
   );
@@ -46,29 +62,60 @@ export function Editor() {
   const [renderedUrl, setRenderedUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Layout the user arranged for themselves; remembered across visits.
+  const [sidebarWidth, setSidebarWidth] = useStoredState(
+    "editor.sidebarWidth",
+    SIDEBAR.default,
+  );
+  const [transportHeight, setTransportHeight] = useStoredState(
+    "editor.transportHeight",
+    TRANSPORT.default,
+  );
+  const [collapsed, setCollapsed] = useStoredState(
+    "editor.collapsedSections",
+    NO_COLLAPSED_SECTIONS,
+  );
+  const [muted, setMuted] = useStoredState("editor.muted", false);
+
   const audioKeyRef = useRef<string | null>(null);
+  const loadIdRef = useRef(0);
 
-  const handleFileChange = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
+  const loadFile = useCallback(async (file: File) => {
+    const loadId = ++loadIdRef.current;
+    setError(null);
+    setRenderedUrl(null);
+    setIsLoadingTrack(true);
+    audioKeyRef.current = null;
 
-      setError(null);
-      setRenderedUrl(null);
-      audioKeyRef.current = null;
+    const url = URL.createObjectURL(file);
+    try {
+      // Decoded once here; the preview's composition asks for the same URL
+      // and gets this exact object from Remotion's cache, so the waveform and
+      // the scenes share one audio analysis.
+      const audioData = await getAudioData(url);
+      if (loadId !== loadIdRef.current) return;
 
-      const blobUrl = URL.createObjectURL(file);
-      try {
-        const duration = await probeAudioDuration(blobUrl);
-        setAudioFile(file);
-        setAudioUrl(blobUrl);
-        setDurationInFrames(Math.max(1, Math.ceil(duration * FPS)));
-      } catch {
+      setTrack((previous) => {
+        if (previous) URL.revokeObjectURL(previous.url);
+        return {
+          file,
+          url,
+          audioData,
+          durationInFrames: Math.max(
+            1,
+            Math.ceil(audioData.durationInSeconds * FPS),
+          ),
+        };
+      });
+    } catch {
+      URL.revokeObjectURL(url);
+      if (loadId === loadIdRef.current) {
         setError("This file could not be read as audio.");
       }
-    },
-    [],
-  );
+    } finally {
+      if (loadId === loadIdRef.current) setIsLoadingTrack(false);
+    }
+  }, []);
 
   const updateSetting = useCallback(
     <K extends keyof VisualizerSettings>(
@@ -79,6 +126,50 @@ export function Editor() {
     },
     [],
   );
+
+  // Keep the player's mute state in line with the remembered preference.
+  useEffect(() => {
+    if (!player) return;
+    if (muted) player.mute();
+    else player.unmute();
+  }, [player, muted]);
+
+  // The 3D canvas draws its very first frame before the post-processing pass
+  // is ready, which leaves a freshly loaded track showing a black picture
+  // until something changes. Stepping one frame forward and back redraws it.
+  // (Preview only - the server render is not affected.)
+  useEffect(() => {
+    if (!player) return;
+    const timeout = setTimeout(() => {
+      if (player.isPlaying() || player.getCurrentFrame() !== 0) return;
+      player.seekTo(1);
+      requestAnimationFrame(() => player.seekTo(0));
+    }, 150);
+    return () => clearTimeout(timeout);
+  }, [player]);
+
+  // Space plays/pauses, arrow keys jump - unless a control has the focus.
+  const durationInFrames = track?.durationInFrames ?? 1;
+  useEffect(() => {
+    if (!player) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (isInteractiveTarget(e.target)) return;
+
+      if (e.code === "Space") {
+        e.preventDefault();
+        player.toggle();
+      } else if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+        e.preventDefault();
+        const direction = e.key === "ArrowRight" ? 1 : -1;
+        const next =
+          player.getCurrentFrame() + direction * SEEK_KEY_SECONDS * FPS;
+        player.seekTo(Math.min(durationInFrames - 1, Math.max(0, next)));
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [player, durationInFrames]);
 
   const pollJobStatus = useCallback((jobId: string): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -109,7 +200,7 @@ export function Editor() {
   }, []);
 
   const handleRender = useCallback(async () => {
-    if (!audioFile) return;
+    if (!track) return;
     setError(null);
     setRenderedUrl(null);
     setRenderProgress(0);
@@ -120,7 +211,7 @@ export function Editor() {
       if (!audioKey) {
         setIsUploading(true);
         const formData = new FormData();
-        formData.append("audio", audioFile);
+        formData.append("audio", track.file);
         const uploadResponse = await fetch("/api/upload", {
           method: "POST",
           body: formData,
@@ -158,274 +249,96 @@ export function Editor() {
       setIsUploading(false);
       setIsRendering(false);
     }
-  }, [audioFile, settings, resolution, pollJobStatus]);
+  }, [track, settings, resolution, pollJobStatus]);
 
-  const isBusy = isUploading || isRendering;
-
-  return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-6 py-8">
-      <div>
-        <h1 className="font-sans text-2xl font-semibold tracking-tight text-cream">
-          Audio Visualizer
-        </h1>
-        <p className="mt-1 text-sm text-steel">
-          Patch in a track, dial in the look, print it to video.
-        </p>
-      </div>
-
-      {/* SCOPE */}
-      <div className="relative rounded-[10px] border border-hairline bg-panel p-2 shadow-[inset_0_2px_12px_rgba(0,0,0,0.6)]">
-        <Rivet className="left-2 top-2" />
-        <Rivet className="right-2 top-2" />
-        <Rivet className="bottom-2 left-2" />
-        <Rivet className="bottom-2 right-2" />
-        {audioUrl && durationInFrames ? (
-          <Player
-            component={AudioVisualizer3D}
-            inputProps={{ audioSrc: audioUrl, ...settings }}
-            durationInFrames={durationInFrames}
-            compositionWidth={1280}
-            compositionHeight={720}
-            fps={FPS}
-            style={{ width: "100%", borderRadius: 6, overflow: "hidden" }}
-            controls
-            loop
-            clickToPlay
-            acknowledgeRemotionLicense
-          />
-        ) : (
-          <div className="flex aspect-video w-full items-center justify-center rounded-md bg-chassis">
-            <InputJack
-              hasFile={Boolean(audioFile)}
-              fileName={audioFile?.name}
-              onFileChange={handleFileChange}
-            />
-          </div>
-        )}
-      </div>
-
-      {audioUrl && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <Panel label="Input">
-            <InputJack
-              hasFile={Boolean(audioFile)}
-              fileName={audioFile?.name}
-              onFileChange={handleFileChange}
-              compact
-            />
-          </Panel>
-
-          <Panel label="Scene">
-            <div className="flex h-full flex-col items-start justify-center gap-2">
-              <SegmentedSelector
-                options={SCENES.map((s) => ({ value: s.id, label: s.label }))}
-                value={settings.scene}
-                onChange={(v) => updateSetting("scene", v)}
-              />
-            </div>
-          </Panel>
-
-          <Panel label="Shape">
-            <div className="flex flex-wrap items-center justify-around gap-3">
-              <SegmentedSelector
-                options={BAR_COUNT_OPTIONS.map((n) => ({
-                  value: n,
-                  label: String(n),
-                }))}
-                value={settings.barCount}
-                onChange={(v) => updateSetting("barCount", v)}
-              />
-              <Knob
-                label="Radius"
-                value={settings.radius}
-                min={1}
-                max={10}
-                step={0.1}
-                onChange={(v) => updateSetting("radius", v)}
-                formatValue={(v) => v.toFixed(1)}
-              />
-              <Knob
-                label="Width"
-                value={settings.barWidth}
-                min={0.05}
-                max={1}
-                step={0.01}
-                onChange={(v) => updateSetting("barWidth", v)}
-                formatValue={(v) => v.toFixed(2)}
-              />
-              <Knob
-                label="Height"
-                value={settings.heightScale}
-                min={1}
-                max={10}
-                step={0.1}
-                onChange={(v) => updateSetting("heightScale", v)}
-                formatValue={(v) => v.toFixed(1)}
-              />
-            </div>
-          </Panel>
-
-          <Panel label="Color">
-            <div className="flex justify-around gap-3">
-              <Knob
-                label="Hue Start"
-                value={settings.hueStart}
-                min={0}
-                max={360}
-                step={1}
-                onChange={(v) => updateSetting("hueStart", v)}
-                formatValue={(v) => `${Math.round(v)}°`}
-              />
-              <Knob
-                label="Hue End"
-                value={settings.hueEnd}
-                min={0}
-                max={720}
-                step={1}
-                onChange={(v) => updateSetting("hueEnd", v)}
-                formatValue={(v) => `${Math.round(v)}°`}
-              />
-            </div>
-          </Panel>
-
-          <Panel label="Motion">
-            <div className="flex justify-around gap-3">
-              <Knob
-                label="Camera"
-                value={settings.cameraSpeed}
-                min={0}
-                max={2}
-                step={0.01}
-                onChange={(v) => updateSetting("cameraSpeed", v)}
-                formatValue={(v) => `${v.toFixed(2)}x`}
-              />
-            </div>
-          </Panel>
-
-          <Panel label="Output" className="sm:col-span-2 lg:col-span-3">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <SegmentedSelector
-                options={Object.entries(RESOLUTIONS).map(([key, r]) => ({
-                  value: key as ResolutionKey,
-                  label: r.label,
-                }))}
-                value={resolution}
-                onChange={setResolution}
-              />
-
-              <div className="flex flex-1 flex-col gap-2 sm:max-w-xs">
-                <button
-                  type="button"
-                  onClick={handleRender}
-                  disabled={isBusy}
-                  className="rounded-xl border border-hairline bg-panel-raised px-6 py-3 font-sans text-sm font-semibold tracking-wide text-cream shadow-[0_1px_0_rgba(255,255,255,0.04)_inset,0_2px_6px_rgba(0,0,0,0.4)] transition-shadow hover:shadow-[0_0_16px_rgba(255,138,61,0.45)] hover:text-amber disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {isUploading
-                    ? "UPLOADING…"
-                    : isRendering
-                      ? `RENDERING ${Math.round(renderProgress * 100)}%`
-                      : "RENDER"}
-                </button>
-
-                {isRendering && (
-                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-chassis">
-                    <div
-                      className="h-full bg-amber shadow-[0_0_16px_rgba(255,138,61,0.45)] transition-[width] duration-300"
-                      style={{ width: `${Math.round(renderProgress * 100)}%` }}
-                    />
-                  </div>
-                )}
-
-                {error && <p className="text-xs text-red-400">{error}</p>}
-
-                {renderedUrl && (
-                  <a
-                    href={renderedUrl}
-                    download
-                    className="font-mono text-xs text-amber underline"
-                  >
-                    Download video
-                  </a>
-                )}
-              </div>
-            </div>
-          </Panel>
-        </div>
-      )}
-    </div>
+  const toggleSection = useCallback(
+    (id: SectionId) => setCollapsed({ ...collapsed, [id]: !collapsed[id] }),
+    [collapsed, setCollapsed],
   );
-}
 
-function Rivet({ className = "" }: { className?: string }) {
-  return (
-    <span
-      className={`pointer-events-none absolute z-10 h-1.5 w-1.5 rounded-full bg-[radial-gradient(circle_at_35%_30%,rgba(255,255,255,0.5),rgba(0,0,0,0.6))] ${className}`}
-    />
-  );
-}
+  const layout = {
+    "--sidebar-w": `${sidebarWidth}px`,
+    "--transport-h": `${transportHeight}px`,
+  } as CSSProperties;
 
-function InputJack({
-  hasFile,
-  fileName,
-  onFileChange,
-  compact = false,
-}: {
-  hasFile: boolean;
-  fileName?: string;
-  onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  compact?: boolean;
-}) {
   return (
-    <label
-      className={`group relative flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md ${
-        compact ? "py-2" : "py-8"
-      }`}
+    <div
+      className="editor-grid"
+      style={layout}
+      onDragOver={(e) => {
+        if (e.dataTransfer.types.includes("Files")) e.preventDefault();
+      }}
+      onDrop={(e) => {
+        const file = e.dataTransfer.files?.[0];
+        if (!file) return;
+        e.preventDefault();
+        loadFile(file);
+      }}
     >
-      <span
-        className={`relative flex items-center justify-center rounded-full border-2 border-dashed ${
-          hasFile ? "border-amber-dim" : "border-hairline"
-        } ${compact ? "h-12 w-12" : "h-16 w-16"} transition-colors group-hover:border-amber`}
-      >
-        <svg
-          width={compact ? 18 : 22}
-          height={compact ? 18 : 22}
-          viewBox="0 0 24 24"
-          fill="none"
-        >
-          <circle
-            cx="12"
-            cy="12"
-            r="4"
-            className={hasFile ? "fill-amber" : "fill-steel"}
-          />
-          <path
-            d="M12 2v6M12 16v6M2 12h6M16 12h6"
-            stroke={hasFile ? "var(--patch-amber)" : "var(--steel-label)"}
-            strokeWidth="1.5"
-            strokeLinecap="round"
-          />
-        </svg>
-        {hasFile && (
-          <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-amber shadow-[0_0_8px_rgba(255,138,61,0.8)]" />
-        )}
-      </span>
-      <span className="font-mono text-[11px] tracking-[0.08em] text-steel uppercase">
-        {hasFile ? "Loaded" : "Input"}
-      </span>
-      {fileName && (
-        <span className="max-w-[180px] truncate font-mono text-xs text-cream">
-          {fileName}
-        </span>
-      )}
-      {!hasFile && !compact && (
-        <span className="text-xs text-steel">Click to select a track</span>
-      )}
-      <input
-        type="file"
-        accept="audio/*,.wav,.mp3,.m4a,.aac,.ogg,.flac"
-        className="hidden"
-        onChange={onFileChange}
+      <Sidebar
+        settings={settings}
+        onSettingChange={updateSetting}
+        resolution={resolution}
+        onResolutionChange={setResolution}
+        collapsed={collapsed}
+        onToggleSection={toggleSection}
+        render={{
+          canRender: Boolean(track),
+          isUploading,
+          isRendering,
+          progress: renderProgress,
+          error,
+          renderedUrl,
+        }}
+        onRender={handleRender}
       />
-    </label>
+
+      <ResizeHandle
+        orientation="vertical"
+        label="Resize settings panel"
+        className="editor-handle editor-handle-v"
+        value={sidebarWidth}
+        min={SIDEBAR.min}
+        max={SIDEBAR.max}
+        defaultValue={SIDEBAR.default}
+        onChange={setSidebarWidth}
+      />
+
+      <Preview
+        key={`preview:${track?.url ?? "empty"}`}
+        audioUrl={track?.url ?? null}
+        durationInFrames={durationInFrames}
+        fps={FPS}
+        settings={settings}
+        initiallyMuted={muted}
+        isLoading={isLoadingTrack}
+        onPlayer={setPlayer}
+        onPickFile={loadFile}
+      />
+
+      <ResizeHandle
+        orientation="horizontal"
+        label="Resize timeline"
+        className="editor-handle editor-handle-h"
+        value={transportHeight}
+        min={TRANSPORT.min}
+        max={TRANSPORT.max}
+        defaultValue={TRANSPORT.default}
+        onChange={setTransportHeight}
+        invert
+      />
+
+      <Transport
+        key={`transport:${track?.url ?? "empty"}`}
+        player={track ? player : null}
+        audioData={track?.audioData ?? null}
+        fileName={track?.file.name ?? null}
+        durationInFrames={durationInFrames}
+        fps={FPS}
+        muted={muted}
+        onToggleMute={() => setMuted(!muted)}
+        onPickFile={loadFile}
+      />
+    </div>
   );
 }
