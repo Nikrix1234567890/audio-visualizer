@@ -197,3 +197,25 @@ export function withTransform(
   next.keyframes = keyframes;
   return next;
 }
+
+/**
+ * One keyframe of one target moved from second `from` to second `to` - or,
+ * with `copy`, a copy of it placed there while the original stays.
+ */
+export function moveKeyframe(
+  keys: Keyframe[],
+  from: number,
+  to: number,
+  copy = false,
+): Keyframe[] {
+  const index = keyframeIndexAt(keys, from);
+  if (index < 0) return keys;
+  const moved = { ...keys[index], t: to };
+  return [
+    // Landing on another keyframe replaces it.
+    ...keys.filter(
+      (k, i) => (copy || i !== index) && Math.abs(k.t - to) >= SAME_MOMENT,
+    ),
+    moved,
+  ].sort((a, b) => a.t - b.t);
+}

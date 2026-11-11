@@ -3,12 +3,17 @@
 import type { MediaUtilsAudioData } from "@remotion/media-utils";
 import type { PlayerRef } from "@remotion/player";
 import { useEffect, useRef, useState } from "react";
+import { KeyframeLanes, type TimelineLane } from "./KeyframeLanes";
+import type { TimelineView } from "./TimeDiamond";
 import {
   formatTime,
   Waveform,
   type MarkerOwner,
   type TimelineMarker,
 } from "./Waveform";
+
+/** How far the timeline can be zoomed in. */
+const ZOOMS = [1, 2, 4, 8, 16];
 
 const ACCEPTED_AUDIO = "audio/*,.wav,.mp3,.m4a,.aac,.ogg,.flac";
 /** How often the transport UI follows the playing video. */
@@ -33,6 +38,8 @@ export function Transport({
   onPickFile,
   markers,
   onMoveMarker,
+  lanes,
+  onMoveKey,
 }: {
   player: PlayerRef | null;
   audioData: MediaUtilsAudioData | null;
@@ -45,7 +52,11 @@ export function Transport({
   /** Keyframes to show in the timeline. */
   markers: TimelineMarker[];
   onMoveMarker: (owner: MarkerOwner, from: number, to: number) => void;
+  /** One row per animated setting, shown under the waveform. */
+  lanes: TimelineLane[];
+  onMoveKey: (lane: TimelineLane, from: number, to: number, copy: boolean) => void;
 }) {
+  const [zoom, setZoom] = useState(1);
   const [frame, setFrame] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -81,6 +92,19 @@ export function Transport({
   }, [player]);
 
   const ready = Boolean(player && audioData);
+
+  // The stretch of the track on screen. Zoomed in, the timeline shows one
+  // "page" and turns to the next when the playhead leaves it.
+  const duration = durationInFrames / fps;
+  const seconds = frame / fps;
+  const length = duration / zoom;
+  const view: TimelineView = {
+    start: Math.max(0, Math.min(duration - length, Math.floor(seconds / length) * length)),
+    length,
+  };
+  const zoomIndex = ZOOMS.indexOf(zoom);
+  const zoomButton =
+    "flex h-6 w-6 items-center justify-center rounded-md border border-line font-mono text-xs text-ink outline-none hover:border-accent-dim hover:text-accent focus-visible:border-accent disabled:cursor-not-allowed disabled:text-muted disabled:opacity-40";
 
   return (
     <div className="editor-area-transport surface-texture flex min-h-0 flex-col gap-3 border-t border-line bg-surface p-3 lg:flex-row lg:items-stretch lg:border-t-0">
@@ -167,16 +191,54 @@ export function Transport({
         </button>
       </div>
 
-      <div className="h-16 min-w-0 flex-1 lg:h-auto">
+      <div className="flex shrink-0 items-center gap-1 lg:flex-col lg:justify-center">
+        <button
+          type="button"
+          className={zoomButton}
+          disabled={zoomIndex >= ZOOMS.length - 1}
+          aria-label="Zoom into the timeline"
+          title="Zoom in"
+          onClick={() => setZoom(ZOOMS[zoomIndex + 1])}
+        >
+          +
+        </button>
+        <span className="w-6 text-center font-mono text-[10px] text-muted tabular-nums">
+          {zoom}x
+        </span>
+        <button
+          type="button"
+          className={zoomButton}
+          disabled={zoomIndex <= 0}
+          aria-label="Zoom out of the timeline"
+          title="Zoom out"
+          onClick={() => setZoom(ZOOMS[zoomIndex - 1])}
+        >
+          -
+        </button>
+      </div>
+
+      <div className="flex h-24 min-w-0 flex-1 flex-col gap-1.5 lg:h-auto">
+        <div className="min-h-0 flex-1">
         <Waveform
           audioData={audioData}
           frame={frame}
           durationInFrames={durationInFrames}
           fps={fps}
+          view={view}
           onSeek={(target) => player?.seekTo(target)}
           markers={markers}
           onMoveMarker={onMoveMarker}
         />
+        </div>
+        {audioData && lanes.length > 0 && (
+          <KeyframeLanes
+            lanes={lanes}
+            view={view}
+            seconds={seconds}
+            onGo={(t) => player?.seekTo(Math.round(t * fps))}
+            onMoveKey={onMoveKey}
+          />
+        )}
       </div>
     </div>
   );

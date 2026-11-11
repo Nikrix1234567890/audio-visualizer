@@ -11,13 +11,20 @@ import {
   useState,
   type CSSProperties,
 } from "react";
-import type {
-  SceneDocument,
-  SceneElement,
+import {
+  CAMERA_PARAMS,
+  ELEMENT_DEFS,
+  LOOK_PARAMS,
+  type Keyframes,
+  type ParamDef,
+  type SceneDocument,
+  type SceneElement,
 } from "../../remotion/scene/definitions";
 import {
   keyframeTimes,
+  moveKeyframe,
   moveKeyframes,
+  withKeyframes,
   withTransform,
 } from "../../remotion/scene/keyframes";
 import { sanitizeScene } from "../../remotion/scene/sanitize";
@@ -41,6 +48,7 @@ import {
   type CollapsedSections,
   type SaveStatus,
 } from "@/components/editor/Sidebar";
+import type { TimelineLane } from "@/components/editor/KeyframeLanes";
 import { Transport } from "@/components/editor/Transport";
 import type { MarkerOwner, TimelineMarker } from "@/components/editor/Waveform";
 import { ResizeHandle } from "@/components/ui/ResizeHandle";
@@ -61,7 +69,7 @@ const SEEK_KEY_SECONDS = 5;
 const DEFAULT_TITLE = "Untitled project";
 
 const SIDEBAR = { min: 240, max: 520, default: 320 };
-const TRANSPORT = { min: 88, max: 320, default: 132 };
+const TRANSPORT = { min: 88, max: 420, default: 168 };
 const NO_COLLAPSED_SECTIONS: CollapsedSections = {};
 
 type Track = {
@@ -73,6 +81,16 @@ type Track = {
   audioData: MediaUtilsAudioData;
   durationInFrames: number;
 };
+
+/** What a keyframe target is called: a parameter's label, or "Position X". */
+function targetLabel(defs: ParamDef[], target: string): string {
+  const [name, axis] = target.split(".");
+  if (name === "scale") return "Scale";
+  if (name === "position" || name === "rotation") {
+    return `${name === "position" ? "Position" : "Rotation"} ${"XYZ"[Number(axis)]}`;
+  }
+  return defs.find((def) => def.key === target)?.label ?? target;
+}
 
 /** True while the user is typing or operating a control that uses the keys itself. */
 function isInteractiveTarget(target: EventTarget | null): boolean {
@@ -345,6 +363,64 @@ export function Editor({
       ...group("look", "Look", keyframeTimes(scene.lookKeyframes)),
     ];
   }, [scene, selectedId]);
+
+  // One timeline row per animated setting.
+  const lanes = useMemo<TimelineLane[]>(() => {
+    const selected = scene.elements.find((e) => e.id === selectedId);
+    const rows = (
+      owner: MarkerOwner,
+      prefix: string,
+      defs: ParamDef[],
+      keyframes: Keyframes | undefined,
+    ) =>
+      Object.entries(keyframes ?? {}).map(([target, keys]) => ({
+        owner,
+        target,
+        label: `${prefix}${targetLabel(defs, target)}`,
+        keys,
+      }));
+    return [
+      ...rows(
+        "element",
+        "",
+        selected ? ELEMENT_DEFS[selected.type].params : [],
+        selected?.keyframes,
+      ),
+      ...rows("camera", "Camera · ", CAMERA_PARAMS, scene.cameraKeyframes),
+      ...rows("look", "Look · ", LOOK_PARAMS, scene.lookKeyframes),
+    ];
+  }, [scene, selectedId]);
+
+  // Dragging a diamond in a row moves (or, with Alt, copies) that one keyframe.
+  const moveKey = useCallback(
+    (lane: TimelineLane, from: number, to: number, copy: boolean) => {
+      const moved = (keyframes: Keyframes | undefined) =>
+        withKeyframes(
+          keyframes,
+          lane.target,
+          moveKeyframe(keyframes?.[lane.target] ?? [], from, to, copy),
+        );
+      recordScene((current) => {
+        if (lane.owner === "camera") {
+          return { ...current, cameraKeyframes: moved(current.cameraKeyframes) };
+        }
+        if (lane.owner === "look") {
+          return { ...current, lookKeyframes: moved(current.lookKeyframes) };
+        }
+        return {
+          ...current,
+          elements: current.elements.map((element) =>
+            element.id === selectedId
+              ? { ...element, keyframes: moved(element.keyframes) }
+              : element,
+          ),
+        };
+      });
+      setTemplateId(null);
+      markUnsaved();
+    },
+    [markUnsaved, recordScene, selectedId],
+  );
 
   // Dragging a marker moves every keyframe its owner has at that moment.
   const moveMarker = useCallback(
@@ -799,6 +875,8 @@ export function Editor({
         onPickFile={loadFile}
         markers={markers}
         onMoveMarker={moveMarker}
+        lanes={lanes}
+        onMoveKey={moveKey}
       />
     </div>
     </PlayheadProvider>

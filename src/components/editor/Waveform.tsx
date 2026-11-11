@@ -3,13 +3,15 @@
 import type { MediaUtilsAudioData } from "@remotion/media-utils";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getTrackAnalysis } from "../../../remotion/audio/analysis";
+import { TimeDiamond, type TimelineView } from "@/components/editor/TimeDiamond";
 
-const PEAK_BUCKETS = 4000;
+const PEAK_BUCKETS = 8000;
 const BAR_WIDTH = 2;
 const BAR_GAP = 1;
 const SEEK_KEY_SECONDS = 5;
 
-// Canvas cannot read CSS variables cheaply per frame; these mirror DESIGN.md.
+// A canvas cannot read CSS variables cheaply per frame; these mirror the
+// tokens in globals.css (accent, an unlit violet, ink).
 const COLOR_PLAYED = "#a78bfa";
 const COLOR_UNPLAYED = "#3a3768";
 const COLOR_BEAT = "rgba(242, 240, 255, 0.45)";
@@ -18,9 +20,6 @@ const COLOR_PLAYHEAD = "#f2f0ff";
 /** Whose keyframe a timeline marker stands for. */
 export type MarkerOwner = "element" | "camera" | "look";
 export type TimelineMarker = { owner: MarkerOwner; label: string; t: number };
-
-/** A marker dragged less far than this (in pixels) was clicked, not moved. */
-const DRAG_THRESHOLD = 3;
 
 export function formatTime(seconds: number): string {
   const total = Math.max(0, Math.floor(seconds));
@@ -68,12 +67,16 @@ function computeBeats(audioData: MediaUtilsAudioData): number[] {
  * ticks along the bottom mark the beats the visualizer reacts to (the same
  * analysis the scenes use, see remotion/audio/analysis.ts). Diamonds along
  * the top are keyframes: click one to go there, drag it to another moment.
+ *
+ * `view` is the stretch of the track that is shown - the whole track, or a
+ * part of it when zoomed in.
  */
 export function Waveform({
   audioData,
   frame,
   durationInFrames,
   fps,
+  view,
   onSeek,
   markers,
   onMoveMarker,
@@ -82,16 +85,11 @@ export function Waveform({
   frame: number;
   durationInFrames: number;
   fps: number;
+  view: TimelineView;
   onSeek: (frame: number) => void;
   markers: TimelineMarker[];
   onMoveMarker: (owner: MarkerOwner, from: number, to: number) => void;
 }) {
-  // The marker being dragged and the moment it is currently held at.
-  const [drag, setDrag] = useState<{
-    marker: TimelineMarker;
-    startX: number;
-    t: number | null;
-  } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
@@ -116,7 +114,12 @@ export function Waveform({
     return () => observer.disconnect();
   }, []);
 
-  const progress = durationInFrames > 1 ? frame / (durationInFrames - 1) : 0;
+  const seconds = frame / fps;
+  const duration = durationInFrames / fps;
+  // Where the view begins and ends, as fractions of the whole track.
+  const viewFrom = duration > 0 ? view.start / duration : 0;
+  const viewSpan = duration > 0 ? view.length / duration : 1;
+  const progress = (seconds - view.start) / view.length;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -143,10 +146,13 @@ export function Waveform({
     const playheadX = progress * width;
 
     for (let i = 0; i < barCount; i++) {
-      const from = Math.floor((i / barCount) * PEAK_BUCKETS);
-      const to = Math.max(from + 1, Math.floor(((i + 1) / barCount) * PEAK_BUCKETS));
+      const from = Math.floor((viewFrom + (i / barCount) * viewSpan) * PEAK_BUCKETS);
+      const to = Math.max(
+        from + 1,
+        Math.floor((viewFrom + ((i + 1) / barCount) * viewSpan) * PEAK_BUCKETS),
+      );
       let peak = 0;
-      for (let b = from; b < to; b++) if (peaks[b] > peak) peak = peaks[b];
+      for (let b = from; b < to && b < PEAK_BUCKETS; b++) if (peaks[b] > peak) peak = peaks[b];
 
       const x = i * (BAR_WIDTH + BAR_GAP);
       const half = Math.max(0.5, peak * (middle - 1));
@@ -156,21 +162,23 @@ export function Waveform({
 
     ctx.fillStyle = COLOR_BEAT;
     for (const beat of beats) {
-      ctx.fillRect(Math.round(beat * width), height - beatLane + 2, 1, beatLane - 2);
+      const at = (beat - viewFrom) / viewSpan;
+      if (at < 0 || at > 1) continue;
+      ctx.fillRect(Math.round(at * width), height - beatLane + 2, 1, beatLane - 2);
     }
 
-    ctx.fillStyle = COLOR_PLAYHEAD;
-    ctx.fillRect(Math.round(playheadX), 0, 1, height);
-  }, [peaks, beats, size, progress]);
+    if (progress >= 0 && progress <= 1) {
+      ctx.fillStyle = COLOR_PLAYHEAD;
+      ctx.fillRect(Math.round(playheadX), 0, 1, height);
+    }
+  }, [peaks, beats, size, progress, viewFrom, viewSpan]);
 
   const seekFromPointer = (e: React.PointerEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const position = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
-    onSeek(Math.round(position * (durationInFrames - 1)));
+    const target = Math.round((view.start + position * view.length) * fps);
+    onSeek(Math.min(durationInFrames - 1, Math.max(0, target)));
   };
-
-  const seconds = frame / fps;
-  const duration = durationInFrames / fps;
 
   return (
     <div
@@ -202,62 +210,25 @@ export function Waveform({
       }}
     >
       <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
-      {audioData &&
-        markers
-          .filter((marker) => marker.t <= duration)
-          .map((marker) => {
-            const isDragged = drag?.marker === marker && drag.t !== null;
-            const t = isDragged ? (drag.t as number) : marker.t;
-            const timeAt = (clientX: number, target: HTMLElement) => {
-              const rect = (target.parentElement as HTMLElement).getBoundingClientRect();
-              const position = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
-              return Math.round(position * duration * 1000) / 1000;
-            };
-            return (
-              <button
+      {audioData && (
+        // The combined row: one diamond per moment at which the selected
+        // element, the camera or the look has a keyframe.
+        <div className="absolute inset-x-0 top-0 h-4">
+          {markers
+            .filter((marker) => marker.t <= duration)
+            .map((marker) => (
+              <TimeDiamond
                 key={`${marker.owner}:${marker.t}`}
-                type="button"
-                aria-label={`${marker.label} keyframe at ${t.toFixed(1)} seconds`}
-                title={`${marker.label} · ${t.toFixed(2)} s - click to go there, drag to move`}
-                style={{ left: `${(t / duration) * 100}%` }}
-                className="group/marker absolute top-0 flex h-4 w-4 -translate-x-1/2 cursor-ew-resize touch-none items-center justify-center outline-none"
-                onPointerDown={(e) => {
-                  // Not a seek: the marker handles its own click and drag.
-                  e.stopPropagation();
-                  e.currentTarget.setPointerCapture(e.pointerId);
-                  setDrag({ marker, startX: e.clientX, t: null });
-                }}
-                onPointerMove={(e) => {
-                  if (!drag || drag.marker !== marker) return;
-                  if (drag.t === null && Math.abs(e.clientX - drag.startX) < DRAG_THRESHOLD) {
-                    return;
-                  }
-                  setDrag({ ...drag, t: timeAt(e.clientX, e.currentTarget) });
-                }}
-                onPointerUp={() => {
-                  if (!drag || drag.marker !== marker) return;
-                  if (drag.t === null) onSeek(Math.round(marker.t * fps));
-                  else if (drag.t !== marker.t) onMoveMarker(marker.owner, marker.t, drag.t);
-                  setDrag(null);
-                }}
-                onPointerCancel={() => setDrag(null)}
-                onKeyDown={(e) => {
-                  if (e.key !== "Enter" && e.key !== " ") return;
-                  e.preventDefault();
-                  e.stopPropagation();
-                  onSeek(Math.round(marker.t * fps));
-                }}
-              >
-                <span
-                  className={`h-2 w-2 rotate-45 border group-hover/marker:scale-125 group-focus-visible/marker:scale-125 ${
-                    marker.owner === "element"
-                      ? "border-accent bg-accent"
-                      : "border-ink bg-canvas"
-                  }`}
-                />
-              </button>
-            );
-          })}
+                t={marker.t}
+                view={view}
+                label={marker.label}
+                isFilled={marker.owner === "element"}
+                onGo={(t) => onSeek(Math.round(t * fps))}
+                onMove={(to) => onMoveMarker(marker.owner, marker.t, to)}
+              />
+            ))}
+        </div>
+      )}
       {!audioData && (
         <span className="absolute inset-0 flex items-center justify-center font-mono text-[11px] tracking-[0.08em] text-muted uppercase">
           No track loaded
