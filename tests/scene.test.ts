@@ -25,7 +25,7 @@ import { lyricAt, parseLyrics } from "../remotion/scene/lyrics";
 import { sanitizeScene } from "../remotion/scene/sanitize";
 import { TEMPLATES, cloneScene } from "../remotion/scene/templates";
 
-const SILENCE = { bass: 0, mid: 0, treble: 0, level: 0, beat: 0 };
+const SILENCE = { bass: 0, mid: 0, treble: 0, level: 0, beat: 0, beatCount: 0 };
 const key = (t: number, v: number, ease: Keyframe["ease"] = "linear"): Keyframe => ({ t, v, ease });
 
 test("keyframes: value between, before and after the markers", () => {
