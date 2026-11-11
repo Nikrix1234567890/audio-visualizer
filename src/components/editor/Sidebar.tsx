@@ -6,8 +6,10 @@ import {
   CAMERA_PARAMS,
   ELEMENT_DEFS,
   LOOK_PARAMS,
+  MAX_ELEMENTS,
   TRANSFORM_LIMITS,
   createElement,
+  createElementId,
   type Binding,
   type Bindings,
   type ElementType,
@@ -134,6 +136,34 @@ export function Sidebar({
     const element = createElement(type);
     onSceneChange({ ...scene, elements: [...scene.elements, element] });
     onSelect(element.id);
+  };
+
+  /** A copy right below the original, selected so it can be moved away. */
+  const duplicateElement = (id: string) => {
+    const index = scene.elements.findIndex((e) => e.id === id);
+    if (index < 0 || scene.elements.length >= MAX_ELEMENTS) return;
+    const original = scene.elements[index];
+    const copy: SceneElement = {
+      ...original,
+      id: createElementId(),
+      name: `${original.name} copy`.slice(0, 40),
+      position: [...original.position],
+      rotation: [...original.rotation],
+      params: { ...original.params },
+      bindings: { ...original.bindings },
+    };
+    const elements = [...scene.elements];
+    elements.splice(index + 1, 0, copy);
+    onSceneChange({ ...scene, elements });
+    onSelect(copy.id);
+  };
+
+  const moveElement = (from: number, to: number) => {
+    if (from === to) return;
+    const elements = [...scene.elements];
+    const [moved] = elements.splice(from, 1);
+    elements.splice(to, 0, moved);
+    onSceneChange({ ...scene, elements });
   };
 
   const removeElement = (id: string) => {
@@ -293,6 +323,8 @@ export function Sidebar({
             if (element) updateElement(id, { visible: !element.visible });
           }}
           onRemove={removeElement}
+          onDuplicate={duplicateElement}
+          onMove={moveElement}
           onAdd={addElement}
         />,
       )}

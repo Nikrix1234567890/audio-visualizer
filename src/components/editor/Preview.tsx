@@ -43,6 +43,10 @@ export function Preview({
   selectedId,
   onSelect,
   onTransform,
+  onUndo,
+  onRedo,
+  canUndo,
+  canRedo,
 }: {
   audioUrl: string | null;
   durationInFrames: number;
@@ -56,6 +60,10 @@ export function Preview({
   selectedId: string | null;
   onSelect: SceneEditorHooks["onSelect"];
   onTransform: SceneEditorHooks["onTransform"];
+  onUndo: () => void;
+  onRedo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
 }) {
   const areaRef = useRef<HTMLDivElement>(null);
   const [area, setArea] = useState({ width: 0, height: 0 });
@@ -145,6 +153,14 @@ export function Preview({
           Tool
         </span>
         <SegmentedSelector options={TOOLS} value={tool} onChange={setTool} />
+        <div className="flex gap-1">
+          <HistoryButton label="Undo (Ctrl+Z)" disabled={!canUndo} onClick={onUndo}>
+            <path d="M6 4L2.5 7.5 6 11M3 7.5h6.5a3.5 3.5 0 010 7H7" />
+          </HistoryButton>
+          <HistoryButton label="Redo (Ctrl+Shift+Z)" disabled={!canRedo} onClick={onRedo}>
+            <path d="M10 4l3.5 3.5L10 11M13 7.5H6.5a3.5 3.5 0 000 7H9" />
+          </HistoryButton>
+        </div>
         <span className="hidden text-xs text-steel xl:inline">
           {isPlaying
             ? "Pause to edit in the picture."
@@ -251,6 +267,43 @@ function DropZone({
         }}
       />
     </label>
+  );
+}
+
+function HistoryButton({
+  label,
+  disabled,
+  onClick,
+  children,
+}: {
+  label: string;
+  disabled: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      title={label}
+      disabled={disabled}
+      onClick={onClick}
+      className="flex h-8 w-8 items-center justify-center rounded-md border border-hairline text-cream outline-none hover:border-amber-dim hover:text-amber focus-visible:border-amber disabled:cursor-not-allowed disabled:text-steel disabled:opacity-40 disabled:hover:border-hairline disabled:hover:text-steel"
+    >
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 16 16"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+      >
+        {children}
+      </svg>
+    </button>
   );
 }
 

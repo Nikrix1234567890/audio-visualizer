@@ -15,8 +15,9 @@ const FILE_ELEMENTS: ElementType[] = ["image", "model"];
 
 /**
  * Everything in the scene, one row per element: click to select, the eye
- * hides or shows it, the cross removes it. "Add element" opens the catalogue
- * of element types.
+ * hides or shows it, the two sheets copy it, the cross removes it. Drag a
+ * row to change the order. "Add element" opens the catalogue of element
+ * types.
  */
 export function ElementList({
   elements,
@@ -24,6 +25,8 @@ export function ElementList({
   onSelect,
   onToggleVisible,
   onRemove,
+  onDuplicate,
+  onMove,
   onAdd,
 }: {
   elements: SceneElement[];
@@ -31,9 +34,15 @@ export function ElementList({
   onSelect: (id: string) => void;
   onToggleVisible: (id: string) => void;
   onRemove: (id: string) => void;
+  onDuplicate: (id: string) => void;
+  /** Moves the element at index `from` to index `to`. */
+  onMove: (from: number, to: number) => void;
   onAdd: (type: ElementType) => void;
 }) {
   const [isAdding, setIsAdding] = useState(false);
+  // Row being dragged and the row it is currently held over.
+  const [dragFrom, setDragFrom] = useState<number | null>(null);
+  const [dragOver, setDragOver] = useState<number | null>(null);
   const isFull = elements.length >= MAX_ELEMENTS;
 
   return (
@@ -45,16 +54,43 @@ export function ElementList({
       )}
 
       <ul className="flex flex-col gap-1">
-        {elements.map((element) => {
+        {elements.map((element, index) => {
           const isSelected = element.id === selectedId;
+          const isDropTarget =
+            dragFrom !== null && dragOver === index && dragFrom !== index;
           return (
             <li
               key={element.id}
-              className={`flex items-center rounded-md border ${
-                isSelected
-                  ? "border-amber-dim bg-panel-raised"
-                  : "border-transparent hover:border-hairline"
-              }`}
+              draggable
+              onDragStart={(e) => {
+                // Firefox only starts a drag that carries some data.
+                e.dataTransfer.setData("text/plain", element.name);
+                e.dataTransfer.effectAllowed = "move";
+                setDragFrom(index);
+              }}
+              onDragOver={(e) => {
+                if (dragFrom === null) return;
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "move";
+                setDragOver(index);
+              }}
+              onDrop={(e) => {
+                if (dragFrom === null) return;
+                e.preventDefault();
+                e.stopPropagation();
+                onMove(dragFrom, index);
+              }}
+              onDragEnd={() => {
+                setDragFrom(null);
+                setDragOver(null);
+              }}
+              className={`flex cursor-grab items-center rounded-md border active:cursor-grabbing ${
+                isDropTarget
+                  ? "border-amber"
+                  : isSelected
+                    ? "border-amber-dim bg-panel-raised"
+                    : "border-transparent hover:border-hairline"
+              } ${dragFrom === index ? "opacity-40" : ""}`}
             >
               <button
                 type="button"
@@ -98,6 +134,19 @@ export function ElementList({
                     strokeLinecap="round"
                   />
                 )}
+              </IconButton>
+
+              <IconButton
+                label={`Duplicate ${element.name}`}
+                onClick={() => onDuplicate(element.id)}
+                disabled={isFull}
+              >
+                <path
+                  d="M6 6V3.5h6.5V10H10M3.5 6H10v6.5H3.5z"
+                  stroke="currentColor"
+                  strokeWidth="1.3"
+                  strokeLinejoin="round"
+                />
               </IconButton>
 
               <IconButton
@@ -170,11 +219,13 @@ function IconButton({
   label,
   onClick,
   active = false,
+  disabled = false,
   children,
 }: {
   label: string;
   onClick: () => void;
   active?: boolean;
+  disabled?: boolean;
   children: React.ReactNode;
 }) {
   return (
@@ -183,7 +234,8 @@ function IconButton({
       aria-label={label}
       title={label}
       onClick={onClick}
-      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md outline-none hover:text-amber focus-visible:text-amber ${
+      disabled={disabled}
+      className={`flex h-8 w-7 shrink-0 disabled:cursor-not-allowed disabled:opacity-40 items-center justify-center rounded-md outline-none hover:text-amber focus-visible:text-amber ${
         active ? "text-cream" : "text-steel"
       }`}
     >

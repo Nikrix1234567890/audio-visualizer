@@ -36,6 +36,7 @@ import {
 } from "@/components/editor/Sidebar";
 import { Transport } from "@/components/editor/Transport";
 import { ResizeHandle } from "@/components/ui/ResizeHandle";
+import { useSceneHistory } from "@/lib/useSceneHistory";
 import { useStoredState } from "@/lib/useStoredState";
 import {
   sanitizeAspect,
@@ -97,9 +98,8 @@ export function Editor({
   const [track, setTrack] = useState<Track | null>(null);
   const [isLoadingTrack, setIsLoadingTrack] = useState(Boolean(initialProjectId));
   const [player, setPlayer] = useState<PlayerRef | null>(null);
-  const [scene, setScene] = useState<SceneDocument>(() =>
-    cloneScene(startTemplate.scene),
-  );
+  const history = useSceneHistory(() => cloneScene(startTemplate.scene));
+  const { scene, change: recordScene, reset: resetScene } = history;
   // Which template the scene still equals; null as soon as it was edited.
   const [templateId, setTemplateId] = useState<string | null>(startTemplate.id);
   const [selectedId, setSelectedId] = useState<string | null>(
@@ -214,7 +214,7 @@ export function Editor({
       const project = await response.json();
       if (isCancelled) return;
       const loadedScene = sanitizeScene(project.scene);
-      setScene(loadedScene);
+      resetScene(loadedScene);
       setTemplateId(null);
       setSelectedId(loadedScene.elements[0]?.id ?? null);
       setResolution(sanitizeResolution(project.resolution));
@@ -233,17 +233,17 @@ export function Editor({
     return () => {
       isCancelled = true;
     };
-  }, [initialProjectId, loadTrack]);
+  }, [initialProjectId, loadTrack, resetScene]);
 
   const markUnsaved = useCallback(() => setSaveStatus("unsaved"), []);
 
   const changeScene = useCallback(
     (next: SceneDocument) => {
-      setScene(next);
+      recordScene(next);
       setTemplateId(null);
       markUnsaved();
     },
-    [markUnsaved],
+    [markUnsaved, recordScene],
   );
 
   // Dragging the gizmo in the picture changes an element's transform.
@@ -252,7 +252,7 @@ export function Editor({
       id: string,
       patch: Partial<Pick<SceneElement, "position" | "rotation" | "scale">>,
     ) => {
-      setScene((current) => ({
+      recordScene((current) => ({
         ...current,
         elements: current.elements.map((element) =>
           element.id === id ? { ...element, ...patch } : element,
@@ -261,7 +261,7 @@ export function Editor({
       setTemplateId(null);
       markUnsaved();
     },
-    [markUnsaved],
+    [markUnsaved, recordScene],
   );
 
   const loadTemplate = useCallback(
@@ -276,12 +276,14 @@ export function Editor({
       ) {
         return;
       }
-      setScene(cloneScene(template.scene));
+      // A step of its own in the history: loading a template by mistake
+      // can be undone.
+      recordScene(cloneScene(template.scene), { merge: false });
       setTemplateId(template.id);
       setSelectedId(template.focusElementId);
       markUnsaved();
     },
-    [templateId, markUnsaved],
+    [templateId, markUnsaved, recordScene],
   );
 
   // Warn before edits are lost. An untouched template is not worth a
@@ -318,6 +320,46 @@ export function Editor({
       document.removeEventListener("click", onClick, true);
     };
   }, [hasUnsavedEdits]);
+
+  // Undo and redo. After either, the scene no longer equals a template.
+  const { undo: undoScene, redo: redoScene, canUndo, canRedo } = history;
+  const undo = useCallback(() => {
+    undoScene();
+    setTemplateId(null);
+    markUnsaved();
+  }, [undoScene, markUnsaved]);
+  const redo = useCallback(() => {
+    redoScene();
+    setTemplateId(null);
+    markUnsaved();
+  }, [redoScene, markUnsaved]);
+
+  // Ctrl+Z / Ctrl+Shift+Z / Ctrl+Y (Cmd on a Mac). Text fields keep their
+  // own undo while the cursor is in them.
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+      const target = e.target;
+      if (
+        target instanceof HTMLElement &&
+        (target.closest("textarea, [contenteditable=true]") ||
+          (target instanceof HTMLInputElement &&
+            !["range", "checkbox", "color", "file"].includes(target.type)))
+      ) {
+        return;
+      }
+      const key = e.key.toLowerCase();
+      if (key === "z" && !e.shiftKey) {
+        e.preventDefault();
+        undo();
+      } else if ((key === "z" && e.shiftKey) || key === "y") {
+        e.preventDefault();
+        redo();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [undo, redo]);
 
   // Keep the player's mute state in line with the remembered preference.
   useEffect(() => {
@@ -585,6 +627,10 @@ export function Editor({
         selectedId={selectedId}
         onSelect={setSelectedId}
         onTransform={transformElement}
+        onUndo={undo}
+        onRedo={redo}
+        canUndo={canUndo}
+        canRedo={canRedo}
       />
 
       <ResizeHandle
