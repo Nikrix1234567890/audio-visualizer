@@ -83,8 +83,8 @@ function Plan({
 }) {
   return (
     <div
-      className={`flex flex-col gap-5 rounded-2xl border bg-surface p-6 ${
-        isHighlighted ? "border-accent-dim" : "border-line"
+      className={`flex flex-col gap-5 glass rounded-2xl p-6 ${
+        isHighlighted ? "shadow-[0_0_50px_-12px_rgba(139,92,246,0.7)]" : ""
       }`}
     >
       <div className="flex flex-col gap-1">

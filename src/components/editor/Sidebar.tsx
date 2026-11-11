@@ -282,6 +282,7 @@ export function Sidebar({
                   >
                     <Thumbnail
                       src={`/thumbnails/templates/${template.id}.jpg`}
+                      video={`/previews/${template.id}.mp4`}
                       dimmed={!isActive}
                     />
                     <span
