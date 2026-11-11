@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { queuePosition } from "@/lib/renderQueue";
 import { deleteFile } from "@/lib/storage";
 
 export async function GET(
@@ -23,6 +24,8 @@ export async function GET(
   return NextResponse.json({
     status: job.status,
     progress: job.progress,
+    // Renders run one at a time: how many are still ahead of this one.
+    ahead: await queuePosition(job),
     url: job.outputPath ? `/api/files/${job.outputPath}` : null,
     error: job.errorMessage,
   });

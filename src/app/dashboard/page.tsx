@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { DeleteButton } from "@/components/DeleteButton";
 import { DeleteProjectButton } from "@/components/DeleteProjectButton";
+import { RefreshWhile } from "@/components/RefreshWhile";
 import { TemplateGrid } from "@/components/TemplateGrid";
 import { prisma } from "@/lib/prisma";
 import { sanitizeAspect, sanitizeResolution } from "@/lib/visualizerSettings";
@@ -36,6 +37,13 @@ export default async function DashboardPage() {
     where: { userId: session.user.id },
     orderBy: { updatedAt: "desc" },
     select: { id: true, title: true, updatedAt: true },
+  });
+
+  // Videos that are waiting or being drawn right now.
+  const running = await prisma.renderJob.findMany({
+    where: { userId: session.user.id, status: { in: ["QUEUED", "RENDERING"] } },
+    orderBy: { createdAt: "asc" },
+    select: { id: true, status: true, progress: true, settings: true },
   });
 
   const videos = await prisma.renderJob.findMany({
@@ -86,7 +94,35 @@ export default async function DashboardPage() {
         <h2 className="font-mono text-[11px] tracking-[0.12em] text-muted uppercase">
           Your videos
         </h2>
-        {videos.length === 0 ? (
+        <RefreshWhile active={running.length > 0} />
+        {running.length > 0 && (
+          <ul className="flex flex-col rounded-2xl border border-accent-dim bg-surface">
+            {running.map((job) => (
+              <li
+                key={job.id}
+                className="flex items-center gap-4 border-b border-line px-4 py-3 last:border-b-0"
+              >
+                <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                  <span className="text-sm text-ink tabular-nums">
+                    {describeVideo(job.settings)}
+                  </span>
+                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-canvas">
+                    <div
+                      className="h-full bg-accent shadow-glow-active transition-[width] duration-500"
+                      style={{ width: `${Math.round(job.progress * 100)}%` }}
+                    />
+                  </div>
+                </div>
+                <span className="shrink-0 font-mono text-[11px] tracking-[0.06em] text-accent uppercase tabular-nums">
+                  {job.status === "QUEUED"
+                    ? "Waiting"
+                    : `Rendering ${Math.round(job.progress * 100)}%`}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+        {videos.length === 0 && running.length > 0 ? null : videos.length === 0 ? (
           <p className="text-sm text-muted">
             Videos you render while logged in are kept here, ready to
             download again.

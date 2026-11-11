@@ -71,6 +71,8 @@ export type RenderState = {
   isUploading: boolean;
   isRendering: boolean;
   progress: number;
+  /** Renders still ahead in the queue, or null once ours has started. */
+  ahead: number | null;
   error: string | null;
   renderedUrl: string | null;
 };
@@ -495,6 +497,10 @@ export function Sidebar({
           >
             {render.isUploading ? (
               "UPLOADING…"
+            ) : render.isRendering && render.ahead !== null ? (
+              <span className="font-mono">
+                {render.ahead > 0 ? `WAITING - ${render.ahead} AHEAD` : "STARTING…"}
+              </span>
             ) : render.isRendering ? (
               <span className="font-mono">RENDERING {percent}%</span>
             ) : (

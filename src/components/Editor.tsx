@@ -149,6 +149,8 @@ export function Editor({
   const [isUploading, setIsUploading] = useState(false);
   const [isRendering, setIsRendering] = useState(false);
   const [renderProgress, setRenderProgress] = useState(0);
+  // Renders ahead of ours in the queue; null while ours is being drawn.
+  const [rendersAhead, setRendersAhead] = useState<number | null>(null);
   const [renderedUrl, setRenderedUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -568,6 +570,7 @@ export function Editor({
           }
           const data = await response.json();
           setRenderProgress(data.progress ?? 0);
+          setRendersAhead(data.status === "QUEUED" ? (data.ahead ?? 0) : null);
 
           if (data.status === "DONE") {
             resolve(data.url as string);
@@ -591,6 +594,7 @@ export function Editor({
     setError(null);
     setRenderedUrl(null);
     setRenderProgress(0);
+    setRendersAhead(null);
 
     try {
       const audioKey = await ensureAudioKey();
@@ -732,6 +736,7 @@ export function Editor({
           isUploading,
           isRendering,
           progress: renderProgress,
+          ahead: rendersAhead,
           error,
           renderedUrl,
         }}

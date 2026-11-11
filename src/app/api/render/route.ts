@@ -6,6 +6,7 @@ import { getFreePort } from "@/lib/freePort";
 import { renderMedia, selectComposition } from "@remotion/renderer";
 import { auth } from "@/auth";
 import { createFileToken, fileOwner } from "@/lib/fileAccess";
+import { enqueueRender, queueRefusal } from "@/lib/renderQueue";
 import { fileExists, getAbsolutePath } from "@/lib/storage";
 import { TIER_LIMITS, isFrameRateAllowed, isResolutionAllowed } from "@/lib/tiers";
 import { getTier } from "@/lib/userTier";
@@ -163,6 +164,11 @@ export async function POST(request: Request) {
   }
   const watermark = TIER_LIMITS[tier].watermark;
 
+  const refusal = await queueRefusal(userId);
+  if (refusal) {
+    return NextResponse.json({ error: refusal }, { status: 429 });
+  }
+
   // The render browser has no login cookie. This token lets it read the
   // files of the account that started the render - and nobody else's.
   const fileToken = userId ? createFileToken(userId) : undefined;
@@ -183,18 +189,20 @@ export async function POST(request: Request) {
     },
   });
 
-  // Deliberately not awaited: this is a long-running self-hosted Node
-  // process (not serverless), so the render keeps going in the background
-  // while the client polls GET /api/render/[jobId] for progress.
-  void runRender(
-    job.id,
-    audioSrc,
-    origin,
-    scene,
-    resolution,
-    fps,
-    fileToken,
-    watermark,
+  // Not awaited: this is a long-running self-hosted Node process (not
+  // serverless), so the render happens in the background - after the ones
+  // queued before it - while the client polls GET /api/render/[jobId].
+  enqueueRender(() =>
+    runRender(
+      job.id,
+      audioSrc,
+      origin,
+      scene,
+      resolution,
+      fps,
+      fileToken,
+      watermark,
+    ),
   );
 
   return NextResponse.json({ jobId: job.id });
