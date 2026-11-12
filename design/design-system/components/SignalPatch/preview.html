@@ -1,0 +1,14 @@
+<!-- @dsCard group="Audio" height=216 -->
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>SignalPatch</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Geist:wght@400..700&family=Geist+Mono:wght@400..600&display=swap"></head>
+<body class="pf-demo pf-demo--stage">
+<div class="pf-popover pf-stack" style="gap:12px;width:300px">
+<div class="pf-row" style="justify-content:space-between"><span class="ui-strong">Bar height reacts to</span><button class="pf-btn pf-btn--ghost pf-btn--sm">Unplug</button></div>
+<div class="pf-row" style="gap:6px"><button class="pf-signal" data-sig="bass" aria-pressed="true">Bass</button><button class="pf-signal" data-sig="mid" aria-pressed="false">Mids</button><button class="pf-signal" data-sig="high" aria-pressed="false">Highs</button><button class="pf-signal" data-sig="level" aria-pressed="false">Level</button><button class="pf-signal" data-sig="beat" aria-pressed="false">Beat</button></div>
+<div class="pf-param"><div class="pf-scrub" role="slider" tabindex="0" aria-label="Amount" style="--v:0.3"><span class="pf-scrub__label">Amount</span><span class="pf-scrub__value">30<small>%</small></span></div></div>
+<div class="pf-togglerow"><span>Invert (the value drops on the signal)</span><button class="pf-switch" role="switch" aria-checked="false"></button></div>
+</div>
+<script>window.Pulsefield && window.Pulsefield.mount();</script>
+</body>
+</html>

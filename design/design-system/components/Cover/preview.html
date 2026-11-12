@@ -1,0 +1,31 @@
+<!-- @dsCard height=288 -->
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Pulsefield</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Geist:wght@400..700&family=Geist+Mono:wght@400..600&display=swap">
+<style>
+  html, body { margin:0; height:100%; }
+  body { background:var(--bg-1); color:var(--ink-1); overflow:hidden; }
+  .cover { position:relative; width:960px; height:288px; overflow:hidden; }
+  .cover svg { position:absolute; inset:0; display:block; }
+  .dot { fill:var(--line-3); }
+  .bass { fill:var(--sig-bass); } .mid { fill:var(--sig-mid); } .accent { fill:var(--accent); }
+  .high { fill:var(--sig-high); } .beat { fill:var(--sig-beat); }
+  .words { position:absolute; left:var(--space-8); bottom:var(--space-8); max-width:440px; }
+  .name { margin:0; font:700 72px/.95 var(--font-display); letter-spacing:-.035em; color:var(--ink-1); }
+  .tag { margin:var(--space-3) 0 0 2px; font:400 14px/20px var(--font-sans); color:var(--ink-2); }
+</style></head>
+<body>
+<div class="cover">
+<svg viewBox="0 0 960 288" width="960" height="288" aria-hidden="true">
+<!--
+  blocks      sig-bass 64x58 · sig-mid 64x173 · accent 64x259 (the tallest: the one accent) · sig-high 64x144 · sig-beat 64x58
+  arrangement the logo's five bars at scale, centred on one axis, space-6 gutters, right of x = 480
+  pattern     a dot grid at a 48px pitch (space-12) in line-3: "the frame sits on a dotted well" is the editor's stage
+  scales      bar width space-16; gutter space-6; pitch space-12; bars are pills, rx = half the width (radius-full)
+-->
+<circle class="dot" cx="500" cy="24" r="1.5"/><circle class="dot" cx="548" cy="24" r="1.5"/><circle class="dot" cx="596" cy="24" r="1.5"/><circle class="dot" cx="644" cy="24" r="1.5"/><circle class="dot" cx="692" cy="24" r="1.5"/><circle class="dot" cx="740" cy="24" r="1.5"/><circle class="dot" cx="788" cy="24" r="1.5"/><circle class="dot" cx="836" cy="24" r="1.5"/><circle class="dot" cx="884" cy="24" r="1.5"/><circle class="dot" cx="932" cy="24" r="1.5"/><circle class="dot" cx="500" cy="72" r="1.5"/><circle class="dot" cx="548" cy="72" r="1.5"/><circle class="dot" cx="596" cy="72" r="1.5"/><circle class="dot" cx="644" cy="72" r="1.5"/><circle class="dot" cx="692" cy="72" r="1.5"/><circle class="dot" cx="740" cy="72" r="1.5"/><circle class="dot" cx="788" cy="72" r="1.5"/><circle class="dot" cx="836" cy="72" r="1.5"/><circle class="dot" cx="884" cy="72" r="1.5"/><circle class="dot" cx="932" cy="72" r="1.5"/><circle class="dot" cx="500" cy="120" r="1.5"/><circle class="dot" cx="548" cy="120" r="1.5"/><circle class="dot" cx="596" cy="120" r="1.5"/><circle class="dot" cx="644" cy="120" r="1.5"/><circle class="dot" cx="692" cy="120" r="1.5"/><circle class="dot" cx="740" cy="120" r="1.5"/><circle class="dot" cx="788" cy="120" r="1.5"/><circle class="dot" cx="836" cy="120" r="1.5"/><circle class="dot" cx="884" cy="120" r="1.5"/><circle class="dot" cx="932" cy="120" r="1.5"/><circle class="dot" cx="500" cy="168" r="1.5"/><circle class="dot" cx="548" cy="168" r="1.5"/><circle class="dot" cx="596" cy="168" r="1.5"/><circle class="dot" cx="644" cy="168" r="1.5"/><circle class="dot" cx="692" cy="168" r="1.5"/><circle class="dot" cx="740" cy="168" r="1.5"/><circle class="dot" cx="788" cy="168" r="1.5"/><circle class="dot" cx="836" cy="168" r="1.5"/><circle class="dot" cx="884" cy="168" r="1.5"/><circle class="dot" cx="932" cy="168" r="1.5"/><circle class="dot" cx="500" cy="216" r="1.5"/><circle class="dot" cx="548" cy="216" r="1.5"/><circle class="dot" cx="596" cy="216" r="1.5"/><circle class="dot" cx="644" cy="216" r="1.5"/><circle class="dot" cx="692" cy="216" r="1.5"/><circle class="dot" cx="740" cy="216" r="1.5"/><circle class="dot" cx="788" cy="216" r="1.5"/><circle class="dot" cx="836" cy="216" r="1.5"/><circle class="dot" cx="884" cy="216" r="1.5"/><circle class="dot" cx="932" cy="216" r="1.5"/><circle class="dot" cx="500" cy="264" r="1.5"/><circle class="dot" cx="548" cy="264" r="1.5"/><circle class="dot" cx="596" cy="264" r="1.5"/><circle class="dot" cx="644" cy="264" r="1.5"/><circle class="dot" cx="692" cy="264" r="1.5"/><circle class="dot" cx="740" cy="264" r="1.5"/><circle class="dot" cx="788" cy="264" r="1.5"/><circle class="dot" cx="836" cy="264" r="1.5"/><circle class="dot" cx="884" cy="264" r="1.5"/><circle class="dot" cx="932" cy="264" r="1.5"/><rect class="bar bass" x="504" y="115" width="64" height="58" rx="32"/><rect class="bar mid" x="592" y="58" width="64" height="173" rx="32"/><rect class="bar accent" x="680" y="14" width="64" height="259" rx="32"/><rect class="bar high" x="768" y="72" width="64" height="144" rx="32"/><rect class="bar beat" x="856" y="115" width="64" height="58" rx="32"/>
+</svg>
+<div class="words"><h1 class="name">Pulsefield</h1><p class="tag">Turn any song into an audio-reactive 3D video.</p></div>
+</div>
+</body>
+</html>

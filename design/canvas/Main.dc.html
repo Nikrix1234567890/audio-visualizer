@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pulsefield landing page</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/pulsefield/tokens.css">
+<link rel="stylesheet" href="ds/pulsefield/components/bundle.css">
+<link rel="stylesheet" href="redesign.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&amp;family=Geist:wght@400..700&amp;family=Geist+Mono:wght@400..600&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit}
+</style>
+</helmet>
+<div class="lp" data-theme="{{theme}}">
+
+<nav class="pf-nav" style="position: sticky; top: 0; z-index: 100">
+<a class="pf-logo" href="#top"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="1" y="8" width="2" height="4" rx="1"></rect><rect x="5" y="4" width="2" height="12" rx="1"></rect><rect x="9" y="1" width="2" height="18" rx="1"></rect><rect x="13" y="5" width="2" height="10" rx="1"></rect><rect x="17" y="8" width="2" height="4" rx="1"></rect></svg><span>Pulsefield</span></a>
+<span class="pf-nav__links lp-hide-sm" style="margin-left: 16px"><a class="pf-nav__link" href="#templates">Templates</a><a class="pf-nav__link" href="#features">Features</a><a class="pf-nav__link" href="#pricing">Pricing</a></span>
+<span class="pf-spacer"></span>
+<a class="pf-nav__link lp-hide-sm" href="Dashboard.dc.html">Log in</a>
+<a class="pf-btn pf-btn--cta pf-btn--lg" href="EditorStart.dc.html">Open the editor</a>
+</nav>
+
+<header id="top" class="lp-wrap lp-hero">
+<span class="pf-badge pf-badge--lg" style="align-self: flex-start"><span class="pf-badge__dot" style="color: var(--accent)"></span>No install. Free to try.</span>
+<h1 class="lp-h1">Make your music impossible to scroll past.</h1>
+<p class="lp-lead">Drop in a track, pick a 3D scene and export a video that moves on every beat. In your browser, in minutes.</p>
+<div class="lp-row">
+<a class="pf-btn pf-btn--cta pf-btn--xl" href="EditorStart.dc.html">Start with your track<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"></path></svg></a>
+<a class="pf-btn pf-btn--secondary pf-btn--xl" href="#templates">Browse 33 templates</a>
+</div>
+<div class="lp-reassure">
+<span><svg class="ico ico--accent" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>No account needed</span>
+<span><svg class="ico ico--accent" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>Free 720p exports</span>
+<span><svg class="ico ico--accent" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>What you see is the video</span>
+</div>
+
+<div class="pf-window" style="margin-top: 28px">
+<div class="pf-window__bar"><i></i><i></i><i></i><span class="pf-window__url">pulsefield.app/editor</span></div>
+<div class="mini">
+<div class="mini__bar">
+<span class="pf-logo"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="1" y="8" width="2" height="4" rx="1"></rect><rect x="5" y="4" width="2" height="12" rx="1"></rect><rect x="9" y="1" width="2" height="18" rx="1"></rect><rect x="13" y="5" width="2" height="10" rx="1"></rect><rect x="17" y="8" width="2" height="4" rx="1"></rect></svg></span>
+<span class="pf-sep"></span>
+<span class="ui-strong" style="padding: 0 4px">Night drive visual</span>
+<span class="pf-badge pf-badge--success"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>Saved</span>
+<span class="pf-spacer"></span>
+<span class="pf-seg lp-hide-sm"><span class="pf-seg__item" aria-pressed="true">16:9</span><span class="pf-seg__item">9:16</span><span class="pf-seg__item">1:1</span></span>
+<span class="pf-btn pf-btn--cta"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path></svg>Export</span>
+</div>
+<div class="mini__side">
+<span class="ui-strong">Templates</span>
+<div class="mini__cards">
+<span class="pf-tcard pf-tcard--compact" aria-current="true"><img class="thumb" src="/_blob/8897772962d1b168a849b63fac04d27a" alt=""><span class="pf-tcard__body"><span class="pf-tcard__name">Galaxy</span></span></span>
+<span class="pf-tcard pf-tcard--compact"><img class="thumb" src="/_blob/5793755c18a8c373ec2c96bc29af3d65" alt=""><span class="pf-tcard__body"><span class="pf-tcard__name">Helix</span></span></span>
+<span class="pf-tcard pf-tcard--compact"><img class="thumb" src="/_blob/a4b197996b3ed3557f70fa5db60a551c" alt=""><span class="pf-tcard__body"><span class="pf-tcard__name">Nova</span></span></span>
+<span class="pf-tcard pf-tcard--compact"><img class="thumb" src="/_blob/8f65b13e80182c7911840af8a483e074" alt=""><span class="pf-tcard__body"><span class="pf-tcard__name">Hyperdrive</span></span></span>
+<span class="pf-tcard pf-tcard--compact"><img class="thumb" src="/_blob/ef98b8f2fb1194d7f7e59b722ee530c1" alt=""><span class="pf-tcard__body"><span class="pf-tcard__name">Aurora</span></span></span>
+<span class="pf-tcard pf-tcard--compact"><img class="thumb" src="/_blob/c370b60cfdffc208e25172f4b132865e" alt=""><span class="pf-tcard__body"><span class="pf-tcard__name">Liquid Gold</span></span></span>
+</div>
+</div>
+<div class="mini__stage">
+<div class="media-box" style="width: 100%; max-width: 640px; aspect-ratio: 16/9; border-radius: 6px; box-shadow: 0 0 0 1px var(--line-2), var(--shadow-3)">
+<img class="media" src="/_blob/8897772962d1b168a849b63fac04d27a" alt="The Galaxy template: a spiral of particles in pink, orange and violet">
+<video src="/_blob/0dd006361e0bb12ab5e6eb94106c2a87" autoPlay="{{yes}}" muted="{{yes}}" loop="{{yes}}" playsInline="{{yes}}" aria-hidden="true"></video>
+</div>
+</div>
+<div class="mini__side mini__side--right">
+<span class="ui-strong">Galaxy</span>
+<div class="pf-param"><div class="pf-scrub v48"><span class="pf-scrub__label">Radius</span><span class="pf-scrub__value">2.40<small>m</small></span></div><span class="pf-jack"></span><span class="pf-key"></span></div>
+<div class="pf-param"><div class="pf-scrub v42"><span class="pf-scrub__label">Arm width</span><span class="pf-scrub__value">1.25<small>x</small></span><span class="pf-scrub__mod m30" data-sig="bass"></span></div><span class="pf-jack" data-sig="bass"></span><span class="pf-key"></span></div>
+<div class="pf-param"><div class="pf-scrub v68"><span class="pf-scrub__label">Glow</span><span class="pf-scrub__value">68<small>%</small></span><span class="pf-scrub__mod m22" data-sig="beat"></span></div><span class="pf-jack" data-sig="beat"></span><span class="pf-key" data-state="on"></span></div>
+<div class="pf-param"><div class="pf-scrub v59" data-active="true"><span class="pf-scrub__label">Arm twist</span><span class="pf-scrub__value">214<small>°</small></span></div><span class="pf-jack"></span><span class="pf-key" data-state="at"></span></div>
+<div class="pf-param"><div class="pf-scrub v09"><span class="pf-scrub__label">Hue shift</span><span class="pf-scrub__value">32<small>°</small></span><span class="pf-scrub__mod m40" data-sig="high"></span></div><span class="pf-jack" data-sig="high"></span><span class="pf-key"></span></div>
+<span class="pf-color" style="margin-top: 6px"><span class="pf-color__chip" style="background: #ff4fa3"></span><span class="pf-color__label">Colour</span><span class="pf-color__hex">#FF4FA3</span></span>
+</div>
+<div class="mini__time">
+<div class="pf-transport">
+<span class="pf-play"><svg class="ico ico--solid" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3l14 9-14 9V3z"></path></svg></span>
+<span class="pf-timecode">1:05.12 <span>/ 3:12.00</span></span>
+<span class="pf-sep"></span>
+<span class="pf-badge pf-badge--outline">128 BPM</span>
+<span class="pf-spacer"></span>
+<span class="pf-meter" aria-hidden="true"><span data-sig="bass" style="height: 90%"></span><span data-sig="mid" style="height: 55%"></span><span data-sig="high" style="height: 35%"></span><span data-sig="level" style="height: 70%"></span><span data-sig="beat" style="height: 100%"></span></span>
+</div>
+<div style="position: relative; height: 72px; background: var(--bg-0)"><div class="wave"></div><div class="pf-beats"></div><div style="position: absolute; top: 0; bottom: 0; left: 34%; width: 1px; background: var(--accent)"></div></div>
+</div>
+</div>
+</div>
+<p class="lp-goes">Made for <b>YouTube</b>, <b>Reels</b>, <b>TikTok</b>, <b>Shorts</b> and <b>Spotify Canvas</b>.</p>
+</header>
+
+<section id="templates" class="lp-wrap lp-section">
+<div class="lp-head">
+<p class="lp-eyebrow">Templates</p>
+<h2 class="lp-h2">33 scenes to start from.</h2>
+<p class="lp-lead">Every template is a real scene you can take apart. Hover to see it move, click to open it with your track.</p>
+</div>
+<div class="lp-chips">
+<button class="pf-chip" aria-pressed="true">All<span class="pf-chip__count">33</span></button>
+<button class="pf-chip" aria-pressed="false">Particles</button>
+<button class="pf-chip" aria-pressed="false">Bars and rings</button>
+<button class="pf-chip" aria-pressed="false">Space</button>
+<button class="pf-chip" aria-pressed="false">Retro</button>
+<button class="pf-chip" aria-pressed="false">With text</button>
+</div>
+<div class="lp-grid">
+<a class="pf-tcard s3" href="Editor.dc.html"><img class="thumb" src="/_blob/8897772962d1b168a849b63fac04d27a" alt=""><span class="pf-tcard__body"><span class="pf-tcard__name">Galaxy</span><span class="pf-tcard__meta">2 elements</span></span></a>
+<a class="pf-tcard s3" href="Editor.dc.html"><img class="thumb" src="/_blob/887025c7c57b1d20d79d1154c631416a" alt=""><span class="pf-tcard__body"><span class="pf-tcard__name">Night City</span><span class="pf-tcard__meta">5 elements</span></span></a>
+<a class="pf-tcard s3" href="Editor.dc.html"><img class="thumb" src="/_blob/c370b60cfdffc208e25172f4b132865e" alt=""><span class="pf-tcard__body"><span class="pf-tcard__name">Liquid Gold</span><span class="pf-tcard__meta">2 elements</span></span></a>
+<a class="pf-tcard s3" href="Editor.dc.html"><img class="thumb" src="/_blob/57930e7b0465ecd6d57b1a57a42661e3" alt=""><span class="pf-tcard__body"><span class="pf-tcard__name">Radial Bars</span><span class="pf-tcard__meta">3 elements</span></span></a>
+<a class="pf-tcard s3" href="Editor.dc.html"><img class="thumb" src="/_blob/1c83f215597951253652fedaf34b5a77" alt=""><span class="pf-tcard__body"><span class="pf-tcard__name">Terrain Wave</span><span class="pf-tcard__meta">3 elements</span></span></a>
+<a class="pf-tcard s3" href="Editor.dc.html"><img class="thumb" src="/_blob/5793755c18a8c373ec2c96bc29af3d65" alt=""><span class="pf-tcard__body"><span class="pf-tcard__name">Helix</span><span class="pf-tcard__meta">2 elements</span></span></a>
+<a class="pf-tcard s3" href="Editor.dc.html"><img class="thumb" src="/_blob/f687cf38cb122a1a3dde54a329a7a91e" alt=""><span class="pf-tcard__body"><span class="pf-tcard__name">Solar</span><span class="pf-tcard__meta">3 elements</span></span></a>
+<a class="pf-tcard s3" href="Editor.dc.html"><img class="thumb" src="/_blob/ef98b8f2fb1194d7f7e59b722ee530c1" alt=""><span class="pf-tcard__body"><span class="pf-tcard__name">Aurora</span><span class="pf-tcard__meta">2 elements</span></span></a>
+</div>
+<div class="lp-more"><a class="pf-btn pf-btn--secondary pf-btn--lg" href="EditorStart.dc.html">See all 33 templates</a></div>
+</section>
+
+<section class="lp-rule">
+<div class="lp-wrap lp-section">
+<div class="lp-head">
+<p class="lp-eyebrow">How it works</p>
+<h2 class="lp-h2">From a song to a video in three steps.</h2>
+</div>
+<div class="lp-grid">
+<div class="pf-card s4">
+<div class="pf-card__demo"><div class="pf-drop pf-drop--inline"><span class="pf-drop__icon"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5l12-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM21 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"></path></svg></span><span class="pf-stack" style="gap: 2px"><span class="ui-strong">Drop a track here</span><span class="pf-drop__hint">MP3, WAV, M4A, AAC, OGG or FLAC</span></span></div></div>
+<span class="pf-step__num">Step 1</span>
+<h3 class="pf-card__title">Load a track</h3>
+<p class="pf-card__text">Drop in any song. Bass, mids, highs and every beat are found once, right in your browser.</p>
+</div>
+<div class="pf-card s4">
+<div class="pf-card__demo">
+<div class="pf-param"><div class="pf-scrub v42"><span class="pf-scrub__label">Bar height</span><span class="pf-scrub__value">1.25<small>x</small></span><span class="pf-scrub__mod m30" data-sig="bass"></span></div><span class="pf-jack" data-sig="bass"></span><span class="pf-key"></span></div>
+<div class="pf-param"><div class="pf-scrub v68"><span class="pf-scrub__label">Glow</span><span class="pf-scrub__value">68<small>%</small></span><span class="pf-scrub__mod m22" data-sig="beat"></span></div><span class="pf-jack" data-sig="beat"></span><span class="pf-key"></span></div>
+</div>
+<span class="pf-step__num">Step 2</span>
+<h3 class="pf-card__title">Build the scene</h3>
+<p class="pf-card__text">Start from a template or an empty stage. Add elements and plug any setting into the music.</p>
+</div>
+<div class="pf-card s4">
+<div class="pf-card__demo" style="flex-direction: row; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px">
+<span class="pf-seg"><span class="pf-seg__item">16:9</span><span class="pf-seg__item" aria-pressed="true">9:16</span><span class="pf-seg__item">1:1</span></span>
+<span class="pf-btn pf-btn--cta"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path></svg>Export</span>
+</div>
+<span class="pf-step__num">Step 3</span>
+<h3 class="pf-card__title">Export the video</h3>
+<p class="pf-card__text">Pick a format and press Export. The video is drawn by the same code as the preview.</p>
+</div>
+</div>
+</div>
+</section>
+
+<section id="features" class="lp-rule">
+<div class="lp-wrap lp-section">
+<div class="lp-head">
+<p class="lp-eyebrow">What you can do</p>
+<h2 class="lp-h2">An editor, not a preset picker.</h2>
+<p class="lp-lead">46 elements you add, stack and tune. Every one of them can listen to your track.</p>
+</div>
+<div class="lp-grid">
+
+<div class="pf-card s7">
+<div class="pf-card__demo">
+<div class="lp-row" style="gap: 6px; margin-bottom: 4px">
+<span class="pf-signal" data-sig="bass" aria-pressed="true">Bass</span><span class="pf-signal" data-sig="mid">Mids</span><span class="pf-signal" data-sig="high">Highs</span><span class="pf-signal" data-sig="level">Level</span><span class="pf-signal" data-sig="beat">Beat</span>
+</div>
+<div class="pf-param"><div class="pf-scrub v42"><span class="pf-scrub__label">Bar height</span><span class="pf-scrub__value">1.25<small>x</small></span><span class="pf-scrub__mod m30" data-sig="bass"></span></div><span class="pf-jack" data-sig="bass"></span><span class="pf-key"></span></div>
+<div class="pf-param"><div class="pf-scrub v68"><span class="pf-scrub__label">Glow</span><span class="pf-scrub__value">68<small>%</small></span><span class="pf-scrub__mod m22" data-sig="beat"></span></div><span class="pf-jack" data-sig="beat"></span><span class="pf-key"></span></div>
+<div class="pf-param"><div class="pf-scrub v12"><span class="pf-scrub__label">Camera shake</span><span class="pf-scrub__value">12<small>%</small></span><span class="pf-scrub__mod m30" data-sig="level"></span></div><span class="pf-jack" data-sig="level"></span><span class="pf-key"></span></div>
+<div class="pf-param"><div class="pf-scrub v25"><span class="pf-scrub__label">Hue shift</span><span class="pf-scrub__value">90<small>°</small></span><span class="pf-scrub__mod m40" data-sig="high"></span></div><span class="pf-jack" data-sig="high"></span><span class="pf-key"></span></div>
+</div>
+<h3 class="pf-card__title">Anything can react</h3>
+<p class="pf-card__text">Plug a setting into bass, mids, highs, loudness or the beat with one click. Each signal keeps its colour, so you always see what drives what.</p>
+</div>
+
+<div class="pf-card s5">
+<div class="pf-card__demo" style="padding: 0; gap: 0; overflow: hidden">
+<div style="position: relative; height: 64px; background: var(--bg-0); border-bottom: 1px solid var(--line-1)"><div class="wave"></div><div class="pf-beats"></div></div>
+<div style="position: relative; height: 26px; background: var(--bg-0); border-bottom: 1px solid var(--line-1)"><span class="pf-kfspan" style="left: 8%; width: 54%"></span><span class="pf-kf" style="left: 8%"></span><span class="pf-kf" data-sel="true" style="left: 34%"></span><span class="pf-kf" style="left: 62%"></span></div>
+<div style="position: relative; height: 26px; background: var(--bg-0)"><span class="pf-kfspan" style="left: 25%; width: 45%"></span><span class="pf-kf" style="left: 25%"></span><span class="pf-kf" style="left: 70%"></span></div>
+</div>
+<h3 class="pf-card__title">Animate over time</h3>
+<p class="pf-card__text">Set a value now and another later. It travels between them, on a timeline right under the waveform.</p>
+</div>
+
+<div class="pf-card s4">
+<div class="pf-card__demo" style="padding: 4px; gap: 1px">
+<div class="pf-layer"><span class="pf-layer__grip"></span><img class="layer-thumb" src="/_blob/dbe515fcb913ea9477c28ff460b062f9" alt=""><span class="pf-layer__name">Your logo.png</span><span class="pf-layer__sigs"><span class="pf-dot" data-sig="level"></span></span></div>
+<div class="pf-layer" aria-selected="true"><span class="pf-layer__grip"></span><img class="layer-thumb" src="/_blob/57fed656244d83064d30a7aff7d1eac2" alt=""><span class="pf-layer__name">Bar ring</span><span class="pf-layer__sigs"><span class="pf-dot" data-sig="bass"></span><span class="pf-dot" data-sig="mid"></span></span></div>
+<div class="pf-layer"><span class="pf-layer__grip"></span><img class="layer-thumb" src="/_blob/58e93296d24b1debac4a8b069a9c1d4e" alt=""><span class="pf-layer__name">Stars</span><span class="pf-layer__sigs"></span></div>
+</div>
+<h3 class="pf-card__title">Bring your own</h3>
+<p class="pf-card__text">Your logo, your cover art, your 3D model. Placed in the scene like any other element.</p>
+</div>
+
+<div class="pf-card s4">
+<div class="pf-card__demo">
+<span class="pf-seg pf-seg--block"><span class="pf-seg__item">Even</span><span class="pf-seg__item">Wave</span><span class="pf-seg__item" aria-pressed="true">On the beat</span></span>
+<div class="pf-param"><div class="pf-scrub v55"><span class="pf-scrub__label">Swing</span><span class="pf-scrub__value">55<small>%</small></span></div></div>
+</div>
+<h3 class="pf-card__title">Slow down, speed up</h3>
+<p class="pf-card__text">Give an element a tempo swing: it surges on every beat and falls into slow motion in between.</p>
+</div>
+
+<div class="pf-card s4">
+<div class="pf-card__demo" style="flex-direction: row; gap: 8px; padding: 8px">
+<div class="media-box" style="flex: 1; aspect-ratio: 16/9; border-radius: 4px"><img class="media" src="/_blob/a4b197996b3ed3557f70fa5db60a551c" alt=""><span class="pf-badge pf-badge--solid" style="position: absolute; left: 6px; top: 6px">Preview</span></div>
+<div class="media-box" style="flex: 1; aspect-ratio: 16/9; border-radius: 4px"><img class="media" src="/_blob/a4b197996b3ed3557f70fa5db60a551c" alt=""><span class="pf-badge pf-badge--solid" style="position: absolute; left: 6px; top: 6px">Video</span></div>
+</div>
+<h3 class="pf-card__title">What you see is the video</h3>
+<p class="pf-card__text">No separate export engine. Preview and final render run the same code, frame for frame.</p>
+</div>
+
+</div>
+</div>
+</section>
+
+<section class="lp-rule">
+<div class="lp-wrap lp-section">
+<div class="lp-head">
+<p class="lp-eyebrow">Made for where it goes</p>
+<h2 class="lp-h2">One scene, three formats.</h2>
+<p class="lp-lead">Switch format and the camera adapts, so your scene stays in the picture.</p>
+</div>
+<div class="lp-formats">
+<div class="lp-format" style="flex: 16 1 320px">
+<div class="media-box" style="aspect-ratio: 16/9; border-radius: 12px; box-shadow: 0 0 0 1px var(--line-2)"><img class="media" src="/_blob/8897772962d1b168a849b63fac04d27a" alt="Galaxy in landscape"></div>
+<span class="lp-format__cap"><b>16:9</b>YouTube</span>
+</div>
+<div class="lp-format" style="flex: 0 0 210px">
+<div class="pf-phone"><div class="media-box" style="aspect-ratio: 9/16; border-radius: 22px"><video src="/_blob/14ef84de7e3958065ceb9d7b2c081eb5" autoPlay="{{yes}}" muted="{{yes}}" loop="{{yes}}" playsInline="{{yes}}" aria-label="Galaxy in portrait"></video></div></div>
+<span class="lp-format__cap"><b>9:16</b>Reels, Shorts, TikTok</span>
+</div>
+<div class="lp-format" style="flex: 9 1 220px">
+<div class="media-box" style="aspect-ratio: 1; border-radius: 12px; box-shadow: 0 0 0 1px var(--line-2)"><img class="media" src="/_blob/8897772962d1b168a849b63fac04d27a" alt="Galaxy as a square"></div>
+<span class="lp-format__cap"><b>1:1</b>Feeds</span>
+</div>
+</div>
+</div>
+</section>
+
+<section id="pricing" class="lp-rule">
+<div class="lp-wrap lp-section">
+<div class="lp-head">
+<p class="lp-eyebrow">Pricing</p>
+<h2 class="lp-h2">Free to make videos. Premium when you want them bigger and unmarked.</h2>
+</div>
+<div class="lp-grid">
+<div class="pf-price s6">
+<span class="pf-price__name">Free</span>
+<span class="pf-price__amount">€0</span>
+<ul class="pf-price__list">
+<li><svg class="ico ico--accent" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>Export up to 720p at 30 fps</li>
+<li><svg class="ico ico--accent" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>All templates and elements</li>
+<li><svg class="ico ico--accent" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>Landscape, portrait and square</li>
+<li><svg class="ico ico--accent" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>Your own pictures and 3D models</li>
+<li><svg class="ico ico--accent" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>Small watermark in the corner</li>
+</ul>
+<a class="pf-btn pf-btn--secondary pf-btn--lg pf-btn--block" href="EditorStart.dc.html" style="margin-top: auto">Open the editor</a>
+</div>
+<div class="pf-price pf-price--featured s6">
+<span class="pf-price__name">Premium<span class="pf-badge pf-badge--premium"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 6.5 7 10.5l5-7 5 7 4.5-4L19 17H5L2.5 6.500zM5 21h14"></path></svg>Best quality</span></span>
+<span class="pf-price__amount">[YOUR PRICE]<small>per month</small></span>
+<ul class="pf-price__list">
+<li><svg class="ico ico--accent" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>Export up to 4K at 60 fps</li>
+<li><svg class="ico ico--accent" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>No watermark</li>
+<li><svg class="ico ico--accent" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>Everything in Free</li>
+<li><svg class="ico ico--accent" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>Cancel any time in the customer portal</li>
+</ul>
+<a class="pf-btn pf-btn--cta pf-btn--lg pf-btn--block" href="#pricing" style="margin-top: auto">Get Premium</a>
+</div>
+</div>
+<div class="lp-tablebox">
+<table class="pf-table">
+<thead><tr><th></th><th>Free</th><th>Premium</th></tr></thead>
+<tbody>
+<tr><th>Resolution</th><td>720p</td><td>720p, 1080p, 1440p, 4K</td></tr>
+<tr><th>Frame rate</th><td>30 fps</td><td>30 or 60 fps</td></tr>
+<tr><th>Watermark</th><td>Small, bottom right</td><td>None</td></tr>
+<tr><th>Templates and elements</th><td>All 33 and 46</td><td>All 33 and 46</td></tr>
+<tr><th>Saved projects</th><td>Yes</td><td>Yes</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+
+<section class="lp-rule">
+<div class="lp-wrap lp-section">
+<div class="lp-grid">
+<div class="s5 lp-head" style="margin-bottom: 0">
+<p class="lp-eyebrow">Questions</p>
+<h2 class="lp-h2">Before you start.</h2>
+</div>
+<div class="s7 pf-faq">
+<details open="{{yes}}"><summary>What does the watermark look like?<svg class="ico pf-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5v14"></path></svg></summary><p>A small "Pulsefield" in the bottom right corner. The editor's preview shows it exactly where the video will have it.</p></details>
+<details><summary>Do I need an account?<svg class="ico pf-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5v14"></path></svg></summary><p>No. You can load a track, build a scene and export without one. An account keeps your projects and videos.</p></details>
+<details><summary>Do I keep my projects on the free plan?<svg class="ico pf-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5v14"></path></svg></summary><p>Yes. Projects, your own templates and your videos stay in your account on both plans.</p></details>
+<details><summary>How is the payment handled?<svg class="ico pf-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5v14"></path></svg></summary><p>By Stripe, on a page run by Stripe. Card details never reach this site.</p></details>
+<details><summary>What happens when Premium ends?<svg class="ico pf-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5v14"></path></svg></summary><p>The account goes back to the free plan. Nothing is deleted.</p></details>
+</div>
+</div>
+</div>
+</section>
+
+<section class="lp-rule">
+<div class="lp-wrap lp-section lp-close">
+<h2 class="lp-h2">Your track is the only thing missing.</h2>
+<div class="pf-drop" style="width: 100%; max-width: 560px">
+<span class="pf-drop__icon"><svg class="ico ico--lg" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5l12-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM21 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"></path></svg></span>
+<span class="pf-drop__title">Drop a track here</span>
+<span class="pf-drop__hint">MP3, WAV, M4A, AAC, OGG or FLAC. It opens straight in the editor.</span>
+<span class="lp-row" style="justify-content: center"><a class="pf-btn pf-btn--cta pf-btn--lg" href="EditorStart.dc.html">Choose a file</a><a class="pf-btn pf-btn--secondary pf-btn--lg" href="Editor.dc.html">Use the demo track</a></span>
+</div>
+</div>
+</section>
+
+<div class="lp-wrap" style="padding-inline: 0">
+<footer class="pf-footer">
+<div class="pf-stack" style="gap: 12px"><span class="pf-logo"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="1" y="8" width="2" height="4" rx="1"></rect><rect x="5" y="4" width="2" height="12" rx="1"></rect><rect x="9" y="1" width="2" height="18" rx="1"></rect><rect x="13" y="5" width="2" height="10" rx="1"></rect><rect x="17" y="8" width="2" height="4" rx="1"></rect></svg><span>Pulsefield</span></span><span style="max-width: 30ch">Turn any song into an audio-reactive 3D video, right in your browser.</span></div>
+<div><h4>Product</h4><a href="EditorStart.dc.html">Editor</a><a href="#templates">Templates</a><a href="#pricing">Pricing</a></div>
+<div><h4>Account</h4><a href="Dashboard.dc.html">Log in</a><a href="Dashboard.dc.html">Create account</a><a href="Dashboard.dc.html">Dashboard</a></div>
+<div><h4>Legal</h4><a href="#top">Imprint</a><a href="#top">Privacy</a><a href="#top">Terms</a></div>
+</footer>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["phosphor","iris"],"default":"phosphor"},"$preview":{"width":1440,"height":7400}}'>
+class Component extends DCLogic {
+renderVals() {
+return { theme: this.props.theme ?? 'phosphor', yes: true };
+}
+}
+</script>
+</body>
+</html>

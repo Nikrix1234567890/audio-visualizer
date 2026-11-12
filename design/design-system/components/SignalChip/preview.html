@@ -1,0 +1,12 @@
+<!-- @dsCard group="Audio" height=136 -->
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>SignalChip</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Geist:wght@400..700&family=Geist+Mono:wght@400..600&display=swap"></head>
+<body class="pf-demo pf-demo--col">
+<div class="pf-row"><button class="pf-signal" data-sig="bass" aria-pressed="true">Bass</button><button class="pf-signal" data-sig="mid" aria-pressed="false">Mids</button><button class="pf-signal" data-sig="high" aria-pressed="false">Highs</button><button class="pf-signal" data-sig="level" aria-pressed="false">Level</button><button class="pf-signal" data-sig="beat" aria-pressed="false">Beat</button></div>
+<div class="pf-row" style="gap:16px"><span class="pf-row"><button class="pf-jack"></button><span class="pf-note">Unlit jack</span></span>
+<span class="pf-row"><button class="pf-jack" data-sig="bass"></button><button class="pf-jack" data-sig="mid"></button><button class="pf-jack" data-sig="high"></button><button class="pf-jack" data-sig="level"></button><button class="pf-jack" data-sig="beat"></button><span class="pf-note">Lit jacks</span></span>
+<span class="pf-row"><span class="pf-meter"><span data-sig="bass" style="--l:.9"></span><span data-sig="mid" style="--l:.55"></span><span data-sig="high" style="--l:.35"></span><span data-sig="level" style="--l:.7"></span><span data-sig="beat" style="--l:1"></span></span><span class="pf-note">Live meter</span></span></div>
+<script>window.Pulsefield && window.Pulsefield.mount();</script>
+</body>
+</html>

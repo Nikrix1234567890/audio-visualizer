@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pulsefield dashboard</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/pulsefield/tokens.css">
+<link rel="stylesheet" href="ds/pulsefield/components/bundle.css">
+<link rel="stylesheet" href="redesign.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&amp;family=Geist:wght@400..700&amp;family=Geist+Mono:wght@400..600&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit}
+</style>
+</helmet>
+<div class="db" data-theme="{{theme}}">
+
+<nav class="pf-nav">
+<a class="pf-logo" href="Main.dc.html"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="1" y="8" width="2" height="4" rx="1"></rect><rect x="5" y="4" width="2" height="12" rx="1"></rect><rect x="9" y="1" width="2" height="18" rx="1"></rect><rect x="13" y="5" width="2" height="10" rx="1"></rect><rect x="17" y="8" width="2" height="4" rx="1"></rect></svg><span>Pulsefield</span></a>
+<span class="pf-nav__links" style="margin-left: 16px"><a class="pf-nav__link" href="Dashboard.dc.html" aria-current="page">Dashboard</a><a class="pf-nav__link" href="Main.dc.html">Templates</a><a class="pf-nav__link" href="Main.dc.html">Pricing</a></span>
+<span class="pf-spacer"></span>
+<span class="pf-badge">Free</span>
+<span class="pf-avatar">NZ</span>
+</nav>
+
+<div class="db-wrap">
+
+<div class="db-head">
+<div class="pf-stack" style="gap: 6px"><h1 class="db-h1">Your projects</h1><span class="pf-note" style="font-size: 14px; line-height: 20px">3 projects, 4 videos</span></div>
+<a class="pf-btn pf-btn--cta pf-btn--lg" href="EditorStart.dc.html"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5v14"></path></svg>New project</a>
+</div>
+
+<div class="pf-banner pf-banner--premium"><svg class="ico pf-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 6.5 7 10.5l5-7 5 7 4.500-4L19 17H5L2.500 6.500zM5 21h14"></path></svg><span><b>Your videos export at 720p with a small watermark.</b> Premium goes up to 4K at 60 fps, without it.</span><a class="pf-btn pf-btn--premium pf-btn--sm pf-banner__action" href="Main.dc.html">See Premium</a></div>
+
+<section>
+<div class="db-grid">
+<a class="pf-drop" href="EditorStart.dc.html" style="text-decoration: none; min-height: 190px"><span class="pf-drop__icon"><svg class="ico ico--lg" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5v14"></path></svg></span><span class="pf-drop__title">New project</span><span class="pf-drop__hint">Or drop a track here</span></a>
+<a class="pf-tcard" href="Editor.dc.html"><span style="position: relative; display: block"><img class="thumb" src="/_blob/8897772962d1b168a849b63fac04d27a" alt=""><span class="pf-tcard__badges"><span class="pf-badge pf-badge--solid">16:9</span></span></span><span class="pf-tcard__body"><span class="pf-stack" style="gap: 0"><span class="pf-tcard__name">Night drive visual</span><span class="pf-tcard__meta">Edited 2 hours ago · 2 videos</span></span><svg class="ico" style="color: var(--ink-3)" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2zM19 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2zM5 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"></path></svg></span></a>
+<a class="pf-tcard" href="Editor.dc.html"><span style="position: relative; display: block"><img class="thumb" src="/_blob/f687cf38cb122a1a3dde54a329a7a91e" alt=""><span class="pf-tcard__badges"><span class="pf-badge pf-badge--accent"><span class="pf-badge__dot pf-badge__dot--live"></span>Rendering 42%</span></span></span><span class="pf-tcard__body"><span class="pf-stack" style="gap: 0"><span class="pf-tcard__name">Solar, album teaser</span><span class="pf-tcard__meta">Edited yesterday · 1 video</span></span><svg class="ico" style="color: var(--ink-3)" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2zM19 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2zM5 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"></path></svg></span></a>
+<a class="pf-tcard" href="Editor.dc.html"><span style="position: relative; display: block"><img class="thumb" src="/_blob/5793755c18a8c373ec2c96bc29af3d65" alt=""><span class="pf-tcard__badges"><span class="pf-badge pf-badge--solid">9:16</span></span></span><span class="pf-tcard__body"><span class="pf-stack" style="gap: 0"><span class="pf-tcard__name">Helix teaser</span><span class="pf-tcard__meta">Edited 3 days ago · 1 video</span></span><svg class="ico" style="color: var(--ink-3)" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2zM19 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2zM5 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"></path></svg></span></a>
+</div>
+</section>
+
+<section>
+<h2 class="db-h2">Videos</h2>
+<div class="db-jobs">
+<div class="pf-job"><img class="thumb" style="border-radius: 4px" src="/_blob/f687cf38cb122a1a3dde54a329a7a91e" alt=""><div class="pf-stack" style="gap: 6px"><span class="pf-job__title">Solar, album teaser</span><div class="pf-progress p42"><span></span></div><span class="pf-job__meta"><span>1280 x 720</span><span>30 fps</span><span>42%</span><span>about 2 min left</span></span></div><button class="pf-btn pf-btn--ghost pf-btn--sm">Cancel</button></div>
+<div class="pf-job"><img class="thumb" style="border-radius: 4px" src="/_blob/5793755c18a8c373ec2c96bc29af3d65" alt=""><div class="pf-stack" style="gap: 6px"><span class="pf-job__title">Helix teaser</span><span class="pf-job__meta"><span>720 x 1280</span><span>30 fps</span><span>0:15</span></span></div><span class="pf-badge pf-badge--outline">Queued · 2nd</span></div>
+<div class="pf-job"><img class="thumb" style="border-radius: 4px" src="/_blob/8897772962d1b168a849b63fac04d27a" alt=""><div class="pf-stack" style="gap: 6px"><span class="pf-job__title">Night drive visual, full track</span><span class="pf-job__meta"><span>1280 x 720</span><span>30 fps</span><span>3:12</span><span>41 MB</span></span></div><button class="pf-btn pf-btn--secondary pf-btn--sm"><svg class="ico ico--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path></svg>Download</button></div>
+<div class="pf-job"><img class="thumb" style="border-radius: 4px" src="/_blob/8897772962d1b168a849b63fac04d27a" alt=""><div class="pf-stack" style="gap: 6px"><span class="pf-job__title">Night drive visual, 30 s cut</span><span class="pf-job__meta"><span>720 x 1280</span><span>30 fps</span><span>0:30</span><span>7 MB</span></span></div><button class="pf-btn pf-btn--secondary pf-btn--sm"><svg class="ico ico--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path></svg>Download</button></div>
+</div>
+</section>
+
+<section>
+<h2 class="db-h2">Start from a template</h2>
+<div class="db-grid">
+<a class="pf-tcard" href="Editor.dc.html"><img class="thumb" src="/_blob/887025c7c57b1d20d79d1154c631416a" alt=""><span class="pf-tcard__body"><span class="pf-tcard__name">Night City</span><span class="pf-tcard__meta">5 elements</span></span></a>
+<a class="pf-tcard" href="Editor.dc.html"><img class="thumb" src="/_blob/c370b60cfdffc208e25172f4b132865e" alt=""><span class="pf-tcard__body"><span class="pf-tcard__name">Liquid Gold</span><span class="pf-tcard__meta">2 elements</span></span></a>
+<a class="pf-tcard" href="Editor.dc.html"><img class="thumb" src="/_blob/a4b197996b3ed3557f70fa5db60a551c" alt=""><span class="pf-tcard__body"><span class="pf-tcard__name">Nova</span><span class="pf-tcard__meta">2 elements</span></span></a>
+<a class="pf-tcard" href="Editor.dc.html"><img class="thumb" src="/_blob/ef98b8f2fb1194d7f7e59b722ee530c1" alt=""><span class="pf-tcard__body"><span class="pf-tcard__name">Aurora</span><span class="pf-tcard__meta">2 elements</span></span></a>
+</div>
+</section>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["phosphor","iris"],"default":"phosphor"},"$preview":{"width":1440,"height":1180}}'>
+class Component extends DCLogic {
+renderVals() {
+return { theme: this.props.theme ?? 'phosphor' };
+}
+}
+</script>
+</body>
+</html>

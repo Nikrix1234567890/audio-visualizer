@@ -1,0 +1,212 @@
+{
+ "v": 3,
+ "layout": "files",
+ "createdOnFiles": {
+  "v": 1,
+  "at": "2026-11-12T16:15:24Z"
+ },
+ "title": "Pulsefield",
+ "namespace": "Pulsefield",
+ "libraries": [],
+ "sections": {},
+ "groups": [
+  "Templates",
+  "Elements"
+ ],
+ "assetGroups": {
+  "Templates": {
+   "name": "Templates",
+   "tile": "m",
+   "order": [
+    "galaxy.jpg",
+    "radialBars.jpg",
+    "sphereSwarm.jpg",
+    "terrainWave.jpg",
+    "liquidGold.jpg",
+    "nova.jpg",
+    "hyperdrive.jpg",
+    "helix.jpg",
+    "nightCity.jpg",
+    "aurora.jpg",
+    "jellyfish.jpg",
+    "solar.jpg",
+    "nebula.jpg",
+    "vortex.jpg",
+    "equalizer.jpg",
+    "pulseRing.jpg"
+   ],
+   "files": {
+    "galaxy.jpg": {
+     "name": "galaxy.jpg",
+     "blob": "03f8ecb7fb8ab934724f3814ef03689b",
+     "size": 12020,
+     "type": "image/jpeg"
+    },
+    "radialBars.jpg": {
+     "name": "radialBars.jpg",
+     "blob": "9464e854c57bcf1c24a983d9a059280e",
+     "size": 15172,
+     "type": "image/jpeg"
+    },
+    "sphereSwarm.jpg": {
+     "name": "sphereSwarm.jpg",
+     "blob": "77f87d7ee605f6c0ae587d37caf19f6e",
+     "size": 15479,
+     "type": "image/jpeg"
+    },
+    "terrainWave.jpg": {
+     "name": "terrainWave.jpg",
+     "blob": "e8ee4020e46c42816a415a8bad032c19",
+     "size": 14316,
+     "type": "image/jpeg"
+    },
+    "liquidGold.jpg": {
+     "name": "liquidGold.jpg",
+     "blob": "ce485015a64c3018a1d70319e91de5d1",
+     "size": 23952,
+     "type": "image/jpeg"
+    },
+    "nova.jpg": {
+     "name": "nova.jpg",
+     "blob": "ab4a26c2e872e61fb6d535196e7478eb",
+     "size": 14407,
+     "type": "image/jpeg"
+    },
+    "hyperdrive.jpg": {
+     "name": "hyperdrive.jpg",
+     "blob": "2d77debe8356f7f6b22556d9441c4a44",
+     "size": 18361,
+     "type": "image/jpeg"
+    },
+    "helix.jpg": {
+     "name": "helix.jpg",
+     "blob": "be931f4eae5eb8f0f5280955bb5b013d",
+     "size": 14071,
+     "type": "image/jpeg"
+    },
+    "nightCity.jpg": {
+     "name": "nightCity.jpg",
+     "blob": "33edbac81e652adb13e8d49f43a3c8c2",
+     "size": 25321,
+     "type": "image/jpeg"
+    },
+    "aurora.jpg": {
+     "name": "aurora.jpg",
+     "blob": "8c546043ae47bb1056894f2245d751ff",
+     "size": 15707,
+     "type": "image/jpeg"
+    },
+    "jellyfish.jpg": {
+     "name": "jellyfish.jpg",
+     "blob": "905ee29eff68bd8c6685ace0306e2155",
+     "size": 7939,
+     "type": "image/jpeg"
+    },
+    "solar.jpg": {
+     "name": "solar.jpg",
+     "blob": "c7e82ae45c3fbc45d961db57fc5fa1ee",
+     "size": 21547,
+     "type": "image/jpeg"
+    },
+    "nebula.jpg": {
+     "name": "nebula.jpg",
+     "blob": "c2dc97c2e1bfd8c4f3015b7659c78207",
+     "size": 23442,
+     "type": "image/jpeg"
+    },
+    "vortex.jpg": {
+     "name": "vortex.jpg",
+     "blob": "d2e39e4768e0f016489e0a9b4374aaf1",
+     "size": 16594,
+     "type": "image/jpeg"
+    },
+    "equalizer.jpg": {
+     "name": "equalizer.jpg",
+     "blob": "312e184739504e3a23f7d92dd2e29cb4",
+     "size": 21309,
+     "type": "image/jpeg"
+    },
+    "pulseRing.jpg": {
+     "name": "pulseRing.jpg",
+     "blob": "396f7309d1efcc5f0bf014297ed18804",
+     "size": 9014,
+     "type": "image/jpeg"
+    }
+   }
+  },
+  "Elements": {
+   "name": "Elements",
+   "tile": "m",
+   "order": [
+    "barRing.jpg",
+    "stars.jpg",
+    "core.jpg",
+    "tunnel.jpg",
+    "gridFloor.jpg",
+    "trackTitle.jpg",
+    "spectrumRing.jpg",
+    "sun.jpg"
+   ],
+   "files": {
+    "barRing.jpg": {
+     "name": "barRing.jpg",
+     "blob": "8e7bc2ea9c6c31af084cdeaef63b91ea",
+     "size": 9055,
+     "type": "image/jpeg"
+    },
+    "stars.jpg": {
+     "name": "stars.jpg",
+     "blob": "4fc9e9379949205ec35fd43c4fe765df",
+     "size": 2151,
+     "type": "image/jpeg"
+    },
+    "core.jpg": {
+     "name": "core.jpg",
+     "blob": "6621542129cd5d7b24416bac088ea4f6",
+     "size": 3914,
+     "type": "image/jpeg"
+    },
+    "tunnel.jpg": {
+     "name": "tunnel.jpg",
+     "blob": "8c8ed9d44ac278263d9fed695d1aacc4",
+     "size": 10856,
+     "type": "image/jpeg"
+    },
+    "gridFloor.jpg": {
+     "name": "gridFloor.jpg",
+     "blob": "976d32a4000620d3698cd837b9dd13e6",
+     "size": 12227,
+     "type": "image/jpeg"
+    },
+    "trackTitle.jpg": {
+     "name": "trackTitle.jpg",
+     "blob": "b1842b2dee006177bd1c37dd5e12d775",
+     "size": 6486,
+     "type": "image/jpeg"
+    },
+    "spectrumRing.jpg": {
+     "name": "spectrumRing.jpg",
+     "blob": "3d063ab6114b2d69e80758aa39a276c1",
+     "size": 7843,
+     "type": "image/jpeg"
+    },
+    "sun.jpg": {
+     "name": "sun.jpg",
+     "blob": "1d3195633a353195faa4759fca3f5f87",
+     "size": 5193,
+     "type": "image/jpeg"
+    }
+   }
+  }
+ },
+ "blobs": {},
+ "docs": {
+  "sections": []
+ },
+ "lastChange": {
+  "by": "Claude",
+  "at": "2026-11-12T16:15:24Z",
+  "via": "Claude Code",
+  "note": "First version: tokens, components, brand book."
+ }
+}

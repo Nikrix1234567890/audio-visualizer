@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pulsefield editor</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/pulsefield/tokens.css">
+<link rel="stylesheet" href="ds/pulsefield/components/bundle.css">
+<link rel="stylesheet" href="redesign.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&amp;family=Geist:wght@400..700&amp;family=Geist+Mono:wght@400..600&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit}
+</style>
+</helmet>
+<div class="{{shellClass}}" data-theme="{{theme}}">
+
+<header class="ed__bar">
+<a class="pf-logo" href="Dashboard.dc.html" aria-label="Back to the dashboard"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="1" y="8" width="2" height="4" rx="1"></rect><rect x="5" y="4" width="2" height="12" rx="1"></rect><rect x="9" y="1" width="2" height="18" rx="1"></rect><rect x="13" y="5" width="2" height="10" rx="1"></rect><rect x="17" y="8" width="2" height="4" rx="1"></rect></svg></a>
+<span class="pf-sep"></span>
+<input class="pf-input pf-input--bare" style="width: 190px" value="Night drive visual" aria-label="Project title">
+<span class="pf-badge pf-badge--success"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>Saved</span>
+<span class="pf-spacer"></span>
+<button class="pf-btn pf-btn--ghost pf-btn--icon" aria-label="Undo"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7v6h6M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path></svg></button>
+<button class="pf-btn pf-btn--ghost pf-btn--icon" aria-label="Redo" disabled="{{yes}}"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 7v6h-6M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"></path></svg></button>
+<span class="pf-sep"></span>
+<div class="pf-seg" role="group" aria-label="Format"><button class="pf-seg__item" aria-pressed="true">16:9</button><button class="pf-seg__item" aria-pressed="false">9:16</button><button class="pf-seg__item" aria-pressed="false">1:1</button></div>
+<span class="pf-spacer"></span>
+<span class="pf-badge">Free</span>
+<button class="pf-btn pf-btn--ghost"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"></path></svg>Share</button>
+<button class="pf-btn pf-btn--cta" onClick="{{toggleExport}}"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path></svg>Export</button>
+<span class="pf-avatar">NZ</span>
+</header>
+
+<nav class="pf-rail ed__rail" aria-label="Library">
+<sc-for list="{{rail}}" as="item" hint-placeholder-count="5">
+<button class="pf-rail__item" aria-selected="{{item.on}}" onClick="{{item.pick}}"><svg class="ico ico--rail" viewBox="0 0 24 24" aria-hidden="true"><path d="{{item.d}}"></path></svg>{{item.label}}</button>
+</sc-for>
+<span class="pf-rail__spacer"></span>
+<button class="pf-rail__item"><svg class="ico ico--rail" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"></path></svg>Help</button>
+</nav>
+
+<aside class="ed__lib">
+<sc-if value="{{isTemplates}}" hint-placeholder-val="{{true}}">
+<div class="ed__libhead">Templates<span class="pf-tab__count">33</span></div>
+<div class="ed__libbody">
+<label class="pf-inputwrap"><svg class="ico pf-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 11a8 8 0 1 1-16 0 8 8 0 0 1 16 0zM21 21l-4.300-4.300"></path></svg><input class="pf-input" placeholder="Search templates" aria-label="Search templates"></label>
+<div class="ed__cards">
+<sc-for list="{{templates}}" as="t" hint-placeholder-count="8">
+<button class="pf-tcard pf-tcard--compact" aria-current="{{t.current}}" style="padding: 0; text-align: left"><img class="thumb" src="{{t.src}}" alt=""><span class="pf-tcard__body"><span class="pf-tcard__name">{{t.name}}</span></span></button>
+</sc-for>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{isElements}}" hint-placeholder-val="{{false}}">
+<div class="ed__libhead">Elements<span class="pf-tab__count">46</span></div>
+<div class="ed__libbody">
+<label class="pf-inputwrap"><svg class="ico pf-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 11a8 8 0 1 1-16 0 8 8 0 0 1 16 0zM21 21l-4.300-4.300"></path></svg><input class="pf-input" placeholder="Ring, tunnel, text" aria-label="Search elements"></label>
+<p class="ed__group">Shapes</p>
+<div class="ed__tiles">
+<button class="pf-ecard"><img class="thumb thumb--sq" src="/_blob/57fed656244d83064d30a7aff7d1eac2" alt=""><span class="pf-ecard__name">Bar ring</span></button>
+<button class="pf-ecard"><img class="thumb thumb--sq" src="/_blob/43a791534dfe4ef68074e47d9d881d58" alt=""><span class="pf-ecard__name">Spectrum ring</span></button>
+<button class="pf-ecard"><img class="thumb thumb--sq" src="/_blob/566c84d2eaf9826197125e8fa24e5b13" alt=""><span class="pf-ecard__name">Glowing core</span></button>
+</div>
+<p class="ed__group">Particles and space</p>
+<div class="ed__tiles">
+<button class="pf-ecard"><img class="thumb thumb--sq" src="/_blob/878bce49a77f490ba3b38ead0c87eb5e" alt=""><span class="pf-ecard__name">Tunnel</span></button>
+<button class="pf-ecard"><img class="thumb thumb--sq" src="/_blob/58e93296d24b1debac4a8b069a9c1d4e" alt=""><span class="pf-ecard__name">Stars</span></button>
+<button class="pf-ecard"><img class="thumb thumb--sq" src="/_blob/8897772962d1b168a849b63fac04d27a" alt=""><span class="pf-ecard__name">Galaxy</span></button>
+</div>
+<p class="ed__group">Text</p>
+<div class="ed__tiles">
+<button class="pf-ecard"><img class="thumb thumb--sq" src="/_blob/dbe515fcb913ea9477c28ff460b062f9" alt=""><span class="pf-ecard__name">Track title</span></button>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{isMedia}}" hint-placeholder-val="{{false}}">
+<div class="ed__libhead">Media</div>
+<div class="ed__libbody">
+<div class="pf-drop pf-drop--inline"><span class="pf-drop__icon"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"></path></svg></span><span class="pf-stack" style="gap: 2px"><span class="ui-strong">Add a picture or 3D model</span><span class="pf-drop__hint">PNG, JPG, WebP up to 10 MB. GLB up to 50 MB.</span></span></div>
+<div class="pf-empty"><span class="pf-empty__title">Nothing uploaded yet</span><span>Your logo, cover art and models show up here and can be dragged into the scene.</span></div>
+</div>
+</sc-if>
+<sc-if value="{{isText}}" hint-placeholder-val="{{false}}">
+<div class="ed__libhead">Text</div>
+<div class="ed__libbody">
+<button class="pf-btn pf-btn--secondary pf-btn--block" style="justify-content: flex-start">Text<span class="pf-spacer"></span><span class="pf-note">A line you type</span></button>
+<button class="pf-btn pf-btn--secondary pf-btn--block" style="justify-content: flex-start">Track title<span class="pf-spacer"></span><span class="pf-note">From the file name</span></button>
+<button class="pf-btn pf-btn--secondary pf-btn--block" style="justify-content: flex-start">Lyrics<span class="pf-spacer"></span><span class="pf-note">Timed lines</span></button>
+</div>
+</sc-if>
+<sc-if value="{{isPalettes}}" hint-placeholder-val="{{false}}">
+<div class="ed__libhead">Palettes</div>
+<div class="ed__libbody">
+<span class="pf-note">One click recolours every element in the scene.</span>
+<div class="pf-palettes" style="grid-template-columns: repeat(3, minmax(0, 1fr))">
+<button class="pf-palette" aria-pressed="false"><span class="pf-palette__bar" style="background: linear-gradient(90deg, #f59e0b, #fde047)"></span>Gold</button>
+<button class="pf-palette" aria-pressed="false"><span class="pf-palette__bar" style="background: linear-gradient(90deg, #fb4d6d, #fb7185)"></span>Rose</button>
+<button class="pf-palette" aria-pressed="true"><span class="pf-palette__bar" style="background: linear-gradient(90deg, #f97316, #d946ef)"></span>Dusk</button>
+<button class="pf-palette" aria-pressed="false"><span class="pf-palette__bar" style="background: linear-gradient(90deg, #d946ef, #22d3ee)"></span>Neon</button>
+<button class="pf-palette" aria-pressed="false"><span class="pf-palette__bar" style="background: linear-gradient(90deg, #22d3ee, #3b82f6)"></span>Ice</button>
+<button class="pf-palette" aria-pressed="false"><span class="pf-palette__bar" style="background: linear-gradient(90deg, #14b8a6, #6366f1)"></span>Ocean</button>
+</div>
+</div>
+</sc-if>
+</aside>
+
+<main class="ed__stage">
+<div class="pf-toolbar ed__tools" role="toolbar" aria-label="Tools">
+<button class="pf-btn pf-btn--ghost pf-btn--icon" aria-pressed="true" aria-label="Select (V)"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4l7.1 17 2.5-7.4L21 11.1 4 4z"></path></svg></button>
+<button class="pf-btn pf-btn--ghost pf-btn--icon" aria-label="Move (G)"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"></path></svg></button>
+<button class="pf-btn pf-btn--ghost pf-btn--icon" aria-label="Rotate (R)"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.700L21 8M21 3v5h-5"></path></svg></button>
+<button class="pf-btn pf-btn--ghost pf-btn--icon" aria-label="Scale (S)"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"></path></svg></button>
+<span class="pf-sep"></span>
+<button class="pf-btn pf-btn--ghost pf-btn--sm">Fit<svg class="ico ico--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button>
+</div>
+<span class="ed__fps">60 fps</span>
+<div class="ed__frame">
+<img class="media" src="/_blob/8897772962d1b168a849b63fac04d27a" alt="The scene: a spiral galaxy of particles">
+<video class="media" style="position: absolute; inset: 0" src="/_blob/0dd006361e0bb12ab5e6eb94106c2a87" autoPlay="{{yes}}" muted="{{yes}}" loop="{{yes}}" playsInline="{{yes}}" aria-hidden="true"></video>
+<span class="pf-frame__tl"><span class="pf-badge pf-badge--solid">16:9</span><span class="pf-badge pf-badge--solid">720p</span></span>
+<span class="pf-frame__br">Pulsefield</span>
+<span class="ed__gizmo"><i style="left: 0; top: 0"></i><i style="left: 100%; top: 0"></i><i style="left: 0; top: 100%"></i><i style="left: 100%; top: 100%"></i></span>
+</div>
+</main>
+
+<aside class="ed__insp">
+<div class="ed__insphead">Scene<button class="pf-btn pf-btn--ghost pf-btn--sm" onClick="{{showElements}}"><svg class="ico ico--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5v14"></path></svg>Add</button></div>
+<div class="pf-layers" role="listbox" aria-label="Scene" style="padding-top: 0">
+<div class="pf-layer" role="option" aria-selected="true"><span class="pf-layer__grip"></span><img class="layer-thumb" src="/_blob/8897772962d1b168a849b63fac04d27a" alt=""><span class="pf-layer__name">Galaxy</span><span class="pf-layer__sigs"><span class="pf-dot" data-sig="{{sig}}"></span><span class="pf-dot" data-sig="beat"></span></span><button class="pf-layer__btn" aria-label="Hide Galaxy"><svg class="ico ico--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.600-7 10-7 10 7 10 7-3.600 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"></path></svg></button></div>
+<div class="pf-layer" role="option" aria-selected="false"><span class="pf-layer__grip"></span><img class="layer-thumb" src="/_blob/dbe515fcb913ea9477c28ff460b062f9" alt=""><span class="pf-layer__name">Track title</span><span class="pf-layer__sigs"><span class="pf-dot" data-sig="level"></span></span><button class="pf-layer__btn" aria-label="Hide Track title"><svg class="ico ico--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.600-7 10-7 10 7 10 7-3.600 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"></path></svg></button></div>
+<div class="pf-layer" role="option" aria-selected="false"><span class="pf-layer__grip"></span><img class="layer-thumb" src="/_blob/58e93296d24b1debac4a8b069a9c1d4e" alt=""><span class="pf-layer__name">Stars</span><span class="pf-layer__sigs"></span><button class="pf-layer__btn" aria-label="Hide Stars"><svg class="ico ico--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.600-7 10-7 10 7 10 7-3.600 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"></path></svg></button></div>
+</div>
+<div class="pf-tabs" role="tablist" style="border-top: 1px solid var(--line-1)">
+<button class="pf-tab" role="tab" aria-selected="{{isElementTab}}" onClick="{{tabElement}}">Element</button>
+<button class="pf-tab" role="tab" aria-selected="{{isCameraTab}}" onClick="{{tabCamera}}">Camera</button>
+<button class="pf-tab" role="tab" aria-selected="{{isLookTab}}" onClick="{{tabLook}}">Look</button>
+</div>
+<div class="ed__scroll">
+<sc-if value="{{isElementTab}}" hint-placeholder-val="{{true}}">
+<div class="pf-section"><div class="pf-section__head"><svg class="ico ico--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>Shape</div>
+<div class="pf-section__body">
+<div class="pf-param"><div class="pf-scrub v48" role="slider" tabindex="0" aria-label="Radius"><span class="pf-scrub__label">Radius</span><span class="pf-scrub__value">2.40<small>m</small></span></div><button class="pf-jack" aria-label="React to audio"></button><button class="pf-key" aria-label="Animate over time"></button></div>
+<div class="pf-param"><div class="pf-scrub v42" role="slider" tabindex="0" aria-label="Arm width"><span class="pf-scrub__label">Arm width</span><span class="pf-scrub__value">1.25<small>x</small></span><span class="pf-scrub__mod m30" data-sig="{{sig}}"></span></div><button class="pf-jack" data-sig="{{sig}}" aria-label="Arm width reacts to audio" onClick="{{togglePatch}}"></button><button class="pf-key" aria-label="Animate over time"></button></div>
+<div class="pf-param"><div class="pf-scrub v59" data-active="true" role="slider" tabindex="0" aria-label="Arm twist"><span class="pf-scrub__label">Arm twist</span><span class="pf-scrub__value">214<small>°</small></span></div><button class="pf-jack" aria-label="React to audio"></button><button class="pf-key" data-state="at" aria-label="Keyframe at the playhead"></button></div>
+<div class="pf-param"><div class="pf-scrub v68" role="slider" tabindex="0" aria-label="Glow"><span class="pf-scrub__label">Glow</span><span class="pf-scrub__value">68<small>%</small></span><span class="pf-scrub__mod m22" data-sig="beat"></span></div><button class="pf-jack" data-sig="beat" aria-label="Glow reacts to the beat"></button><button class="pf-key" data-state="on" aria-label="Animated"></button></div>
+<div class="pf-param"><div class="pf-scrub v38" role="slider" tabindex="0" aria-label="Particles"><span class="pf-scrub__label">Particles</span><span class="pf-scrub__value">24,000</span></div><span class="pf-param__lock" title="Counts cannot react or animate"><svg class="ico ico--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2zM7 11V7a5 5 0 0 1 10 0v4"></path></svg></span><span style="width: 16px"></span></div>
+</div></div>
+<div class="pf-section"><div class="pf-section__head"><svg class="ico ico--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>Colour</div>
+<div class="pf-section__body">
+<button class="pf-color"><span class="pf-color__chip" style="background: #ff4fa3"></span><span class="pf-color__label">Colour</span><span class="pf-color__hex">#FF4FA3</span></button>
+<button class="pf-color"><span class="pf-color__chip" style="background: #ffb23e"></span><span class="pf-color__label">Second colour</span><span class="pf-color__hex">#FFB23E</span></button>
+<div class="pf-param"><div class="pf-scrub v09" role="slider" tabindex="0" aria-label="Hue shift"><span class="pf-scrub__label">Hue shift</span><span class="pf-scrub__value">32<small>°</small></span><span class="pf-scrub__mod m40" data-sig="high"></span></div><button class="pf-jack" data-sig="high" aria-label="Hue shift reacts to the highs"></button><button class="pf-key" aria-label="Animate over time"></button></div>
+</div></div>
+<div class="pf-section" data-collapsed="true"><div class="pf-section__head"><svg class="ico ico--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg>Position, rotation, scale</div></div>
+<div class="pf-section" data-collapsed="true"><div class="pf-section__head"><svg class="ico ico--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg>Tempo</div></div>
+</sc-if>
+<sc-if value="{{isCameraTab}}" hint-placeholder-val="{{false}}">
+<div class="pf-section"><div class="pf-section__head"><svg class="ico ico--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>Position</div>
+<div class="pf-section__body">
+<div class="pf-param"><div class="pf-scrub v55" role="slider" tabindex="0" aria-label="Distance"><span class="pf-scrub__label">Distance</span><span class="pf-scrub__value">11.0<small>m</small></span></div><button class="pf-jack" aria-label="React to audio"></button><button class="pf-key" data-state="on" aria-label="Animated"></button></div>
+<div class="pf-param"><div class="pf-scrub v30" role="slider" tabindex="0" aria-label="Height"><span class="pf-scrub__label">Height</span><span class="pf-scrub__value">3.2<small>m</small></span></div><button class="pf-jack" aria-label="React to audio"></button><button class="pf-key" aria-label="Animate over time"></button></div>
+<div class="pf-param"><div class="pf-scrub v25" role="slider" tabindex="0" aria-label="Orbit speed"><span class="pf-scrub__label">Orbit speed</span><span class="pf-scrub__value">0.25<small>x</small></span></div><button class="pf-jack" aria-label="React to audio"></button><button class="pf-key" aria-label="Animate over time"></button></div>
+<div class="pf-param"><div class="pf-scrub v12" role="slider" tabindex="0" aria-label="Shake"><span class="pf-scrub__label">Shake</span><span class="pf-scrub__value">12<small>%</small></span><span class="pf-scrub__mod m30" data-sig="level"></span></div><button class="pf-jack" data-sig="level" aria-label="Shake reacts to the level"></button><button class="pf-key" aria-label="Animate over time"></button></div>
+</div></div>
+<div class="pf-section"><div class="pf-section__head"><svg class="ico ico--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>Moves at the playhead</div>
+<div class="pf-section__body" style="flex-direction: row; flex-wrap: wrap">
+<button class="pf-btn pf-btn--secondary pf-btn--sm">Push in</button><button class="pf-btn pf-btn--secondary pf-btn--sm">Pull out</button><button class="pf-btn pf-btn--secondary pf-btn--sm">Crane</button><button class="pf-btn pf-btn--secondary pf-btn--sm">Zoom punch</button><button class="pf-btn pf-btn--secondary pf-btn--sm">Dolly zoom</button><button class="pf-btn pf-btn--secondary pf-btn--sm">Impact</button>
+</div></div>
+</sc-if>
+<sc-if value="{{isLookTab}}" hint-placeholder-val="{{false}}">
+<div class="pf-section"><div class="pf-section__head"><svg class="ico ico--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>Light</div>
+<div class="pf-section__body">
+<div class="pf-param"><div class="pf-scrub v68" role="slider" tabindex="0" aria-label="Bloom"><span class="pf-scrub__label">Bloom</span><span class="pf-scrub__value">68<small>%</small></span><span class="pf-scrub__mod m20" data-sig="beat"></span></div><button class="pf-jack" data-sig="beat" aria-label="Bloom reacts to the beat"></button><button class="pf-key" data-state="on" aria-label="Animated"></button></div>
+<div class="pf-param"><div class="pf-scrub v30" role="slider" tabindex="0" aria-label="Vignette"><span class="pf-scrub__label">Vignette</span><span class="pf-scrub__value">30<small>%</small></span></div><button class="pf-jack" aria-label="React to audio"></button><button class="pf-key" aria-label="Animate over time"></button></div>
+<div class="pf-param"><div class="pf-scrub v12" role="slider" tabindex="0" aria-label="Grain"><span class="pf-scrub__label">Grain</span><span class="pf-scrub__value">12<small>%</small></span></div><button class="pf-jack" aria-label="React to audio"></button><button class="pf-key" aria-label="Animate over time"></button></div>
+<button class="pf-color"><span class="pf-color__chip" style="background: #07060f"></span><span class="pf-color__label">Background</span><span class="pf-color__hex">#07060F</span></button>
+</div></div>
+</sc-if>
+</div>
+</aside>
+
+<section class="ed__time" aria-label="Timeline">
+<div class="pf-transport">
+<button class="pf-play" aria-label="Play (Space)"><svg class="ico ico--solid" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3l14 9-14 9V3z"></path></svg></button>
+<span class="pf-timecode">1:05.12 <span>/ 3:12.00</span></span>
+<span class="pf-sep"></span>
+<button class="pf-track-chip"><svg class="ico ico--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5l12-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM21 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"></path></svg><span>demo-track.wav</span><svg class="ico ico--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button>
+<span class="pf-badge pf-badge--outline">128 BPM</span>
+<span class="pf-meter" aria-label="Live signal levels"><span data-sig="bass" style="height: 90%"></span><span data-sig="mid" style="height: 55%"></span><span data-sig="high" style="height: 35%"></span><span data-sig="level" style="height: 70%"></span><span data-sig="beat" style="height: 100%"></span></span>
+<span class="pf-spacer"></span>
+<button class="pf-btn pf-btn--ghost pf-btn--icon" aria-pressed="true" aria-label="Loop the export section"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m17 2 4 4-4 4M3 11v-1a4 4 0 0 1 4-4h14M7 22l-4-4 4-4M21 13v1a4 4 0 0 1-4 4H3"></path></svg></button>
+<button class="pf-btn pf-btn--ghost pf-btn--icon" aria-label="Mute"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4V5zM15.500 8.500a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"></path></svg></button>
+<span class="pf-sep"></span>
+<button class="pf-btn pf-btn--ghost pf-btn--icon pf-btn--sm" aria-label="Zoom out"><svg class="ico ico--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"></path></svg></button>
+<span class="pf-timecode" style="font-size: 12px">4x</span>
+<button class="pf-btn pf-btn--ghost pf-btn--icon pf-btn--sm" aria-label="Zoom in"><svg class="ico ico--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5v14"></path></svg></button>
+</div>
+<div class="pf-timeline" style="flex: 1">
+<div class="pf-tl-row pf-tl-row--ruler"><div class="pf-tl-head"><span class="pf-overline">Animated settings</span></div><div class="pf-tl-lane"><span style="left: 0">0:00</span><span style="left: 12.5%">0:24</span><span style="left: 25%">0:48</span><span style="left: 37.5%">1:12</span><span style="left: 50%">1:36</span><span style="left: 62.5%">2:00</span><span style="left: 75%">2:24</span><span style="left: 87.5%">2:48</span></div></div>
+<div class="pf-tl-row pf-tl-row--wave"><div class="pf-tl-head"><svg class="ico ico--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5l12-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM21 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"></path></svg><b>demo-track.wav</b></div><div class="pf-tl-lane"><div class="wave"></div><div class="pf-beats"></div><div class="pf-range" style="left: 25%; width: 15.6%"><span class="pf-range__label">Export 0:30</span></div></div></div>
+<div class="pf-tl-row"><div class="pf-tl-head"><button class="pf-key" data-state="at" aria-label="Keyframe at the playhead"></button><b>Galaxy</b>&nbsp;Arm twist</div><div class="pf-tl-lane"><span class="pf-kfspan" style="left: 8%; width: 54%"></span><button class="pf-kf" style="left: 8%" aria-label="Keyframe at 0:15"></button><button class="pf-kf" data-sel="true" style="left: 34%" aria-label="Keyframe at 1:05, selected"></button><button class="pf-kf" style="left: 62%" aria-label="Keyframe at 1:59"></button></div></div>
+<div class="pf-tl-row"><div class="pf-tl-head"><button class="pf-key" data-state="on" aria-label="Add a keyframe at the playhead"></button><b>Galaxy</b>&nbsp;Glow</div><div class="pf-tl-lane"><span class="pf-kfspan" style="left: 16%; width: 30%"></span><button class="pf-kf" style="left: 16%" aria-label="Keyframe at 0:31"></button><button class="pf-kf" style="left: 46%" aria-label="Keyframe at 1:28"></button></div></div>
+<div class="pf-tl-row"><div class="pf-tl-head"><button class="pf-key" data-state="on" aria-label="Add a keyframe at the playhead"></button><b>Camera</b>&nbsp;Distance</div><div class="pf-tl-lane"><span class="pf-kfspan" style="left: 25%; width: 25%"></span><button class="pf-kf" style="left: 25%" aria-label="Keyframe at 0:48"></button><button class="pf-kf" style="left: 50%" aria-label="Keyframe at 1:36"></button><button class="pf-kf pf-kf--hold" style="left: 81%" aria-label="Hold keyframe at 2:36"></button></div></div>
+<div class="pf-tl-row"><div class="pf-tl-head"><button class="pf-key" data-state="on" aria-label="Add a keyframe at the playhead"></button><b>Look</b>&nbsp;Bloom</div><div class="pf-tl-lane"><span class="pf-kfspan" style="left: 40%; width: 30%"></span><button class="pf-kf" style="left: 40%" aria-label="Keyframe at 1:17"></button><button class="pf-kf" style="left: 70%" aria-label="Keyframe at 2:14"></button></div></div>
+<div class="pf-playhead" style="left: calc(168px + (100% - 168px) * 0.34)"></div>
+</div>
+</section>
+
+<sc-if value="{{patchOpen}}" hint-placeholder-val="{{false}}">
+<div class="pf-popover pf-stack ed__pop ed__pop--patch" style="gap: 12px; width: 300px" role="dialog" aria-label="Arm width reacts to">
+<div class="lp-row" style="justify-content: space-between"><span class="ui-strong">Arm width reacts to</span><button class="pf-btn pf-btn--ghost pf-btn--sm" onClick="{{togglePatch}}">Done</button></div>
+<div class="lp-row" style="gap: 6px">
+<sc-for list="{{signals}}" as="s" hint-placeholder-count="5">
+<button class="pf-signal" data-sig="{{s.id}}" aria-pressed="{{s.on}}" onClick="{{s.pick}}">{{s.label}}</button>
+</sc-for>
+</div>
+<div class="pf-param"><div class="pf-scrub v30" role="slider" tabindex="0" aria-label="Amount"><span class="pf-scrub__label">Amount</span><span class="pf-scrub__value">30<small>%</small></span></div></div>
+<div class="pf-togglerow"><span>Invert</span><button class="pf-switch" role="switch" aria-checked="false" aria-label="Invert"></button></div>
+</div>
+</sc-if>
+
+<sc-if value="{{exportOpen}}" hint-placeholder-val="{{false}}">
+<div class="pf-popover pf-stack ed__pop ed__pop--export" style="gap: 12px" role="dialog" aria-label="Export video">
+<div class="title">Export video</div>
+<div class="pf-field"><span class="pf-label">Format</span><div class="pf-seg pf-seg--block"><button class="pf-seg__item" aria-pressed="true">16:9</button><button class="pf-seg__item" aria-pressed="false">9:16</button><button class="pf-seg__item" aria-pressed="false">1:1</button></div></div>
+<div class="pf-field"><span class="pf-label">Resolution</span><div class="pf-seg pf-seg--block"><button class="pf-seg__item" aria-pressed="true">720p</button><button class="pf-seg__item" data-locked="true">1080p<svg class="ico ico--premium" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2zM7 11V7a5 5 0 0 1 10 0v4"></path></svg></button><button class="pf-seg__item" data-locked="true">1440p<svg class="ico ico--premium" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2zM7 11V7a5 5 0 0 1 10 0v4"></path></svg></button><button class="pf-seg__item" data-locked="true">4K<svg class="ico ico--premium" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2zM7 11V7a5 5 0 0 1 10 0v4"></path></svg></button></div></div>
+<div class="pf-field"><span class="pf-label">Frame rate</span><div class="pf-seg pf-seg--block"><button class="pf-seg__item" aria-pressed="true">30 fps</button><button class="pf-seg__item" data-locked="true">60 fps<svg class="ico ico--premium" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2zM7 11V7a5 5 0 0 1 10 0v4"></path></svg></button></div></div>
+<div class="pf-field"><span class="pf-label">Length</span><div class="pf-seg pf-seg--block"><button class="pf-seg__item" aria-pressed="false">Whole track</button><button class="pf-seg__item" aria-pressed="false">15 s</button><button class="pf-seg__item" aria-pressed="true">30 s</button><button class="pf-seg__item" aria-pressed="false">60 s</button></div></div>
+<div class="pf-banner pf-banner--premium"><svg class="ico pf-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 6.5 7 10.5l5-7 5 7 4.5-4L19 17H5L2.5 6.500zM5 21h14"></path></svg><span><b>1080p to 4K, 60 fps, no watermark.</b> Premium unlocks them.</span></div>
+<div class="lp-row" style="justify-content: space-between"><span class="pf-note">1280 x 720 · 0:30 · about 1 min</span><button class="pf-btn pf-btn--cta" onClick="{{startExport}}">Export</button></div>
+</div>
+</sc-if>
+
+<sc-if value="{{toast}}" hint-placeholder-val="{{false}}">
+<div class="pf-toast pf-toast--info ed__toast" role="status"><svg class="ico pf-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM7 3v18M17 3v18M3 12h18"></path></svg>Render queued, 1st in line<button class="pf-btn pf-btn--ghost pf-btn--sm" onClick="{{hideToast}}">Dismiss</button></div>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["phosphor","iris"],"default":"phosphor"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+state = { rail: 'templates', tab: 'element', exportOpen: false, patchOpen: false, toast: false, sig: 'bass' };
+renderVals() {
+const s = this.state;
+const railItems = [
+{ id: 'templates', label: 'Templates', d: 'M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z' },
+{ id: 'elements', label: 'Elements', d: 'M21 16V8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4a2 2 0 0 0 1-1.7zM3.300 7 12 12l8.700-5M12 22V12' },
+{ id: 'media', label: 'Media', d: 'M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM9 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM21 15l-3.100-3.100a2 2 0 0 0-2.800 0L6 21' },
+{ id: 'text', label: 'Text', d: 'M4 7V4h16v3M9 20h6M12 4v16' },
+{ id: 'palettes', label: 'Palettes', d: 'M12 22a7 7 0 0 0 7-7c0-2-1-3.900-3-5.500S12.500 5.500 12 3c-.500 2.500-2 4.900-4 6.500S5 13 5 15a7 7 0 0 0 7 7z' }
+];
+const signalList = [['bass', 'Bass'], ['mid', 'Mids'], ['high', 'Highs'], ['level', 'Level'], ['beat', 'Beat']];
+const templateList = [
+['Galaxy', '8897772962d1b168a849b63fac04d27a'], ['Helix', '5793755c18a8c373ec2c96bc29af3d65'],
+['Nova', 'a4b197996b3ed3557f70fa5db60a551c'], ['Hyperdrive', '8f65b13e80182c7911840af8a483e074'],
+['Aurora', 'ef98b8f2fb1194d7f7e59b722ee530c1'], ['Liquid Gold', 'c370b60cfdffc208e25172f4b132865e'],
+['Night City', '887025c7c57b1d20d79d1154c631416a'], ['Radial Bars', '57930e7b0465ecd6d57b1a57a42661e3'],
+['Terrain Wave', '1c83f215597951253652fedaf34b5a77'], ['Solar', 'f687cf38cb122a1a3dde54a329a7a91e']
+];
+return {
+theme: this.props.theme ?? 'phosphor',
+yes: true,
+shellClass: s.rail ? 'ed' : 'ed ed--nolib',
+rail: railItems.map((item) => ({ ...item, on: s.rail === item.id, pick: () => this.setState({ rail: s.rail === item.id ? null : item.id }) })),
+isTemplates: s.rail === 'templates', isElements: s.rail === 'elements', isMedia: s.rail === 'media', isText: s.rail === 'text', isPalettes: s.rail === 'palettes',
+templates: templateList.map(([name, id], i) => ({ name, src: '/_blob/' + id, current: i === 0 })),
+showElements: () => this.setState({ rail: 'elements' }),
+isElementTab: s.tab === 'element', isCameraTab: s.tab === 'camera', isLookTab: s.tab === 'look',
+tabElement: () => this.setState({ tab: 'element' }), tabCamera: () => this.setState({ tab: 'camera', patchOpen: false }), tabLook: () => this.setState({ tab: 'look', patchOpen: false }),
+sig: s.sig,
+signals: signalList.map(([id, label]) => ({ id, label, on: s.sig === id, pick: () => this.setState({ sig: id }) })),
+patchOpen: s.patchOpen, togglePatch: () => this.setState({ patchOpen: !s.patchOpen, exportOpen: false }),
+exportOpen: s.exportOpen, toggleExport: () => this.setState({ exportOpen: !s.exportOpen, patchOpen: false }),
+startExport: () => this.setState({ exportOpen: false, toast: true }),
+toast: s.toast, hideToast: () => this.setState({ toast: false })
+};
+}
+}
+</script>
+</body>
+</html>

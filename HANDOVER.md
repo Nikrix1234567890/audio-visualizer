@@ -303,3 +303,9 @@ Product:
 
 Also still open from before: a real name and domain, filling in the legal
 pages, and per-element timeline tracks for bindings.
+
+## Redesign (started 2026-11-12)
+
+A new look for the landing page and the editor has been designed but not
+built. Everything about it - links to the two preview pages, the sources,
+the open decisions and the build order - is in `design/README.md`.

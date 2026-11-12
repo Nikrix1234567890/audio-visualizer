@@ -1,0 +1,24 @@
+{
+  "v": 3,
+  "createdOnFiles": { "v": 1, "at": "2026-11-12T16:20:00Z" },
+  "title": "Pulsefield UI Redesign",
+  "launch": { "view": "canvas" },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": { "x": 0, "y": 0, "w": 1440, "h": 7400, "title": "Landing page", "expand": "fill" },
+    "Editor.dc.html": { "x": 1520, "y": 0, "w": 1440, "h": 900, "title": "Editor (press Play: Export, jacks, rail and tabs work)", "expand": "fill", "is_interactive": true },
+    "EditorStart.dc.html": { "x": 3040, "y": 0, "w": 1440, "h": 900, "title": "Editor, first visit", "expand": "fill" },
+    "Dashboard.dc.html": { "x": 1520, "y": 1020, "w": 1440, "h": 1180, "title": "Dashboard", "expand": "fill" }
+  },
+  "order": ["Main.dc.html", "Editor.dc.html", "EditorStart.dc.html", "Dashboard.dc.html"],
+  "notes": {},
+  "designSystems": [
+    {
+      "title": "Pulsefield",
+      "namespace": "pulsefield",
+      "artifact": "https://claude.ai/artifact/QJopAkLwhL1gC27DCxw8Qq",
+      "version": "1794500306-8776",
+      "copiedAt": "2026-11-12T16:20:00Z"
+    }
+  ]
+}

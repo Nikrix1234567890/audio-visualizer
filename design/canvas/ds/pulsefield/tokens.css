@@ -1,0 +1,18 @@
+/* Pulsefield — generated from tokens.json */
+:root,[data-theme="phosphor"]{--bg-0:#08090c;--bg-1:#0c0d11;--bg-2:#121419;--bg-3:#1a1d24;--bg-4:#232730;--fill-1:rgba(255,255,255,0.04);--fill-2:rgba(255,255,255,0.08);--line-1:#1f232b;--line-2:#2f3540;--line-3:#4a5263;--ink-1:#f4f5f7;--ink-2:#b4b9c4;--ink-3:#868d9c;--ink-4:#596070;--cta:#f4f5f7;--cta-hover:#ffffff;--on-cta:#08090c;--accent:#3ee6c1;--accent-hover:#74f0d5;--accent-soft:#0e2925;--accent-line:#1f5e52;--on-accent:#04130f;--sig-bass:#ff6a3d;--sig-mid:#b8e04a;--sig-high:#4da6ff;--sig-level:#e2e6ee;--sig-beat:#ff5fc4;--success:#7ddc6f;--warning:#f5a524;--danger:#ff6b6b;--danger-soft:#2b1416;--danger-line:#6b2a2e;--premium:#f2c260;--premium-soft:#2a2112;--premium-line:#6e5626;--scrim:rgba(4,5,8,0.72);--shadow-1:inset 0 1px 0 rgba(255,255,255,0.05), 0 1px 2px rgba(0,0,0,0.4);--shadow-2:0 0 0 1px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.4);--shadow-3:0 0 0 1px rgba(0,0,0,0.5), 0 32px 80px rgba(0,0,0,0.6), 0 8px 24px rgba(0,0,0,0.45);--shadow-well:inset 0 1px 3px rgba(0,0,0,0.5);--glow-accent:0 0 0 1px rgba(62,230,193,0.5), 0 0 28px rgba(62,230,193,0.22);--focus-ring:0 0 0 2px #0c0d11, 0 0 0 4px #3ee6c1;}
+[data-theme="iris"]{--accent:#a394ff;--accent-hover:#beb3ff;--accent-soft:#1d1a3d;--accent-line:#453d8f;--on-accent:#0e0b2a;--glow-accent:0 0 0 1px rgba(163,148,255,0.55), 0 0 28px rgba(163,148,255,0.26);--focus-ring:0 0 0 2px #0c0d11, 0 0 0 4px #a394ff;}
+:root{--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;--space-12:48px;--space-16:64px;--space-24:96px;--space-32:128px;--radius-xs:4px;--radius-sm:6px;--radius-md:8px;--radius-lg:12px;--radius-xl:20px;--radius-full:999px;--control-sm:24px;--control-md:32px;--control-lg:40px;--control-xl:48px;--appbar-h:48px;--rail-w:56px;--library-w:288px;--inspector-w:320px;--timeline-h:232px;--content-max:1200px;--z-sticky:100;--z-popover:200;--z-modal:300;--z-toast:400;--font-display:"Bricolage Grotesque", "Geist", ui-sans-serif, system-ui, sans-serif;--font-sans:"Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;--font-mono:"Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;}
+.display-xl{font-family:var(--font-display);font-size:76px;line-height:0.96;font-weight:700;letter-spacing:-0.035em}
+.display-lg{font-family:var(--font-display);font-size:52px;line-height:1.02;font-weight:700;letter-spacing:-0.03em}
+.display-md{font-family:var(--font-display);font-size:36px;line-height:1.1;font-weight:650;letter-spacing:-0.025em}
+.display-sm{font-family:var(--font-display);font-size:22px;line-height:1.2;font-weight:650;letter-spacing:-0.015em}
+.body-lg{font-family:var(--font-sans);font-size:18px;line-height:28px;font-weight:400}
+.body{font-family:var(--font-sans);font-size:15px;line-height:24px;font-weight:400}
+.title{font-family:var(--font-sans);font-size:17px;line-height:24px;font-weight:600;letter-spacing:-0.01em}
+.ui{font-family:var(--font-sans);font-size:13px;line-height:20px;font-weight:400}
+.ui-strong{font-family:var(--font-sans);font-size:13px;line-height:20px;font-weight:500}
+.caption{font-family:var(--font-sans);font-size:12px;line-height:16px;font-weight:400}
+.micro{font-family:var(--font-sans);font-size:11px;line-height:14px;font-weight:500}
+.readout{font-family:var(--font-mono);font-size:12px;line-height:16px;font-weight:500}
+.timecode{font-family:var(--font-mono);font-size:13px;line-height:16px;font-weight:500}
+.overline{font-family:var(--font-mono);font-size:10.5px;line-height:14px;font-weight:500;letter-spacing:0.08em}

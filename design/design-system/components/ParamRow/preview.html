@@ -1,0 +1,16 @@
+<!-- @dsCard group="Inputs" height=264 -->
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>ParamRow</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Geist:wght@400..700&family=Geist+Mono:wght@400..600&display=swap"></head>
+<body class="pf-demo pf-demo--panel pf-demo--col">
+<div class="pf-stack" style="width:296px;gap:6px">
+<div class="pf-param"><div class="pf-scrub" role="slider" tabindex="0" aria-label="Radius" style="--v:0.48"><span class="pf-scrub__label">Radius</span><span class="pf-scrub__value">2.40<small>m</small></span></div><button class="pf-jack" aria-label="React to audio"></button><button class="pf-key" aria-label="Animate over time"></button></div>
+<div class="pf-param"><div class="pf-scrub" role="slider" tabindex="0" aria-label="Bar height" style="--v:0.42"><span class="pf-scrub__label">Bar height</span><span class="pf-scrub__value">1.25<small>x</small></span><span class="pf-scrub__mod" data-sig="bass" style="--m:0.3"></span></div><button class="pf-jack" data-sig="bass" aria-label="Reacts to bass"></button><button class="pf-key" aria-label="Animate over time"></button></div>
+<div class="pf-param"><div class="pf-scrub" role="slider" tabindex="0" aria-label="Glow" style="--v:0.68"><span class="pf-scrub__label">Glow</span><span class="pf-scrub__value">68<small>%</small></span><span class="pf-scrub__mod" data-sig="beat" style="--m:0.22"></span></div><button class="pf-jack" data-sig="beat" aria-label="Reacts to beat"></button><button class="pf-key" data-state="on" aria-label="Animate over time"></button></div>
+<div class="pf-param"><div class="pf-scrub" role="slider" tabindex="0" aria-label="Arm twist" style="--v:0.59" data-active><span class="pf-scrub__label">Arm twist</span><span class="pf-scrub__value">214<small>°</small></span></div><button class="pf-jack" aria-label="React to audio"></button><button class="pf-key" data-state="at" aria-label="Animate over time"></button></div>
+<div class="pf-param"><div class="pf-scrub" role="slider" tabindex="0" aria-label="Hue shift" style="--v:0.09"><span class="pf-scrub__label">Hue shift</span><span class="pf-scrub__value">32<small>°</small></span><span class="pf-scrub__mod" data-sig="high" style="--m:0.4"></span></div><button class="pf-jack" data-sig="high" aria-label="Reacts to high"></button><button class="pf-key" data-state="on" aria-label="Animate over time"></button></div>
+<div class="pf-param"><div class="pf-scrub" role="slider" tabindex="0" aria-label="Bars" style="--v:0.38"><span class="pf-scrub__label">Bars</span><span class="pf-scrub__value">96</span></div><span class="pf-param__lock" title="Counts cannot react or animate"><i class="pf-i pf-i--sm" data-i="lock"></i></span><span style="width:16px"></span></div>
+</div><span class="pf-note" style="max-width:296px">Drag sideways to change. Double-click to type. Shift is 10x, Alt is 0.1x. The coloured bar under the fill is how far the audio pushes the value.</span>
+<script>window.Pulsefield && window.Pulsefield.mount();</script>
+</body>
+</html>

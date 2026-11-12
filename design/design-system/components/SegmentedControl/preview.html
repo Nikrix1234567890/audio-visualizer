@@ -1,0 +1,14 @@
+<!-- @dsCard group="Inputs" height=168 -->
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>SegmentedControl</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Geist:wght@400..700&family=Geist+Mono:wght@400..600&display=swap"></head>
+<body class="pf-demo pf-demo--col">
+<div class="pf-row" style="gap:16px">
+<div class="pf-seg"><button class="pf-seg__item" aria-pressed="true"><i class="pf-i " data-i="cursor"></i>Select</button><button class="pf-seg__item"><i class="pf-i " data-i="move"></i>Move</button><button class="pf-seg__item"><i class="pf-i " data-i="rotate"></i>Rotate</button><button class="pf-seg__item"><i class="pf-i " data-i="scale"></i>Scale</button></div>
+<div class="pf-seg" role="group"><button class="pf-seg__item" aria-pressed="false">16:9</button><button class="pf-seg__item" aria-pressed="true">9:16</button><button class="pf-seg__item" aria-pressed="false">1:1</button></div>
+<div class="pf-seg" role="group"><button class="pf-seg__item" aria-pressed="false">Linear</button><button class="pf-seg__item" aria-pressed="true">Smooth</button><button class="pf-seg__item" aria-pressed="false">Hold</button></div></div>
+<div style="width:296px"><div class="pf-seg pf-seg--block" role="group"><button class="pf-seg__item" aria-pressed="true">720p</button><button class="pf-seg__item" aria-pressed="false" data-locked>1080p<i class="pf-i " data-i="lock"></i></button><button class="pf-seg__item" aria-pressed="false" data-locked>1440p<i class="pf-i " data-i="lock"></i></button><button class="pf-seg__item" aria-pressed="false" data-locked>4K<i class="pf-i " data-i="lock"></i></button></div></div>
+<span class="pf-note">A locked segment keeps its label readable and shows a gold lock. Clicking it opens the upgrade popover; it never just does nothing.</span>
+<script>window.Pulsefield && window.Pulsefield.mount();</script>
+</body>
+</html>
