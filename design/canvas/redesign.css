@@ -116,6 +116,31 @@
 .ed__coach b{display:block;margin-bottom:2px;font-weight:600;color:var(--ink-1)}
 .ed__group{margin:4px 0 0;font:500 11px/14px var(--font-sans);color:var(--ink-3)}
 
+/* Names and logos */
+.br{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;width:1440px;height:760px;padding:32px;background:var(--bg-1);color:var(--ink-1);font-family:var(--font-sans)}
+.br-card{display:flex;flex-direction:column;gap:24px;padding:28px;border:1px solid var(--line-1);border-radius:var(--radius-xl);background:var(--bg-2)}
+.br-opt{font:500 10.5px/14px var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.br-hero{display:grid;place-items:center;height:220px;border-radius:var(--radius-lg);background-color:var(--bg-0);background-image:radial-gradient(var(--line-1) 1px,transparent 1px);background-size:16px 16px}
+.br-hero svg{width:112px;height:112px}
+.br-name{font:700 46px/1 var(--font-display);letter-spacing:-.035em}
+.br-row{display:flex;align-items:center;gap:16px}
+.br-icon{display:grid;place-items:center;flex:none;width:64px;height:64px;border-radius:16px;background:var(--accent)}
+.br-icon svg{width:38px;height:38px}
+.br-icon--dark{background:var(--bg-0);box-shadow:0 0 0 1px var(--line-2)}
+.br-lock{display:inline-flex;align-items:center;gap:8px;font:700 18px/1 var(--font-display);letter-spacing:-.025em}
+.br-lock svg{width:22px;height:22px}
+.br-navs{display:flex;flex-direction:column;gap:8px;margin-top:auto}
+.br-nav{display:flex;align-items:center;justify-content:space-between;height:48px;padding:0 14px;border:1px solid var(--line-1);border-radius:var(--radius-md);background:var(--bg-1)}
+.br-nav--light{border-color:transparent;background:var(--ink-1);color:var(--bg-0)}
+.mk{fill:none;stroke:var(--accent);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.mk-f{fill:var(--accent);stroke:none}
+.br-icon .mk{stroke:var(--on-accent)}
+.br-icon .mk-f{fill:var(--on-accent)}
+.br-icon--dark .mk{stroke:var(--accent)}
+.br-icon--dark .mk-f{fill:var(--accent)}
+.br-nav--light .mk{stroke:var(--bg-0)}
+.br-nav--light .mk-f{fill:var(--bg-0)}
+
 /* Dashboard */
 .db{min-height:1180px;background:var(--bg-1);color:var(--ink-1);font:400 13px/20px var(--font-sans)}
 .db-wrap{max-width:1248px;margin:0 auto;padding:48px 24px 96px;display:flex;flex-direction:column;gap:48px}

@@ -40,10 +40,10 @@ def ic(name, cls="", solid=False):
     return f'<i class="pf-i {cls}" data-i="{name}"{extra}></i>'
 
 
-MARK = ('<svg viewBox="0 0 20 20" aria-hidden="true"><rect x="1" y="8" width="2" height="4" rx="1"/>'
-        '<rect x="5" y="4" width="2" height="12" rx="1"/><rect x="9" y="1" width="2" height="18" rx="1"/>'
-        '<rect x="13" y="5" width="2" height="10" rx="1"/><rect x="17" y="8" width="2" height="4" rx="1"/></svg>')
-LOGO = f'<span class="pf-logo">{MARK}<span>Pulsefield</span></span>'
+MARK = ('<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="9" cy="9" r="3"/><circle cx="24" cy="9" r="5"/><circle cx="39" cy="9" r="3"/>'
+        '<circle cx="9" cy="24" r="5"/><circle cx="24" cy="24" r="8"/><circle cx="39" cy="24" r="5"/>'
+        '<circle cx="9" cy="39" r="3"/><circle cx="24" cy="39" r="5"/><circle cx="39" cy="39" r="3"/></svg>')
+LOGO = f'<span class="pf-logo">{MARK}<span>Beatframe</span></span>'
 
 
 def scrub(label, value, unit="", v=0.5, sig=None, m=0.2, key="", active=False, lock=False, bare=False):
@@ -167,15 +167,16 @@ def add(name, group, height, cls, body, readme):
     C.append((name, group, height, cls, body, readme))
 
 
-add("Logo", "Brand", 96, "", f'''<span class="pf-logo pf-logo--lg">{MARK}<span>Pulsefield</span></span>
+add("Logo", "Brand", 96, "", f'''<span class="pf-logo pf-logo--lg">{MARK}<span>Beatframe</span></span>
 <span style="width:32px"></span>{LOGO}<span style="width:32px"></span><span class="pf-logo">{MARK}</span>''',
-    """The five-bar pulse mark and the name set in the display face.
+    """The nine-dot sound figure and the name set in the display face.
 
-- The mark is always `accent`; the name is always `ink-1`. No gradient, no second colour in the name.
-- Full logo in the marketing nav and footer. Mark alone in the editor's app bar and as the favicon.
-- Clear space: one bar-height on every side. Minimum size: 16px mark, 14px name.
+- The mark is nine dots in a 3 by 3 grid: small at the corners, larger on the edges, largest in the centre. It is always one colour: `accent` on dark grounds, `on-accent` on an `accent` tile, `bg-0` on light grounds.
+- The name is "Beatframe", one word, capital B, always `ink-1` on dark. No gradient, no second colour in the name.
+- Full logo in the marketing nav and footer. Mark alone in the editor's app bar, as the app icon (on an `accent` tile with a 25% corner radius) and as the favicon.
+- Clear space: the width of the centre dot on every side. Minimum size: 16px mark, 14px name.
 - The watermark in a rendered video is the name alone in the display face, white at 70% opacity, bottom right.
-- The name is a working title. It lives in `remotion/brand.ts`; change it there, never hard-code it.""")
+- The name lives in `remotion/brand.ts`; change it there, never hard-code it. Trademark and domain have not been checked yet.""")
 
 add("Button", "Actions", 232, "pf-demo--col", f'''<div class="pf-row">
 <button class="pf-btn pf-btn--cta">{ic("download")}Export</button>
@@ -483,7 +484,7 @@ add("Stage", "Editor", 420, "pf-demo--col", f'''<div class="pf-stage" style="hei
 <span class="pf-sep"></span>
 <button class="pf-btn pf-btn--ghost pf-btn--sm">Fit{ic("chevron-down","pf-i--sm")}</button></div>
 <span class="pf-timecode" style="position:absolute;top:20px;right:16px;font-size:11px;color:var(--ink-3)">60 fps</span>
-<div class="pf-frame" style="width:auto;height:100%;{img("galaxy")}"><span class="pf-frame__tl"><span class="pf-badge pf-badge--solid">16:9</span><span class="pf-badge pf-badge--solid">720p</span></span><span class="pf-frame__br">Pulsefield</span></div></div>''',
+<div class="pf-frame" style="width:auto;height:100%;{img("galaxy")}"><span class="pf-frame__tl"><span class="pf-badge pf-badge--solid">16:9</span><span class="pf-badge pf-badge--solid">720p</span></span><span class="pf-frame__br">Beatframe</span></div></div>''',
     """The middle of the editor: the video frame on a dotted well, and the floating toolbar.
 
 - The frame shows exactly what will be exported, including the watermark on the free plan. It is always the brightest thing on screen; nothing translucent or blurred is ever laid over it.
@@ -581,7 +582,7 @@ add("FilterChips", "Marketing", 72, "", '''<button class="pf-chip" aria-pressed=
 - The pressed chip is the white fill. Chips scroll sideways on phones instead of wrapping.
 - The categories and counts above are examples; templates need a `category` field before this ships.""")
 
-add("AppWindow", "Marketing", 400, "", f'''<div class="pf-window" style="width:560px"><div class="pf-window__bar"><i></i><i></i><i></i><span class="pf-window__url">pulsefield.app/editor</span></div>
+add("AppWindow", "Marketing", 400, "", f'''<div class="pf-window" style="width:560px"><div class="pf-window__bar"><i></i><i></i><i></i><span class="pf-window__url">beatframe.app/editor</span></div>
 <div style="aspect-ratio:16/9;{img("galaxy")};background-size:cover"></div></div>
 <div class="pf-phone" style="width:150px"><div class="pf-phone__screen" style="{img("jellyfish")}"></div></div>''',
     """Frames for showing the product on marketing pages: a browser window and a phone.
@@ -642,7 +643,7 @@ add("CompareTable", "Marketing", 360, "pf-demo--col", f'''<table class="pf-table
 - On phones the first column stays put and the plans scroll sideways inside the table's own container.""")
 
 add("FAQ", "Marketing", 320, "pf-demo--col", f'''<div class="pf-faq" style="max-width:720px">
-<details open><summary>What does the watermark look like?{ic("plus")}</summary><p>A small "Pulsefield" in the bottom right corner. The editor's preview shows it exactly where the video will have it.</p></details>
+<details open><summary>What does the watermark look like?{ic("plus")}</summary><p>A small "Beatframe" in the bottom right corner. The editor's preview shows it exactly where the video will have it.</p></details>
 <details><summary>Do I keep my projects on the free plan?{ic("plus")}</summary><p>Yes. Projects, your own templates and your videos stay in your account on both plans.</p></details>
 <details><summary>How is the payment handled?{ic("plus")}</summary><p>By Stripe, on a page run by Stripe. Card details never reach this site.</p></details>
 <details><summary>What happens when Premium ends?{ic("plus")}</summary><p>The account goes back to the free plan. Nothing is deleted.</p></details></div>''',
@@ -699,14 +700,15 @@ for name, group, height, cls, body, readme in C:
     write(f"components/{name}/preview.html", html)
     write(f"components/{name}/README.md", f"# {name}\n\n{readme}\n")
 
-# Cover: the logo's five bars as the palette, on the stage's dot grid.
+# Cover: the logo's nine dots as the palette, on the stage's dot grid.
 dots = "".join(f'<circle class="dot" cx="{x}" cy="{y}" r="1.5"/>' for y in range(24, 288, 48) for x in range(500, 960, 48))
-bars = [(504, 115, 58, "bass"), (592, 58, 173, "mid"), (680, 14, 259, "accent"), (768, 72, 144, "high"), (856, 115, 58, "beat")]
-bar_html = "".join(f'<rect class="bar {c}" x="{x}" y="{y}" width="64" height="{h}" rx="32"/>' for x, y, h, c in bars)
+discs = [(576, 48, 24, "deep"), (720, 48, 40, "bass"), (864, 48, 24, "deep"), (576, 144, 40, "mid"), (720, 144, 64, "accent"),
+         (864, 144, 40, "high"), (576, 240, 24, "deep"), (720, 240, 40, "beat"), (864, 240, 24, "deep")]
+bar_html = "".join(f'<circle class="{c}" cx="{x}" cy="{y}" r="{r}"/>' for x, y, r, c in discs)
 cover = f'''<!-- @dsCard height=288 -->
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><title>Pulsefield</title>{FONTS}
+<head><meta charset="utf-8"><title>Beatframe</title>{FONTS}
 <style>
   html, body {{ margin:0; height:100%; }}
   body {{ background:var(--bg-1); color:var(--ink-1); overflow:hidden; }}
@@ -714,7 +716,7 @@ cover = f'''<!-- @dsCard height=288 -->
   .cover svg {{ position:absolute; inset:0; display:block; }}
   .dot {{ fill:var(--line-3); }}
   .bass {{ fill:var(--sig-bass); }} .mid {{ fill:var(--sig-mid); }} .accent {{ fill:var(--accent); }}
-  .high {{ fill:var(--sig-high); }} .beat {{ fill:var(--sig-beat); }}
+  .high {{ fill:var(--sig-high); }} .beat {{ fill:var(--sig-beat); }} .deep {{ fill:var(--bg-4); }}
   .words {{ position:absolute; left:var(--space-8); bottom:var(--space-8); max-width:440px; }}
   .name {{ margin:0; font:700 72px/.95 var(--font-display); letter-spacing:-.035em; color:var(--ink-1); }}
   .tag {{ margin:var(--space-3) 0 0 2px; font:400 14px/20px var(--font-sans); color:var(--ink-2); }}
@@ -723,14 +725,14 @@ cover = f'''<!-- @dsCard height=288 -->
 <div class="cover">
 <svg viewBox="0 0 960 288" width="960" height="288" aria-hidden="true">
 <!--
-  blocks      sig-bass 64x58 · sig-mid 64x173 · accent 64x259 (the tallest: the one accent) · sig-high 64x144 · sig-beat 64x58
-  arrangement the logo's five bars at scale, centred on one axis, space-6 gutters, right of x = 480
-  pattern     a dot grid at a 48px pitch (space-12) in line-3: "the frame sits on a dotted well" is the editor's stage
-  scales      bar width space-16; gutter space-6; pitch space-12; bars are pills, rx = half the width (radius-full)
+  blocks      accent disc r 64 in the centre (the one accent) · sig-bass, sig-mid, sig-high, sig-beat discs r 40 on the edges · bg-4 discs r 24 at the corners
+  arrangement the logo's nine dots at scale: a 3 by 3 grid, 144px between centres, right of x = 480
+  pattern     a dot grid at a 48px pitch (space-12) in line-3: the editor's stage is a dotted well
+  scales      radii 24, 40, 64 are space-6, space-10 and space-16; pitch space-12; discs only, as in the mark
 -->
 {dots}{bar_html}
 </svg>
-<div class="words"><h1 class="name">Pulsefield</h1><p class="tag">Turn any song into an audio-reactive 3D video.</p></div>
+<div class="words"><h1 class="name">Beatframe</h1><p class="tag">Turn any song into an audio-reactive 3D video.</p></div>
 </div>
 </body>
 </html>
@@ -749,7 +751,7 @@ def group(name, items):
 now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 index = {
     "v": 3, "layout": "files", "createdOnFiles": {"v": 1, "at": now},
-    "title": "Pulsefield", "namespace": "Pulsefield", "libraries": [],
+    "title": "Beatframe", "namespace": "Pulsefield", "libraries": [],
     "sections": {}, "groups": ["Templates", "Elements"],
     "assetGroups": {"Templates": group("Templates", T), "Elements": group("Elements", E)},
     "blobs": {}, "docs": {"sections": []},

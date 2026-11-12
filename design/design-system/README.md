@@ -1,4 +1,4 @@
-Pulsefield turns a song into an audio-reactive 3D video in the browser. The interface is a dark studio: neutral, quiet and precise, so the user's picture is the only colourful thing on screen.
+Beatframe turns a song into an audio-reactive 3D video in the browser. The interface is a dark studio: neutral, quiet and precise, so the user's picture is the only colourful thing on screen.
 
 ## Principles
 

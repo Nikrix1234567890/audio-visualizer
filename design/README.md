@@ -56,8 +56,18 @@ pages, so the HTML files here do not show pictures when opened from disk.
 ## Open decisions (the owner's)
 
 1. Is the direction approved, and which accent: Phosphor or Iris?
-2. The final product name ("Pulsefield" is still a working title).
+2. ~~Name and logo.~~ Decided on 2026-11-12: the name is "Beatframe", the
+   logo is the nine-dot sound figure (option D's mark on the "Names and
+   logos" artboard). Still to do: check trademark and domain.
 3. The Premium price (the previews show "[YOUR PRICE]").
+
+## Animation
+
+The owner wants many animations in the design and on the site, built with
+Motion (motion.dev) and its AI kit. Install the kit once per machine with
+`npx motion-ai` (interactive; choose Claude Code), then restart the session
+so its docs search is available. The brand book's Motion section is still
+the restrained first draft and has to be rewritten for this.
 
 ## Next steps once approved
 
