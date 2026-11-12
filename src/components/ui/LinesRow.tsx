@@ -1,6 +1,6 @@
 "use client";
 
-/** A text parameter with several rows: caption above, a text area below. */
+/** A text parameter with several rows: label above, a text area below. */
 export function LinesRow({
   label,
   value,
@@ -15,10 +15,8 @@ export function LinesRow({
   onChange: (value: string) => void;
 }) {
   return (
-    <label className="flex flex-col gap-1.5">
-      <span className="font-mono text-[11px] tracking-[0.08em] text-muted uppercase">
-        {label}
-      </span>
+    <label className="pf-field">
+      <span className="pf-rowlabel">{label}</span>
       <textarea
         value={value}
         maxLength={maxLength}
@@ -26,7 +24,7 @@ export function LinesRow({
         spellCheck={false}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
-        className="resize-y rounded-md border border-line bg-canvas px-2.5 py-1.5 font-mono text-xs leading-relaxed text-ink shadow-scope-recessed outline-none focus:border-accent"
+        className="pf-input"
       />
     </label>
   );

@@ -51,7 +51,8 @@ export function TimeDiamond({
         canCopy ? ", Alt-drag to copy" : ""
       }`}
       style={{ left: `${position * 100}%` }}
-      className="group/diamond absolute top-1/2 flex h-4 w-4 -translate-x-1/2 -translate-y-1/2 cursor-ew-resize touch-none items-center justify-center outline-none"
+      className="pf-kfbtn"
+      data-own={isFilled || undefined}
       onPointerDown={(e) => {
         // Not a seek: the diamond handles its own click and drag.
         e.stopPropagation();
@@ -77,11 +78,7 @@ export function TimeDiamond({
         onGo(t);
       }}
     >
-      <span
-        className={`h-2 w-2 rotate-45 border group-hover/diamond:scale-125 group-focus-visible/diamond:scale-125 ${
-          isFilled ? "border-accent bg-accent" : "border-ink bg-canvas"
-        }`}
-      />
+      <span />
     </button>
   );
 }

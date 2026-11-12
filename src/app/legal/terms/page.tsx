@@ -3,7 +3,7 @@ import { TIER_LIMITS } from "@/lib/tiers";
 import { BRAND } from "../../../../remotion/brand";
 import { RESOLUTIONS } from "../../../../remotion/types";
 
-export const metadata = { title: `Terms - ${BRAND.name}` };
+export const metadata = { title: "Terms of use" };
 
 /**
  * The terms of use. The outline covers what a service like this usually

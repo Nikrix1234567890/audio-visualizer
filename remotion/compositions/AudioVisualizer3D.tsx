@@ -90,12 +90,11 @@ export const AudioVisualizer3D: React.FC<AudioVisualizerProps> = ({
               fontWeight: 700,
               fontSize: Math.min(width, height) * 0.034,
               letterSpacing: '0.02em',
-              color: 'rgba(255, 255, 255, 0.6)',
+              color: 'rgba(255, 255, 255, 0.7)',
               textShadow: '0 1px 4px rgba(0, 0, 0, 0.7)',
             }}
           >
-            {BRAND.first}
-            <span style={{color: 'rgba(167, 139, 250, 0.9)'}}>{BRAND.second}</span>
+            {BRAND.name}
           </div>
         </AbsoluteFill>
       ) : null}

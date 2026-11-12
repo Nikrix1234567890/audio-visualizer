@@ -15,6 +15,8 @@ import {
   CAMERA_PARAMS,
   ELEMENT_DEFS,
   LOOK_PARAMS,
+  createElement,
+  type ElementType,
   type Keyframes,
   type ParamDef,
   type SceneDocument,
@@ -39,24 +41,31 @@ import {
   cloneScene,
 } from "../../remotion/scene/templates";
 import {
+  ASPECTS,
   DEFAULT_ASPECT,
   DEFAULT_FRAME_RATE,
   DEFAULT_RESOLUTION,
+  RESOLUTIONS,
   type AspectKey,
   type FrameRate,
   type ResolutionKey,
 } from "../../remotion/types";
+import { AnimatePresence } from "motion/react";
+import { EditorAppBar, type SaveStatus } from "@/components/editor/EditorAppBar";
 import { FirstSteps, ShortcutsDialog } from "@/components/editor/EditorHelp";
+import { ExportPopover } from "@/components/editor/ExportPopover";
+import {
+  Inspector,
+  type CollapsedSections,
+  type InspectorTab,
+} from "@/components/editor/Inspector";
+import { LibraryPanel, LibraryRail, type LibraryTab } from "@/components/editor/Library";
 import { PlayheadProvider, usePlayheadStore } from "@/components/editor/Playhead";
 import { Preview } from "@/components/editor/Preview";
-import {
-  Sidebar,
-  type CollapsedSections,
-  type SaveStatus,
-} from "@/components/editor/Sidebar";
 import type { TimelineLane } from "@/components/editor/KeyframeLanes";
 import { Transport } from "@/components/editor/Transport";
 import type { MarkerOwner, TimelineMarker } from "@/components/editor/Waveform";
+import { takePendingTrack } from "@/components/site/pendingTrack";
 import { ResizeHandle } from "@/components/ui/ResizeHandle";
 import { TIER_LIMITS, clampToTier, type TierName } from "@/lib/tiers";
 import { useSceneHistory } from "@/lib/useSceneHistory";
@@ -75,8 +84,10 @@ const FPS = 60;
 const SEEK_KEY_SECONDS = 5;
 const DEFAULT_TITLE = "Untitled project";
 
-const SIDEBAR = { min: 240, max: 520, default: 320 };
-const TRANSPORT = { min: 88, max: 420, default: 168 };
+// The three panels around the stage; the user can drag their seams.
+const LIBRARY = { min: 240, max: 400, default: 288 };
+const INSPECTOR = { min: 280, max: 440, default: 320 };
+const TIMELINE = { min: 120, max: 480, default: 232 };
 const NO_COLLAPSED_SECTIONS: CollapsedSections = {};
 
 type Track = {
@@ -201,14 +212,25 @@ export function Editor({
   const [saveError, setSaveError] = useState<string | null>(null);
 
   // Layout the user arranged for themselves; remembered across visits.
-  const [sidebarWidth, setSidebarWidth] = useStoredState(
-    "editor.sidebarWidth",
-    SIDEBAR.default,
+  const [libraryWidth, setLibraryWidth] = useStoredState(
+    "editor.libraryWidth",
+    LIBRARY.default,
   );
-  const [transportHeight, setTransportHeight] = useStoredState(
-    "editor.transportHeight",
-    TRANSPORT.default,
+  const [inspectorWidth, setInspectorWidth] = useStoredState(
+    "editor.inspectorWidth",
+    INSPECTOR.default,
   );
+  const [timelineHeight, setTimelineHeight] = useStoredState(
+    "editor.timelineHeight",
+    TIMELINE.default,
+  );
+  // The library panel that is open, or null while the library is closed.
+  const [libraryTab, setLibraryTab] = useStoredState<LibraryTab | null>(
+    "editor.libraryTab",
+    "templates",
+  );
+  const [inspectorTab, setInspectorTab] = useState<InspectorTab>("element");
+  const [isExportOpen, setIsExportOpen] = useState(false);
   const [collapsed, setCollapsed] = useStoredState(
     "editor.collapsedSections",
     NO_COLLAPSED_SECTIONS,
@@ -273,6 +295,15 @@ export function Editor({
     },
     [loadTrack],
   );
+
+  // A track dropped on the landing page waits for the editor to pick it up.
+  useEffect(() => {
+    if (initialProjectId) return;
+    const file = takePendingTrack();
+    // Loading the handed-over file is exactly what this effect is for.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (file) void loadFile(file);
+  }, [initialProjectId, loadFile]);
 
   // Open a saved project: its scene, its settings and its track.
   useEffect(() => {
@@ -341,6 +372,13 @@ export function Editor({
   }, [initialSceneId, initialProjectId, resetScene]);
 
   const markUnsaved = useCallback(() => setSaveStatus("unsaved"), []);
+
+  // Selecting something shows its settings; Camera and Look are only ever
+  // opened on purpose.
+  const select = useCallback((id: string | null) => {
+    setSelectedId(id);
+    if (id) setInspectorTab("element");
+  }, []);
 
   const changeScene = useCallback(
     (next: SceneDocument) => {
@@ -853,9 +891,21 @@ export function Editor({
     [collapsed, setCollapsed],
   );
 
+  const addElement = useCallback(
+    (type: ElementType) => {
+      const element = createElement(type);
+      changeScene({ ...scene, elements: [...scene.elements, element] });
+      select(element.id);
+    },
+    [changeScene, scene, select],
+  );
+
+  const closeExport = useCallback(() => setIsExportOpen(false), []);
+
   const layout = {
-    "--sidebar-w": `${sidebarWidth}px`,
-    "--transport-h": `${transportHeight}px`,
+    "--lib-w": `${libraryWidth}px`,
+    "--insp-w": `${inspectorWidth}px`,
+    "--time-h": `${timelineHeight}px`,
   } as CSSProperties;
 
   const playhead = usePlayheadStore(track ? player : null, FPS);
@@ -866,141 +916,201 @@ export function Editor({
     transformRef.current = transformElement;
   });
 
+  const isLoggedIn = sessionStatus === "authenticated";
+
   return (
     <PlayheadProvider value={playhead}>
-    <div
-      className="editor-grid"
-      style={layout}
-      onDragOver={(e) => {
-        if (e.dataTransfer.types.includes("Files")) e.preventDefault();
-      }}
-      onDrop={(e) => {
-        const file = e.dataTransfer.files?.[0];
-        if (!file) return;
-        e.preventDefault();
-        loadFile(file);
-      }}
-    >
-      <Sidebar
-        project={{
-          title,
-          onTitleChange: (next) => {
-            setTitle(next);
+      <div
+        className={libraryTab ? "ed" : "ed ed--nolib"}
+        style={layout}
+        onDragOver={(e) => {
+          if (e.dataTransfer.types.includes("Files")) e.preventDefault();
+        }}
+        onDrop={(e) => {
+          const file = e.dataTransfer.files?.[0];
+          if (!file) return;
+          e.preventDefault();
+          loadFile(file);
+        }}
+      >
+        <EditorAppBar
+          project={{
+            title,
+            onTitleChange: (next) => {
+              setTitle(next);
+              markUnsaved();
+            },
+            isLoggedIn,
+            hasTrack: Boolean(track),
+            status: saveStatus,
+            error: saveError,
+            onSave: handleSave,
+          }}
+          aspect={aspect}
+          onAspectChange={(next) => {
+            setAspect(next);
             markUnsaved();
-          },
-          isLoggedIn: sessionStatus === "authenticated",
-          hasTrack: Boolean(track),
-          status: saveStatus,
-          error: saveError,
-          onSave: handleSave,
-        }}
-        scene={scene}
-        onSceneChange={changeScene}
-        templateId={templateId}
-        onLoadTemplate={loadTemplate}
-        onLoadScene={loadScene}
-        selectedId={selectedId}
-        onSelect={setSelectedId}
-        resolution={resolution}
-        onResolutionChange={(next) => {
-          setResolution(next);
-          markUnsaved();
-        }}
-        aspect={aspect}
-        onAspectChange={(next) => {
-          setAspect(next);
-          markUnsaved();
-        }}
-        tier={tier}
-        frameRate={frameRate}
-        onFrameRateChange={(next) => {
-          setFrameRate(next);
-          markUnsaved();
-        }}
-        exportRange={exportRange}
-        onExportRangeChange={setExportRange}
-        trackSeconds={track ? track.durationInFrames / FPS : 0}
-        collapsed={collapsed}
-        onToggleSection={toggleSection}
-        render={{
-          canRender: Boolean(track),
-          isUploading,
-          isRendering,
-          progress: renderProgress,
-          ahead: rendersAhead,
-          error,
-          renderedUrl,
-        }}
-        onRender={handleRender}
-      />
+          }}
+          tier={tier}
+          canUndo={canUndo}
+          canRedo={canRedo}
+          onUndo={undo}
+          onRedo={redo}
+          isExportOpen={isExportOpen}
+          isExporting={isUploading || isRendering}
+          onToggleExport={() => setIsExportOpen((open) => !open)}
+        />
 
-      <ResizeHandle
-        orientation="vertical"
-        label="Resize settings panel"
-        className="editor-handle editor-handle-v"
-        value={sidebarWidth}
-        min={SIDEBAR.min}
-        max={SIDEBAR.max}
-        defaultValue={SIDEBAR.default}
-        onChange={setSidebarWidth}
-      />
+        <LibraryRail
+          tab={libraryTab}
+          onTab={setLibraryTab}
+          onHelp={() => setShowShortcuts(true)}
+        />
 
-      <Preview
-        key={`preview:${track?.url ?? "empty"}`}
-        audioUrl={track?.url ?? null}
-        durationInFrames={durationInFrames}
-        fps={FPS}
-        aspect={aspect}
-        watermark={TIER_LIMITS[tier].watermark}
-        scene={scene}
-        initiallyMuted={muted}
-        isLoading={isLoadingTrack}
-        onPlayer={setPlayer}
-        onPickFile={loadFile}
-        onLoadDemo={loadDemo}
-        notice={
-          hintsSeen ? null : <FirstSteps onDismiss={() => setHintsSeen(true)} />
-        }
-        selectedId={selectedId}
-        onSelect={setSelectedId}
-        onTransform={transformElement}
-        onUndo={undo}
-        onRedo={redo}
-        canUndo={canUndo}
-        canRedo={canRedo}
-      />
+        <aside className="ed__lib" aria-label="Library" hidden={!libraryTab}>
+          {libraryTab && (
+            <LibraryPanel
+              key={libraryTab}
+              tab={libraryTab}
+              scene={scene}
+              templateId={templateId}
+              isLoggedIn={isLoggedIn}
+              onLoadTemplate={loadTemplate}
+              onLoadScene={loadScene}
+              onSceneChange={changeScene}
+              onAdd={addElement}
+            />
+          )}
+        </aside>
 
-      <ResizeHandle
-        orientation="horizontal"
-        label="Resize timeline"
-        className="editor-handle editor-handle-h"
-        value={transportHeight}
-        min={TRANSPORT.min}
-        max={TRANSPORT.max}
-        defaultValue={TRANSPORT.default}
-        onChange={setTransportHeight}
-        invert
-      />
+        <ResizeHandle
+          orientation="vertical"
+          label="Resize the library"
+          className="ed__handle ed__handle--lib"
+          value={libraryWidth}
+          min={LIBRARY.min}
+          max={LIBRARY.max}
+          defaultValue={LIBRARY.default}
+          onChange={setLibraryWidth}
+        />
 
-      <Transport
-        key={`transport:${track?.url ?? "empty"}`}
-        player={track ? player : null}
-        audioData={track?.audioData ?? null}
-        fileName={track?.name ?? null}
-        durationInFrames={durationInFrames}
-        fps={FPS}
-        muted={muted}
-        onToggleMute={() => setMuted(!muted)}
-        onPickFile={loadFile}
-        markers={markers}
-        onMoveMarker={moveMarker}
-        lanes={lanes}
-        onMoveKey={moveKey}
-        range={exportRange}
-        onRangeChange={setExportRange}
-      />
-    </div>
-    {showShortcuts && <ShortcutsDialog onClose={() => setShowShortcuts(false)} />}
+        <Preview
+          key={`preview:${track?.url ?? "empty"}`}
+          audioUrl={track?.url ?? null}
+          durationInFrames={durationInFrames}
+          fps={FPS}
+          aspect={aspect}
+          watermark={TIER_LIMITS[tier].watermark}
+          scene={scene}
+          initiallyMuted={muted}
+          isLoading={isLoadingTrack}
+          onPlayer={setPlayer}
+          onPickFile={loadFile}
+          onLoadDemo={loadDemo}
+          notice={hintsSeen ? null : <FirstSteps onDismiss={() => setHintsSeen(true)} />}
+          badges={[ASPECTS[aspect].label, RESOLUTIONS[resolution].label]}
+          selectedId={selectedId}
+          onSelect={select}
+          onTransform={transformElement}
+        />
+
+        <ResizeHandle
+          orientation="vertical"
+          label="Resize the settings"
+          className="ed__handle ed__handle--insp"
+          value={inspectorWidth}
+          min={INSPECTOR.min}
+          max={INSPECTOR.max}
+          defaultValue={INSPECTOR.default}
+          onChange={setInspectorWidth}
+          invert
+        />
+
+        <Inspector
+          scene={scene}
+          onSceneChange={changeScene}
+          selectedId={selectedId}
+          onSelect={select}
+          tab={inspectorTab}
+          onTab={setInspectorTab}
+          collapsed={collapsed}
+          onToggleSection={toggleSection}
+          onAddClick={() => setLibraryTab("elements")}
+        />
+
+        <ResizeHandle
+          orientation="horizontal"
+          label="Resize the timeline"
+          className="ed__handle ed__handle--time"
+          value={timelineHeight}
+          min={TIMELINE.min}
+          max={TIMELINE.max}
+          defaultValue={TIMELINE.default}
+          onChange={setTimelineHeight}
+          invert
+        />
+
+        <Transport
+          key={`transport:${track?.url ?? "empty"}`}
+          player={track ? player : null}
+          audioData={track?.audioData ?? null}
+          fileName={track?.name ?? null}
+          durationInFrames={durationInFrames}
+          fps={FPS}
+          muted={muted}
+          onToggleMute={() => setMuted(!muted)}
+          onPickFile={loadFile}
+          markers={markers}
+          onMoveMarker={moveMarker}
+          lanes={lanes}
+          onMoveKey={moveKey}
+          range={exportRange}
+          onRangeChange={setExportRange}
+        />
+
+        <AnimatePresence>
+          {isExportOpen && (
+            <ExportPopover
+              key="export"
+              aspect={aspect}
+              onAspectChange={(next) => {
+                setAspect(next);
+                markUnsaved();
+              }}
+              resolution={resolution}
+              onResolutionChange={(next) => {
+                setResolution(next);
+                markUnsaved();
+              }}
+              frameRate={frameRate}
+              onFrameRateChange={(next) => {
+                setFrameRate(next);
+                markUnsaved();
+              }}
+              tier={tier}
+              exportRange={exportRange}
+              onExportRangeChange={setExportRange}
+              trackSeconds={track ? track.durationInFrames / FPS : 0}
+              render={{
+                canRender: Boolean(track),
+                isUploading,
+                isRendering,
+                progress: renderProgress,
+                ahead: rendersAhead,
+                error,
+                renderedUrl,
+              }}
+              onRender={handleRender}
+              onClose={closeExport}
+            />
+          )}
+        </AnimatePresence>
+      </div>
+      <AnimatePresence>
+        {showShortcuts && (
+          <ShortcutsDialog key="shortcuts" onClose={() => setShowShortcuts(false)} />
+        )}
+      </AnimatePresence>
     </PlayheadProvider>
   );
 }

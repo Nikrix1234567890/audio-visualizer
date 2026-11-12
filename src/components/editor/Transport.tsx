@@ -2,6 +2,7 @@
 
 import type { MediaUtilsAudioData } from "@remotion/media-utils";
 import type { PlayerRef } from "@remotion/player";
+import { Minus, Music, Pause, Play, Plus, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { ExportRange } from "@/lib/visualizerSettings";
 import { KeyframeLanes, type TimelineLane } from "./KeyframeLanes";
@@ -21,8 +22,9 @@ const ACCEPTED_AUDIO = "audio/*,.wav,.mp3,.m4a,.aac,.ogg,.flac";
 const UI_REFRESH_MS = 80;
 
 /**
- * The bar under the preview: load a track, play/pause, time, mute, and the
- * waveform used to move through the song. It drives the (control-less)
+ * The bottom of the editor: a transport bar (play/pause, time, the track,
+ * mute, zoom) and under it the waveform used to move through the song, with
+ * one row per animated setting. It drives the (control-less)
  * Remotion player in the preview through `player`.
  *
  * Give this component a `key` that changes with the loaded track, so its
@@ -109,26 +111,41 @@ export function Transport({
     length,
   };
   const zoomIndex = ZOOMS.indexOf(zoom);
-  const zoomButton =
-    "flex h-6 w-6 items-center justify-center rounded-md border border-line font-mono text-xs text-ink outline-none hover:border-accent-dim hover:text-accent focus-visible:border-accent disabled:cursor-not-allowed disabled:text-muted disabled:opacity-40";
 
   return (
-    <div className="editor-area-transport surface-texture flex min-h-0 flex-col gap-3 border-t border-line bg-surface p-3 lg:flex-row lg:items-stretch lg:border-t-0">
-      <div className="flex shrink-0 items-center gap-3">
+    <section className="ed__time" aria-label="Timeline">
+      <div className="pf-transport">
         <button
           type="button"
-          onClick={() => fileInput.current?.click()}
-          title={fileName ?? "Load an audio file"}
-          className="flex max-w-44 items-center gap-2 rounded-md border border-line bg-surface-raised px-3 py-2 font-mono text-[11px] tracking-[0.06em] text-ink uppercase shadow-control-raised outline-none hover:border-accent-dim hover:text-accent focus-visible:border-accent"
+          className="pf-play"
+          disabled={!ready}
+          onClick={(e) => player?.toggle(e)}
+          aria-label={isPlaying ? "Pause" : "Play"}
+          title="Play or pause (Space)"
+          style={ready ? undefined : { opacity: 0.4 }}
         >
-          <span
-            className={`h-2 w-2 shrink-0 rounded-full ${
-              fileName ? "bg-accent shadow-glow-active" : "bg-accent-dim"
-            }`}
-          />
-          <span className="truncate normal-case">
-            {fileName ?? "Load track"}
-          </span>
+          {isPlaying ? (
+            <Pause className="pf-i" data-solid aria-hidden />
+          ) : (
+            <Play className="pf-i" data-solid aria-hidden />
+          )}
+        </button>
+        <span className="pf-timecode">
+          {formatTime(frame / fps)} <span>/ {formatTime(durationInFrames / fps)}</span>
+        </span>
+        <span className="pf-sep" />
+        <button
+          type="button"
+          className="pf-track-chip"
+          onClick={() => fileInput.current?.click()}
+          title={fileName ? `${fileName}: click to load another track` : "Load an audio file"}
+        >
+          {fileName ? (
+            <Music className="pf-i pf-i--sm" aria-hidden />
+          ) : (
+            <Plus className="pf-i pf-i--sm" aria-hidden />
+          )}
+          <span>{fileName ?? "Load a track"}</span>
         </button>
         <input
           ref={fileInput}
@@ -141,102 +158,59 @@ export function Transport({
             e.target.value = "";
           }}
         />
-
+        <span className="pf-spacer" />
         <button
           type="button"
-          disabled={!ready}
-          onClick={(e) => player?.toggle(e)}
-          aria-label={isPlaying ? "Pause" : "Play"}
-          title="Play / pause (Space)"
-          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-line bg-surface-raised shadow-control-raised outline-none hover:border-accent-dim hover:text-accent focus-visible:border-accent disabled:cursor-not-allowed disabled:opacity-40 ${
-            isPlaying ? "text-accent shadow-glow-active" : "text-ink"
-          }`}
-        >
-          <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
-            {isPlaying ? (
-              <path d="M3 2h3v10H3zM8 2h3v10H8z" fill="currentColor" />
-            ) : (
-              <path d="M4 2l8 5-8 5z" fill="currentColor" />
-            )}
-          </svg>
-        </button>
-
-        <span className="w-24 shrink-0 font-mono text-[13px] text-ink tabular-nums">
-          {formatTime(frame / fps)}
-          <span className="text-muted"> / {formatTime(durationInFrames / fps)}</span>
-        </span>
-
-        <button
-          type="button"
+          className="pf-btn pf-btn--ghost pf-btn--icon"
           onClick={onToggleMute}
           aria-label={muted ? "Unmute" : "Mute"}
           aria-pressed={muted}
           title={muted ? "Unmute" : "Mute"}
-          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-line outline-none hover:border-accent-dim focus-visible:border-accent ${
-            muted ? "text-muted" : "text-ink"
-          }`}
         >
-          <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden fill="none">
-            <path d="M2 6h2.5L8 3v10L4.5 10H2z" fill="currentColor" />
-            {muted ? (
-              <path
-                d="M10.5 6l4 4m0-4l-4 4"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-            ) : (
-              <path
-                d="M10.5 5.5a3.5 3.5 0 010 5M12.3 3.7a6 6 0 010 8.6"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-            )}
-          </svg>
+          {muted ? (
+            <VolumeX className="pf-i" aria-hidden />
+          ) : (
+            <Volume2 className="pf-i" aria-hidden />
+          )}
         </button>
-      </div>
-
-      <div className="flex shrink-0 items-center gap-1 lg:flex-col lg:justify-center">
+        <span className="pf-sep" />
         <button
           type="button"
-          className={zoomButton}
-          disabled={zoomIndex >= ZOOMS.length - 1}
-          aria-label="Zoom into the timeline"
-          title="Zoom in"
-          onClick={() => setZoom(ZOOMS[zoomIndex + 1])}
-        >
-          +
-        </button>
-        <span className="w-6 text-center font-mono text-[10px] text-muted tabular-nums">
-          {zoom}x
-        </span>
-        <button
-          type="button"
-          className={zoomButton}
+          className="pf-btn pf-btn--ghost pf-btn--icon pf-btn--sm"
           disabled={zoomIndex <= 0}
           aria-label="Zoom out of the timeline"
           title="Zoom out"
           onClick={() => setZoom(ZOOMS[zoomIndex - 1])}
         >
-          -
+          <Minus className="pf-i pf-i--sm" aria-hidden />
+        </button>
+        <span className="pf-timecode w-6 text-center text-xs">{zoom}x</span>
+        <button
+          type="button"
+          className="pf-btn pf-btn--ghost pf-btn--icon pf-btn--sm"
+          disabled={zoomIndex >= ZOOMS.length - 1}
+          aria-label="Zoom into the timeline"
+          title="Zoom in"
+          onClick={() => setZoom(ZOOMS[zoomIndex + 1])}
+        >
+          <Plus className="pf-i pf-i--sm" aria-hidden />
         </button>
       </div>
 
-      <div className="flex h-24 min-w-0 flex-1 flex-col gap-1.5 lg:h-auto">
+      <div className="ed__timeline">
         <div className="min-h-0 flex-1">
-        <Waveform
-          audioData={audioData}
-          frame={frame}
-          durationInFrames={durationInFrames}
-          fps={fps}
-          view={view}
-          onSeek={(target) => player?.seekTo(target)}
-          markers={markers}
-          onMoveMarker={onMoveMarker}
-          range={range}
-          onRangeChange={onRangeChange}
-        />
+          <Waveform
+            audioData={audioData}
+            frame={frame}
+            durationInFrames={durationInFrames}
+            fps={fps}
+            view={view}
+            onSeek={(target) => player?.seekTo(target)}
+            markers={markers}
+            onMoveMarker={onMoveMarker}
+            range={range}
+            onRangeChange={onRangeChange}
+          />
         </div>
         {audioData && lanes.length > 0 && (
           <KeyframeLanes
@@ -248,6 +222,6 @@ export function Transport({
           />
         )}
       </div>
-    </div>
+    </section>
   );
 }

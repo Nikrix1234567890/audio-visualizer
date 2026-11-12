@@ -3,11 +3,6 @@
 import { signOut } from "next-auth/react";
 import { useState } from "react";
 
-const field =
-  "rounded-md border border-line bg-canvas px-3 py-2 text-sm text-ink shadow-scope-recessed outline-none focus:border-accent";
-const quietButton =
-  "w-fit rounded-xl border border-line bg-surface-raised px-5 py-2.5 text-sm font-semibold tracking-wide text-ink shadow-control-raised outline-none hover:border-accent-dim hover:text-accent focus-visible:border-accent disabled:opacity-50";
-
 async function readError(response: Response, fallback: string) {
   const data = await response.json().catch(() => null);
   return (data?.error as string | undefined) || fallback;
@@ -40,20 +35,20 @@ export function PasswordForm() {
   };
 
   return (
-    <form onSubmit={submit} className="flex max-w-sm flex-col gap-3">
-      <label className="flex flex-col gap-1 text-sm text-muted">
-        Current password
+    <form onSubmit={submit} className="auth-form max-w-sm">
+      <label className="pf-field">
+        <span className="pf-label">Current password</span>
         <input
           type="password"
           required
           autoComplete="current-password"
           value={current}
           onChange={(e) => setCurrent(e.target.value)}
-          className={field}
+          className="pf-input pf-input--lg"
         />
       </label>
-      <label className="flex flex-col gap-1 text-sm text-muted">
-        New password (at least 8 characters)
+      <label className="pf-field">
+        <span className="pf-label">New password (at least 8 characters)</span>
         <input
           type="password"
           required
@@ -61,14 +56,22 @@ export function PasswordForm() {
           autoComplete="new-password"
           value={next}
           onChange={(e) => setNext(e.target.value)}
-          className={field}
+          className="pf-input pf-input--lg"
         />
       </label>
-      <button type="submit" disabled={isSaving} className={quietButton}>
-        {isSaving ? "Saving…" : "Change password"}
+      <button
+        type="submit"
+        disabled={isSaving}
+        aria-busy={isSaving || undefined}
+        className="pf-btn pf-btn--secondary pf-btn--lg w-fit"
+      >
+        Change password
       </button>
       {message && (
-        <p className={`text-xs ${message.isError ? "text-red-400" : "text-accent"}`}>
+        <p
+          role={message.isError ? "alert" : "status"}
+          className={`pf-hint ${message.isError ? "pf-hint--error" : "text-success"}`}
+        >
           {message.text}
         </p>
       )}
@@ -95,11 +98,21 @@ export function ManageSubscriptionButton() {
   };
 
   return (
-    <div className="flex flex-col gap-2">
-      <button type="button" onClick={open} disabled={isOpening} className={quietButton}>
-        {isOpening ? "Opening…" : "Manage subscription"}
+    <div className="pf-stack">
+      <button
+        type="button"
+        onClick={open}
+        disabled={isOpening}
+        aria-busy={isOpening || undefined}
+        className="pf-btn pf-btn--secondary pf-btn--lg w-fit"
+      >
+        Manage subscription
       </button>
-      {error && <p className="text-xs text-red-400">{error}</p>}
+      {error && (
+        <p role="alert" className="pf-hint pf-hint--error">
+          {error}
+        </p>
+      )}
     </div>
   );
 }
@@ -135,26 +148,30 @@ export function DeleteAccountForm() {
   };
 
   return (
-    <form onSubmit={submit} className="flex max-w-sm flex-col gap-3">
-      <label className="flex flex-col gap-1 text-sm text-muted">
-        Your password
+    <form onSubmit={submit} className="auth-form max-w-sm">
+      <label className="pf-field">
+        <span className="pf-label">Your password</span>
         <input
           type="password"
           required
           autoComplete="current-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className={field}
+          className="pf-input pf-input--lg"
         />
       </label>
       <button
         type="submit"
         disabled={isDeleting}
-        className="w-fit rounded-xl border border-red-400/50 px-5 py-2.5 text-sm font-semibold tracking-wide text-red-400 outline-none hover:border-red-400 focus-visible:border-red-400 disabled:opacity-50"
+        className="pf-btn pf-btn--danger pf-btn--lg w-fit"
       >
         {isDeleting ? "Deleting…" : "Delete account"}
       </button>
-      {error && <p className="text-xs text-red-400">{error}</p>}
+      {error && (
+        <p role="alert" className="pf-hint pf-hint--error">
+          {error}
+        </p>
+      )}
     </form>
   );
 }
@@ -177,16 +194,20 @@ export function ResendConfirmationButton() {
   };
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="pf-stack">
       <button
         type="button"
         onClick={send}
         disabled={state !== "idle"}
-        className={quietButton}
+        className="pf-btn pf-btn--secondary w-fit"
       >
         {state === "sending" ? "Sending…" : state === "sent" ? "Mail sent" : "Send the mail again"}
       </button>
-      {error && <p className="text-xs text-red-400">{error}</p>}
+      {error && (
+        <p role="alert" className="pf-hint pf-hint--error">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

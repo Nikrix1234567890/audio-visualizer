@@ -3,12 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
-
-const field =
-  "rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink outline-none focus:border-accent";
-const submit =
-  "mt-2 rounded-md bg-brand px-4 py-2 text-sm font-medium text-canvas hover:brightness-110 disabled:opacity-50";
-const shell = "flex flex-1 flex-col items-center justify-center bg-canvas px-6 py-16 text-ink";
+import { AuthShell } from "@/components/site/AuthShell";
 
 /** "Forgot your password?" - asks for the address and mails a reset link. */
 export function ForgotForm() {
@@ -28,47 +23,57 @@ export function ForgotForm() {
     });
     setIsSending(false);
     if (response.ok) setIsSent(true);
-    else setError((await response.json().catch(() => null))?.error || "That did not work.");
+    else
+      setError(
+        (await response.json().catch(() => null))?.error ||
+          "The link could not be sent. Try again in a moment.",
+      );
   };
 
   return (
-    <div className={shell}>
-      <div className="w-full max-w-sm">
-        <h1 className="mb-2 text-xl font-semibold">Forgot your password?</h1>
-        {isSent ? (
-          <p className="text-sm leading-relaxed text-muted">
-            If there is an account with that address, a mail with a link to
-            choose a new password is on its way. The link works for one hour.
-          </p>
-        ) : (
-          <form onSubmit={send} className="flex flex-col gap-4">
-            <p className="text-sm text-muted">
-              Enter your address and we will mail you a link to choose a new one.
-            </p>
-            <label className="flex flex-col gap-1 text-sm">
-              Email
-              <input
-                type="email"
-                required
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className={field}
-              />
-            </label>
-            {error && <p className="text-sm text-red-400">{error}</p>}
-            <button type="submit" disabled={isSending} className={submit}>
-              {isSending ? "Sending…" : "Send the link"}
-            </button>
-          </form>
-        )}
-        <p className="mt-4 text-sm text-muted">
-          <Link href="/login" className="text-accent underline">
-            Back to log in
-          </Link>
+    <AuthShell title="Reset your password">
+      {isSent ? (
+        <p className="auth-text" role="status">
+          If there is an account with that address, a mail with a link to
+          choose a new password is on its way. The link works for one hour.
         </p>
-      </div>
-    </div>
+      ) : (
+        <form onSubmit={send} className="auth-form">
+          <p className="auth-text">
+            Enter your address and we will mail you a link to choose a new one.
+          </p>
+          <label className="pf-field">
+            <span className="pf-label">Email</span>
+            <input
+              type="email"
+              required
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="pf-input pf-input--lg"
+            />
+            {error && (
+              <span role="alert" className="pf-hint pf-hint--error">
+                {error}
+              </span>
+            )}
+          </label>
+          <button
+            type="submit"
+            disabled={isSending}
+            aria-busy={isSending || undefined}
+            className="pf-btn pf-btn--cta pf-btn--lg pf-btn--block"
+          >
+            Send the link
+          </button>
+        </form>
+      )}
+      <p className="auth-foot">
+        <Link href="/login" className="pf-link">
+          Back to log in
+        </Link>
+      </p>
+    </AuthShell>
   );
 }
 
@@ -91,42 +96,66 @@ export function ResetForm() {
     });
     setIsSaving(false);
     if (response.ok) setIsDone(true);
-    else setError((await response.json().catch(() => null))?.error || "That did not work.");
+    else
+      setError(
+        (await response.json().catch(() => null))?.error ||
+          "The password could not be saved. Ask for a new link.",
+      );
   };
 
   return (
-    <div className={shell}>
-      <div className="w-full max-w-sm">
-        <h1 className="mb-2 text-xl font-semibold">Choose a new password</h1>
-        {isDone ? (
-          <p className="text-sm leading-relaxed text-muted">
-            Your password is changed.{" "}
-            <Link href="/login" className="text-accent underline">
-              Log in
-            </Link>{" "}
-            with the new one.
+    <AuthShell title="Choose a new password">
+      {isDone ? (
+        <>
+          <p className="auth-text" role="status">
+            Your password is changed.
           </p>
-        ) : (
-          <form onSubmit={save} className="flex flex-col gap-4">
-            <label className="flex flex-col gap-1 text-sm">
-              New password (at least 8 characters)
-              <input
-                type="password"
-                required
-                minLength={8}
-                autoComplete="new-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className={field}
-              />
-            </label>
-            {error && <p className="text-sm text-red-400">{error}</p>}
-            <button type="submit" disabled={isSaving || !token} className={submit}>
-              {isSaving ? "Saving…" : "Save the password"}
-            </button>
-          </form>
-        )}
-      </div>
-    </div>
+          <Link href="/login" className="pf-btn pf-btn--cta pf-btn--lg pf-btn--block">
+            Log in
+          </Link>
+        </>
+      ) : (
+        <form onSubmit={save} className="auth-form">
+          <label className="pf-field">
+            <span className="pf-label">New password</span>
+            <input
+              type="password"
+              required
+              minLength={8}
+              autoComplete="new-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="pf-input pf-input--lg"
+            />
+            <span className="pf-hint">At least 8 characters.</span>
+            {error && (
+              <span role="alert" className="pf-hint pf-hint--error">
+                {error}
+              </span>
+            )}
+          </label>
+          {!token && (
+            <p className="pf-hint pf-hint--error">
+              This page needs the link from the mail. Ask for a new one.
+            </p>
+          )}
+          <button
+            type="submit"
+            disabled={isSaving || !token}
+            aria-busy={isSaving || undefined}
+            className="pf-btn pf-btn--cta pf-btn--lg pf-btn--block"
+          >
+            Save the password
+          </button>
+        </form>
+      )}
+      {!isDone && (
+        <p className="auth-foot">
+          <Link href="/forgot" className="pf-link">
+            Ask for a new link
+          </Link>
+        </p>
+      )}
+    </AuthShell>
   );
 }

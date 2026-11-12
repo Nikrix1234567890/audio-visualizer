@@ -7,23 +7,20 @@ import { useState } from "react";
  * may not exist yet (or the render bundle may be missing): then a plain
  * tile is shown instead of a broken image.
  */
-export function ProjectThumb({ src }: { src: string }) {
+export function ProjectThumb({ src, className = "thumb" }: { src: string; className?: string }) {
   const [isMissing, setIsMissing] = useState(false);
 
+  if (isMissing) return <span className={`${className} block`} />;
   return (
-    <span className="block h-[54px] w-24 shrink-0 overflow-hidden rounded-md border border-line bg-canvas">
-      {!isMissing && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={src}
-          alt=""
-          width={96}
-          height={54}
-          loading="lazy"
-          className="h-full w-full object-cover"
-          onError={() => setIsMissing(true)}
-        />
-      )}
-    </span>
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt=""
+      width={480}
+      height={270}
+      loading="lazy"
+      className={className}
+      onError={() => setIsMissing(true)}
+    />
   );
 }

@@ -5,8 +5,8 @@ import { useState } from "react";
 const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
 
 /**
- * A colour parameter: caption, a swatch that opens the system colour picker,
- * and the hex value as an editable readout.
+ * A colour parameter: a chip that opens the system colour picker, the
+ * parameter's name, and the hex value as a field you can type into.
  */
 export function ColorRow({
   label,
@@ -27,40 +27,32 @@ export function ColorRow({
   };
 
   return (
-    <div className="flex items-center justify-between gap-3">
-      <span className="font-mono text-[11px] tracking-[0.08em] text-muted uppercase">
-        {label}
-      </span>
-      <span className="flex items-center gap-2">
+    <div className="pf-color">
+      <label className="pf-color__chip" style={{ background: value }}>
         <input
-          aria-label={`${label} hex value`}
-          value={draft ?? value}
-          spellCheck={false}
-          onChange={(e) => setDraft(e.target.value)}
-          onFocus={(e) => e.target.select()}
-          onBlur={commitDraft}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") e.currentTarget.blur();
-            if (e.key === "Escape") {
-              setDraft(null);
-              e.currentTarget.blur();
-            }
-          }}
-          className="w-[4.5rem] border-b border-transparent bg-transparent text-right font-mono text-[13px] text-ink outline-none hover:border-line focus:border-accent"
+          type="color"
+          aria-label={label}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
         />
-        <label
-          className="relative h-5 w-7 shrink-0 cursor-pointer overflow-hidden rounded-md border border-line shadow-control-raised focus-within:border-accent"
-          style={{ backgroundColor: value }}
-        >
-          <input
-            type="color"
-            aria-label={label}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-          />
-        </label>
-      </span>
+      </label>
+      <span className="pf-color__label">{label}</span>
+      <input
+        aria-label={`${label} hex value`}
+        value={draft ?? value}
+        spellCheck={false}
+        onChange={(e) => setDraft(e.target.value)}
+        onFocus={(e) => e.target.select()}
+        onBlur={commitDraft}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") e.currentTarget.blur();
+          if (e.key === "Escape") {
+            setDraft(null);
+            e.currentTarget.blur();
+          }
+        }}
+        className="pf-color__hex"
+      />
     </div>
   );
 }

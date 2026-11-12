@@ -1,5 +1,6 @@
 "use client";
 
+import { Plus, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import type { SceneDocument } from "../../../remotion/scene/definitions";
 
@@ -92,48 +93,38 @@ export function MyTemplates({
     await refresh();
   };
 
-  const small =
-    "shrink-0 rounded-md px-1.5 py-1 font-mono text-[10px] tracking-[0.06em] uppercase outline-none";
-
   return (
-    <div className="flex flex-col gap-2 border-t border-line pt-3">
-      <span className="font-mono text-[10px] tracking-[0.12em] text-muted uppercase">
-        My templates
-      </span>
+    <div className="flex flex-col gap-2 border-t border-line-1 pt-3">
+      <span className="ed__group">Your templates</span>
 
       {scenes && scenes.length > 0 && (
-        <ul className="flex flex-col gap-1">
+        <ul className="pf-layers p-0">
           {scenes.map((saved) => (
-            <li
-              key={saved.id}
-              className="flex items-center rounded-md border border-transparent hover:border-line"
-            >
+            <li key={saved.id} className="pf-layer cursor-default">
               <button
                 type="button"
                 onClick={() => load(saved.id)}
                 title="Load this template"
-                className="min-w-0 flex-1 truncate px-2.5 py-2 text-left text-sm text-ink outline-none hover:text-accent focus-visible:text-accent"
+                className="pf-layer__pick pl-2"
               >
-                {saved.title}
+                <span className="pf-layer__name">{saved.title}</span>
               </button>
               <button
                 type="button"
                 onClick={() => copyLink(saved.id)}
                 title="Copy a link anyone can open this template with"
-                className={`${small} ${
-                  copiedId === saved.id ? "text-accent" : "text-muted hover:text-accent focus-visible:text-accent"
-                }`}
+                className="pf-btn pf-btn--ghost pf-btn--sm"
               >
-                {copiedId === saved.id ? "Copied" : "Link"}
+                {copiedId === saved.id ? "Copied" : "Copy link"}
               </button>
               <button
                 type="button"
                 onClick={() => remove(saved)}
                 aria-label={`Delete ${saved.title}`}
                 title="Delete"
-                className={`${small} text-muted hover:text-red-400 focus-visible:text-red-400`}
+                className="pf-layer__btn"
               >
-                ✕
+                <Trash2 className="pf-i" aria-hidden />
               </button>
             </li>
           ))}
@@ -144,16 +135,18 @@ export function MyTemplates({
         type="button"
         onClick={save}
         disabled={isSaving}
-        className="rounded-md border border-dashed border-line px-3 py-2 font-mono text-[11px] tracking-[0.08em] text-muted uppercase outline-none hover:border-accent-dim hover:text-accent focus-visible:border-accent disabled:opacity-50"
+        aria-busy={isSaving}
+        className="pf-btn pf-btn--secondary pf-btn--block"
       >
-        {isSaving ? "Saving…" : "+ Save scene as template"}
+        <Plus className="pf-i" aria-hidden />
+        Save scene as template
       </button>
-      <p className="text-xs text-muted">
-        Keeps elements, camera and look - not the track. Pictures and 3D
+      <p className="pf-note">
+        Keeps elements, camera and look, not the track. Pictures and 3D
         models stay private: someone opening your link sees the scene
         without them.
       </p>
-      {error && <p className="text-xs text-red-400">{error}</p>}
+      {error && <p className="pf-hint pf-hint--error">{error}</p>}
     </div>
   );
 }

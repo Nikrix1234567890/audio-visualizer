@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { motion } from "motion/react";
+import type { ReactNode } from "react";
 
 /**
  * Lets its content rise into place the first time it scrolls into view.
- * Without JavaScript, or with reduced motion, the content is simply there
- * (see `.reveal` in globals.css).
+ * With reduced motion it only fades (see MotionProvider).
  */
 export function Reveal({
   children,
@@ -17,30 +17,15 @@ export function Reveal({
   /** Milliseconds to wait, for staggering neighbours. */
   delay?: number;
 }) {
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const element = ref.current;
-    if (!element) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting) return;
-        element.classList.add("is-visible");
-        observer.disconnect();
-      },
-      { rootMargin: "0px 0px -10% 0px" },
-    );
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, []);
-
   return (
-    <div
-      ref={ref}
-      className={`reveal ${className}`}
-      style={delay ? { transitionDelay: `${delay}ms` } : undefined}
+    <motion.div
+      className={className}
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "0px 0px -10% 0px" }}
+      transition={{ duration: 0.6, delay: delay / 1000, ease: [0.2, 0.7, 0.2, 1] }}
     >
       {children}
-    </div>
+    </motion.div>
   );
 }

@@ -1,3 +1,5 @@
+import { Crown, Mail } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
@@ -7,14 +9,15 @@ import {
   PasswordForm,
   ResendConfirmationButton,
 } from "@/components/AccountForms";
+import { Rise, Stagger, StaggerItem } from "@/components/site/kit";
 import { prisma } from "@/lib/prisma";
 import { isStripeConfigured } from "@/lib/stripe";
 import { TIER_LIMITS } from "@/lib/tiers";
 import { RESOLUTIONS } from "../../../remotion/types";
 
+export const metadata: Metadata = { title: "Account" };
+
 const dateFormat = new Intl.DateTimeFormat("en", { dateStyle: "long" });
-const sectionLabel = "font-mono text-[11px] tracking-[0.12em] text-muted uppercase";
-const card = "flex flex-col gap-4 rounded-2xl border border-line bg-surface p-6";
 
 /** The account of the signed-in user: plan, password, deleting the account. */
 export default async function AccountPage() {
@@ -36,72 +39,96 @@ export default async function AccountPage() {
 
   const limits = TIER_LIMITS[user.tier];
   const hasSubscription = Boolean(user.stripeCustomerId) && isStripeConfigured();
+  const isPremium = user.tier === "PREMIUM";
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-6 py-12">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-ink">Account</h1>
-        <p className="text-sm text-muted">
-          {user.email} · member since {dateFormat.format(user.createdAt)}
-        </p>
+    <div className="site db">
+      <div className="db-wrap acct">
+        <Rise className="db-head">
+          <div className="pf-stack gap-1.5">
+            <h1 className="db-h1">Account</h1>
+            <span className="db-sub">
+              {user.email} · member since {dateFormat.format(user.createdAt)}
+            </span>
+          </div>
+          <Link href="/dashboard" className="pf-btn pf-btn--secondary pf-btn--lg">
+            Open the dashboard
+          </Link>
+        </Rise>
+
+        <Stagger className="acct__cards" gap={0.08} delay={0.1}>
+          {!user.emailVerified && (
+            <StaggerItem as="section" className="pf-card acct__card">
+              <h2 className="acct__h2">
+                <Mail className="pf-i" aria-hidden />
+                Confirm your address
+              </h2>
+              <p className="pf-card__text">
+                We sent a mail with a link to {user.email}. Confirming it makes
+                sure a forgotten password can be reset.
+              </p>
+              <ResendConfirmationButton />
+            </StaggerItem>
+          )}
+
+          <StaggerItem as="section" className="pf-card acct__card">
+            <h2 className="acct__h2">Plan</h2>
+            <div className="acct__plan">
+              <span className="acct__plan-name">
+                {isPremium ? "Premium" : "Free"}
+                {isPremium && (
+                  <span className="pf-badge pf-badge--premium">
+                    <Crown className="pf-i" aria-hidden />
+                    Premium
+                  </span>
+                )}
+              </span>
+              <span className="pf-card__text">
+                Exports up to {RESOLUTIONS[limits.maxResolution].label} at{" "}
+                {limits.frameRates.join(" or ")} fps,{" "}
+                {limits.watermark ? "with a small watermark" : "without a watermark"}.
+              </span>
+            </div>
+            {hasSubscription ? (
+              <ManageSubscriptionButton />
+            ) : !isPremium ? (
+              <Link href="/pricing" className="pf-btn pf-btn--premium pf-btn--lg w-fit">
+                <Crown className="pf-i" aria-hidden />
+                See Premium
+              </Link>
+            ) : null}
+            <dl className="acct__counts">
+              <div>
+                <dd>{user._count.projects}</dd>
+                <dt>projects</dt>
+              </div>
+              <div>
+                <dd>{user._count.savedScenes}</dd>
+                <dt>own templates</dt>
+              </div>
+              <div>
+                <dd>{user._count.renderJobs}</dd>
+                <dt>videos</dt>
+              </div>
+            </dl>
+          </StaggerItem>
+
+          <StaggerItem as="section" className="pf-card acct__card">
+            <h2 className="acct__h2">Password</h2>
+            <PasswordForm />
+          </StaggerItem>
+
+          <StaggerItem as="section" className="pf-card acct__card acct__card--danger">
+            <h2 className="acct__h2">Delete account</h2>
+            <p className="pf-card__text">
+              Removes the account with all its projects, own templates, uploaded
+              files and rendered videos. Share links to your templates stop
+              working. This cannot be undone.
+            </p>
+            <DeleteAccountForm />
+          </StaggerItem>
+        </Stagger>
       </div>
-
-      {!user.emailVerified && (
-        <section className={`${card} border-accent-dim`}>
-          <h2 className={sectionLabel}>Confirm your address</h2>
-          <p className="max-w-lg text-sm leading-relaxed text-muted">
-            We sent a mail with a link to {user.email}. Confirming it makes
-            sure a forgotten password can be reset.
-          </p>
-          <ResendConfirmationButton />
-        </section>
-      )}
-
-      <section className={card}>
-        <h2 className={sectionLabel}>Plan</h2>
-        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <span className={`text-2xl font-semibold tracking-tight ${user.tier === "PREMIUM" ? "text-brand" : "text-ink"}`}>
-            {user.tier === "PREMIUM" ? "Premium" : "Free"}
-          </span>
-          <span className="text-sm text-muted">
-            up to {RESOLUTIONS[limits.maxResolution].label},{" "}
-            {limits.frameRates.join(" / ")} fps,{" "}
-            {limits.watermark ? "with watermark" : "no watermark"}
-          </span>
-        </div>
-        {hasSubscription ? (
-          <ManageSubscriptionButton />
-        ) : user.tier === "FREE" ? (
-          <Link
-            href="/pricing"
-            className="w-fit rounded-xl bg-brand px-5 py-2.5 text-sm font-semibold tracking-wide text-canvas outline-none hover:brightness-110 focus-visible:ring-2 focus-visible:ring-ink"
-          >
-            See Premium
-          </Link>
-        ) : null}
-        <p className="text-xs text-muted">
-          {user._count.projects} projects · {user._count.savedScenes} own
-          templates · {user._count.renderJobs} videos -{" "}
-          <Link href="/dashboard" className="text-accent underline">
-            open the dashboard
-          </Link>
-        </p>
-      </section>
-
-      <section className={card}>
-        <h2 className={sectionLabel}>Password</h2>
-        <PasswordForm />
-      </section>
-
-      <section className={card}>
-        <h2 className={sectionLabel}>Delete account</h2>
-        <p className="max-w-lg text-sm leading-relaxed text-muted">
-          Removes the account with all its projects, own templates, uploaded
-          files and rendered videos. Share links to your templates stop
-          working. This cannot be undone.
-        </p>
-        <DeleteAccountForm />
-      </section>
     </div>
   );
 }

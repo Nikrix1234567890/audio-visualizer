@@ -9,26 +9,26 @@ import type {
   TransformTool,
 } from "../../../remotion/scene/SceneRenderer";
 import { ASPECTS, outputSize, type AspectKey } from "../../../remotion/types";
-import { SegmentedSelector } from "@/components/ui/SegmentedSelector";
+import { Maximize2, MousePointer2, Move, Music, RotateCw } from "lucide-react";
 
 /** The preview is drawn at the smallest export size of the chosen format. */
 const PREVIEW_RESOLUTION = "720p";
-/** Bezel padding (p-2) on both sides, see the scope frame below. */
-const BEZEL = 16;
+/** Room kept free around the picture inside the stage. */
+const BEZEL = 0;
 
-const TOOLS: { value: TransformTool; label: string }[] = [
-  { value: "move", label: "Move" },
-  { value: "rotate", label: "Rotate" },
-  { value: "scale", label: "Scale" },
-  { value: "off", label: "Off" },
+const TOOLS: { value: TransformTool; label: string; icon: typeof Move }[] = [
+  { value: "off", label: "Select only", icon: MousePointer2 },
+  { value: "move", label: "Move", icon: Move },
+  { value: "rotate", label: "Rotate", icon: RotateCw },
+  { value: "scale", label: "Scale", icon: Maximize2 },
 ];
 
 /**
- * The "scope": the live 3D picture, fitted into whatever space the layout
- * gives it. It has no playback controls of its own - those live in the
- * transport bar. While paused, clicking an element selects it and the
- * chosen tool's handles let you move, rotate or scale it right in the
- * picture.
+ * The stage: the live 3D picture in its export format, fitted into whatever
+ * space the layout gives it, on a dotted well. A small toolbar floats above
+ * it. It has no playback controls of its own - those live in the transport
+ * bar. While paused, clicking an element selects it and the chosen tool's
+ * handles let you move, rotate or scale it right in the picture.
  */
 export function Preview({
   audioUrl,
@@ -43,13 +43,10 @@ export function Preview({
   onPickFile,
   onLoadDemo,
   notice,
+  badges = [],
   selectedId,
   onSelect,
   onTransform,
-  onUndo,
-  onRedo,
-  canUndo,
-  canRedo,
 }: {
   audioUrl: string | null;
   durationInFrames: number;
@@ -64,15 +61,13 @@ export function Preview({
   onPickFile: (file: File) => void;
   /** Loads the demo track that ships with the app. */
   onLoadDemo: () => void;
-  /** Shown between the toolbar and the picture (the first-visit card). */
+  /** Floats over the stage's lower left corner (the first-visit card). */
   notice?: React.ReactNode;
+  /** Shown as badges in the picture's corner, e.g. "16:9" and "720p". */
+  badges?: string[];
   selectedId: string | null;
   onSelect: SceneEditorHooks["onSelect"];
   onTransform: SceneEditorHooks["onTransform"];
-  onUndo: () => void;
-  onRedo: () => void;
-  canUndo: boolean;
-  canRedo: boolean;
 }) {
   const areaRef = useRef<HTMLDivElement>(null);
   const [area, setArea] = useState({ width: 0, height: 0 });
@@ -157,45 +152,37 @@ export function Preview({
   const height = Math.floor(width / ratio);
 
   return (
-    <section className="editor-area-preview flex min-h-0 min-w-0 flex-col gap-3 p-4">
-      <div className="flex shrink-0 items-center gap-3">
-        <span className="font-mono text-[11px] tracking-[0.08em] text-muted uppercase">
-          Tool
-        </span>
-        <SegmentedSelector options={TOOLS} value={tool} onChange={setTool} />
-        <div className="flex gap-1">
-          <HistoryButton label="Undo (Ctrl+Z)" disabled={!canUndo} onClick={onUndo}>
-            <path d="M6 4L2.5 7.5 6 11M3 7.5h6.5a3.5 3.5 0 010 7H7" />
-          </HistoryButton>
-          <HistoryButton label="Redo (Ctrl+Shift+Z)" disabled={!canRedo} onClick={onRedo}>
-            <path d="M10 4l3.5 3.5L10 11M13 7.5H6.5a3.5 3.5 0 000 7H9" />
-          </HistoryButton>
-        </div>
-        <span className="hidden text-xs text-muted xl:inline">
-          {isPlaying
-            ? "Pause to edit in the picture."
-            : "Click an element to select it, drag the handles to change it."}
-        </span>
-        {isPlaying && measuredFps !== null && (
-          <span
-            className="ml-auto font-mono text-[11px] tracking-[0.06em] text-muted uppercase tabular-nums"
-            title="Frames the preview showed in the last second"
+    <section className="ed__stage" aria-label="Preview">
+      <div className="pf-toolbar ed__tools" role="toolbar" aria-label="Tools">
+        {TOOLS.map(({ value, label, icon: Icon }) => (
+          <button
+            key={value}
+            type="button"
+            className="pf-btn pf-btn--ghost pf-btn--icon"
+            aria-pressed={tool === value}
+            aria-label={label}
+            title={label}
+            onClick={() => setTool(value)}
           >
-            {measuredFps} / {fps} fps
-          </span>
-        )}
+            <Icon className="pf-i" aria-hidden />
+          </button>
+        ))}
       </div>
+      <span className="ed__hint hidden xl:block">
+        {isPlaying
+          ? "Pause to edit in the picture."
+          : "Click an element to select it, drag the handles to change it."}
+      </span>
+      {isPlaying && measuredFps !== null && (
+        <span className="ed__fps" title="Frames the preview showed in the last second">
+          {measuredFps} / {fps} fps
+        </span>
+      )}
 
-      {notice}
-
-      <div
-        ref={areaRef}
-        className="flex aspect-video min-h-0 w-full items-center justify-center lg:aspect-auto lg:flex-1"
-      >
-        {width > 0 && (
-          <div className="relative rounded-2xl border border-line bg-surface p-2 shadow-scope-recessed">
-
-            {audioUrl ? (
+      <div ref={areaRef} className="ed__area">
+        {width > 0 &&
+          (audioUrl ? (
+            <div className="ed__frame" style={{ width, height }}>
               <Player
                 ref={handlePlayer}
                 component={AudioVisualizer3D}
@@ -204,7 +191,7 @@ export function Preview({
                 compositionWidth={composition.width}
                 compositionHeight={composition.height}
                 fps={fps}
-                style={{ width, height, borderRadius: 6, overflow: "hidden" }}
+                style={{ width, height }}
                 controls={false}
                 initiallyMuted={initiallyMuted}
                 clickToPlay={false}
@@ -213,118 +200,69 @@ export function Preview({
                 loop
                 acknowledgeRemotionLicense
               />
-            ) : (
-              <DropZone
-                width={width}
-                height={height}
-                isLoading={isLoading}
-                onPickFile={onPickFile}
-                onLoadDemo={onLoadDemo}
-              />
-            )}
-          </div>
-        )}
+              <span className="ed__badges">
+                {badges.map((badge) => (
+                  <span key={badge} className="pf-badge pf-badge--solid">
+                    {badge}
+                  </span>
+                ))}
+              </span>
+            </div>
+          ) : (
+            // Without a track the first-visit card sits under the drop zone;
+            // floating, it would cover it.
+            <div className="flex w-full max-w-[520px] flex-col gap-3">
+              <DropZone isLoading={isLoading} onPickFile={onPickFile} onLoadDemo={onLoadDemo} />
+              {notice}
+            </div>
+          ))}
       </div>
+
+      {audioUrl && notice && <div className="ed__notice">{notice}</div>}
     </section>
   );
 }
 
 function DropZone({
-  width,
-  height,
   isLoading,
   onPickFile,
   onLoadDemo,
 }: {
-  width: number;
-  height: number;
   isLoading: boolean;
   onPickFile: (file: File) => void;
   onLoadDemo: () => void;
 }) {
   return (
-    <div
-      style={{ width, height }}
-      className="flex flex-col items-center justify-center gap-4 rounded-md bg-canvas"
-    >
-    <label className="group flex cursor-pointer flex-col items-center justify-center gap-3">
-      <span className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed border-line transition-colors group-hover:border-accent">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
-          <circle cx="12" cy="12" r="4" className="fill-muted" />
-          <path
-            d="M12 2v6M12 16v6M2 12h6M16 12h6"
-            stroke="var(--muted)"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-          />
-        </svg>
+    <div className="pf-drop w-full gap-4 px-8 py-10">
+      <span className="pf-drop__icon h-14 w-14">
+        <Music className="pf-i pf-i--lg" aria-hidden />
       </span>
-      <span className="font-mono text-[11px] tracking-[0.08em] text-muted uppercase">
-        {isLoading ? "Reading track…" : "Input"}
+      <span className="font-display text-[22px] leading-tight font-semibold tracking-[-0.015em] text-ink-1">
+        {isLoading ? "Reading the track" : "Drop a track to start"}
+      </span>
+      <span className="pf-drop__hint max-w-[36ch]">
+        MP3, WAV, M4A, AAC, OGG or FLAC. It stays in your browser until you export or save.
       </span>
       {!isLoading && (
-        <span className="text-xs text-muted">
-          Drop a track here or click to select one
+        <span className="pf-row justify-center">
+          <label className="pf-btn pf-btn--cta pf-btn--lg cursor-pointer">
+            Choose a file
+            <input
+              type="file"
+              accept="audio/*,.wav,.mp3,.m4a,.aac,.ogg,.flac"
+              className="sr-only"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) onPickFile(file);
+                e.target.value = "";
+              }}
+            />
+          </label>
+          <button type="button" onClick={onLoadDemo} className="pf-btn pf-btn--secondary pf-btn--lg">
+            Use the demo track
+          </button>
         </span>
       )}
-      <input
-        type="file"
-        accept="audio/*,.wav,.mp3,.m4a,.aac,.ogg,.flac"
-        className="hidden"
-        disabled={isLoading}
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) onPickFile(file);
-          e.target.value = "";
-        }}
-      />
-    </label>
-      {!isLoading && (
-        <button
-          type="button"
-          onClick={onLoadDemo}
-          className="rounded-md border border-line px-3 py-1.5 font-mono text-[11px] tracking-[0.06em] text-muted uppercase outline-none hover:border-accent-dim hover:text-accent focus-visible:border-accent"
-        >
-          Or try the demo track
-        </button>
-      )}
     </div>
-  );
-}
-
-function HistoryButton({
-  label,
-  disabled,
-  onClick,
-  children,
-}: {
-  label: string;
-  disabled: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      title={label}
-      disabled={disabled}
-      onClick={onClick}
-      className="flex h-8 w-8 items-center justify-center rounded-md border border-line text-ink outline-none hover:border-accent-dim hover:text-accent focus-visible:border-accent disabled:cursor-not-allowed disabled:text-muted disabled:opacity-40 disabled:hover:border-line disabled:hover:text-muted"
-    >
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 16 16"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
-        {children}
-      </svg>
-    </button>
   );
 }

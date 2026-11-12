@@ -2,7 +2,7 @@ import { LegalPage } from "@/components/LegalPage";
 import { ANONYMOUS_FILE_DAYS } from "@/lib/cleanup";
 import { BRAND } from "../../../../remotion/brand";
 
-export const metadata = { title: `Privacy - ${BRAND.name}` };
+export const metadata = { title: "Privacy" };
 
 /**
  * What the app does with personal data. The facts below describe what the

@@ -1,7 +1,6 @@
 import { LegalPage } from "@/components/LegalPage";
-import { BRAND } from "../../../../remotion/brand";
 
-export const metadata = { title: `Imprint - ${BRAND.name}` };
+export const metadata = { title: "Imprint" };
 
 /** Who runs the site. Every fact here has to be filled in by the owner. */
 export default function ImprintPage() {

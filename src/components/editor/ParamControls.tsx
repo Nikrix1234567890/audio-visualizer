@@ -1,5 +1,6 @@
 "use client";
 
+import { Lock } from "lucide-react";
 import {
   MAX_LINES_LENGTH,
   MAX_TEXT_LENGTH,
@@ -20,7 +21,7 @@ import { SliderRow } from "@/components/ui/SliderRow";
 import { ToggleRow } from "@/components/ui/ToggleRow";
 
 /**
- * Renders the right control for every parameter in `defs`. The sidebar is
+ * Renders the right control for every parameter in `defs`. The inspector is
  * built from the definitions in remotion/scene/definitions.ts, so a new
  * element type or parameter needs no UI code of its own. Numbers that may
  * react to audio get a fader with an audio jack.
@@ -58,7 +59,18 @@ export function ParamControls({
           };
           // Counts and speeds cannot react to audio (see isBindable).
           return def.modulate === false ? (
-            <SliderRow key={def.key} {...common} />
+            <SliderRow
+              key={def.key}
+              {...common}
+              accessory={
+                <span
+                  className="pf-param__lock w-[38px]"
+                  title="Counts and speeds cannot react to audio or change over time"
+                >
+                  <Lock className="pf-i pf-i--sm" aria-hidden />
+                </span>
+              }
+            />
           ) : (
             <BindableSlider
               key={def.key}

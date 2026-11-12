@@ -58,12 +58,11 @@ export function AssetRow({
     }
   };
 
-  const buttonClass =
-    "rounded-md border border-line px-2.5 py-1.5 font-mono text-[11px] tracking-[0.06em] text-ink uppercase outline-none hover:border-accent-dim hover:text-accent focus-visible:border-accent disabled:cursor-not-allowed disabled:opacity-50";
+  const buttonClass = "pf-btn pf-btn--secondary pf-btn--sm";
 
   return (
     <div className="flex flex-col gap-2">
-      <span className="font-mono text-[11px] tracking-[0.08em] text-muted uppercase">
+      <span className="pf-rowlabel">
         {label}
       </span>
 
@@ -72,7 +71,7 @@ export function AssetRow({
           <div
             role="img"
             aria-label={value ? "Chosen picture" : "No picture chosen"}
-            className="h-12 w-12 shrink-0 rounded-md border border-line bg-canvas bg-cover bg-center shadow-scope-recessed"
+            className="h-12 w-12 shrink-0 rounded-md border border-line-2 bg-bg-0 bg-cover bg-center"
             style={
               value ? { backgroundImage: `url("/api/files/${value}")` } : undefined
             }
@@ -80,7 +79,7 @@ export function AssetRow({
         ) : (
           <span
             className={`h-2 w-2 shrink-0 rounded-full ${
-              value ? "bg-accent shadow-glow-active" : "bg-accent-dim"
+              value ? "bg-accent" : "bg-ink-4"
             }`}
             aria-label={value ? "Model loaded" : "No model chosen"}
             role="img"
@@ -115,8 +114,8 @@ export function AssetRow({
         }}
       />
 
-      {error && <p className="text-xs text-red-400">{error}</p>}
-      {!value && !error && <p className="text-xs text-muted">{hint}</p>}
+      {error && <p className="text-xs text-danger">{error}</p>}
+      {!value && !error && <p className="pf-note">{hint}</p>}
     </div>
   );
 }

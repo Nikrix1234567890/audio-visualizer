@@ -1,9 +1,10 @@
 # Redesign: design system and UI previews
 
 Started on 2026-11-12. The owner found the landing page and the editor too
-plain for a product that should earn money. This folder holds the proposed
-new look. **Nothing in `src/` has been changed yet**, and `DESIGN.md` in the
-repo root still describes the old "Night Signal" look.
+plain for a product that should earn money. This folder holds the new look,
+which the owner approved the same day. It has since been built into the app
+(tokens, fonts, the editor, the pages outside the editor); `DESIGN.md` in
+the repo root is the short version for working in the code.
 
 ## Where to look
 
@@ -69,19 +70,28 @@ Motion (motion.dev) and its AI kit. Install the kit once per machine with
 so its docs search is available. The brand book's Motion section is still
 the restrained first draft and has to be rewritten for this.
 
-## Next steps once approved
+## What has been built (2026-11-12)
 
-1. Put the tokens into `src/app/globals.css` and load the three fonts with
-   `next/font/google` in `src/app/layout.tsx`.
-2. Add `lucide-react` (icons) and an accessible primitives library (Radix or
-   Base UI) for menus, popovers, dialogs and tooltips.
-3. Rebuild `src/components/ui` from `components/bundle.css`, component by
-   component, starting with Button, ParamRow (replaces `SliderRow`),
-   SegmentedControl.
-4. Rebuild the editor shell (`src/components/Editor.tsx`, `editor/Sidebar.tsx`,
-   `editor/Transport.tsx`) in the new layout.
-5. Rebuild the landing page (`src/app/page.tsx`), then pricing, dashboard and
-   the login pages.
-6. Rewrite `DESIGN.md` for the new system; add a lint rule against raw hex
-   colours outside the tokens and screenshot tests for landing page and editor.
-7. Templates need a `category` field before the gallery filters can ship.
+- Tokens in `src/app/globals.css`, the three fonts in `src/app/layout.tsx`,
+  the component classes in `src/app/components.css`.
+- The editor in its new layout: `src/components/Editor.tsx` and
+  `src/components/editor/` (`EditorAppBar`, `Library`, `Inspector`,
+  `ExportPopover`), the controls in `src/components/ui/`, layout in
+  `src/app/editor.css`.
+- The pages outside the editor, with new ones for templates, features and
+  help; layout in `src/app/site.css`.
+- Animation with Motion throughout (rules in the brand book's Motion
+  section).
+
+## Still open
+
+1. Accent: the app uses Phosphor (teal). Iris (violet) exists in the design
+   system only.
+2. Trademark and domain for "Beatframe"; the Premium price.
+3. A lint rule against raw hex colours outside the tokens, and screenshot
+   tests for the landing page and the editor.
+4. The Motion AI kit (`npx motion-ai`) has not been installed; the
+   animations were written against the library directly.
+5. Dialogs still use the browser's own `confirm` and `prompt` in the editor
+   (replace a scene, name a template); the design's Dialog component is not
+   used for them yet.

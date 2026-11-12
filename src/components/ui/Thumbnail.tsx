@@ -39,7 +39,7 @@ export function Thumbnail({
   }, [video]);
 
   return (
-    <span ref={ref} className="relative block aspect-video w-full bg-canvas">
+    <span ref={ref} className="relative block aspect-video w-full bg-bg-0">
       {/* A small static file from the public folder of this app: the image
           optimiser would add a request round trip and gain nothing. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}

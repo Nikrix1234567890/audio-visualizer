@@ -1,6 +1,6 @@
 "use client";
 
-/** A short text parameter: caption above, a single-line field below. */
+/** A short text parameter: label above, a single-line field below. */
 export function TextRow({
   label,
   value,
@@ -13,16 +13,14 @@ export function TextRow({
   onChange: (value: string) => void;
 }) {
   return (
-    <label className="flex flex-col gap-1.5">
-      <span className="font-mono text-[11px] tracking-[0.08em] text-muted uppercase">
-        {label}
-      </span>
+    <label className="pf-field">
+      <span className="pf-rowlabel">{label}</span>
       <input
         value={value}
         maxLength={maxLength}
         spellCheck={false}
         onChange={(e) => onChange(e.target.value)}
-        className="rounded-md border border-line bg-canvas px-2.5 py-1.5 text-sm text-ink shadow-scope-recessed outline-none focus:border-accent"
+        className="pf-input"
       />
     </label>
   );

@@ -33,6 +33,8 @@
     "@remotion/three": "4.0.501",
     "@types/three": "^0.185.1",
     "bcryptjs": "^3.0.3",
+    "lucide-react": "^1.72.0",
+    "motion": "^14.13.0",
     "next": "16.2.12",
     "next-auth": "5.0.0-beta.32",
     "postprocessing": "^6.39.4",

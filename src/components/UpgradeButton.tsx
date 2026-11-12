@@ -1,5 +1,6 @@
 "use client";
 
+import { Crown } from "lucide-react";
 import { useState } from "react";
 
 /** Starts the Premium payment and sends the browser to the Stripe payment page. */
@@ -24,16 +25,27 @@ export function UpgradeButton() {
   };
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="pf-stack">
       <button
         type="button"
         onClick={start}
         disabled={isStarting}
-        className="rounded-xl bg-brand px-5 py-2.5 text-sm font-semibold tracking-wide text-canvas outline-none hover:brightness-110 focus-visible:ring-2 focus-visible:ring-ink disabled:opacity-60"
+        aria-busy={isStarting || undefined}
+        className="pf-btn pf-btn--cta pf-btn--lg pf-btn--block"
       >
-        {isStarting ? "Opening the payment page…" : "Go Premium"}
+        <Crown className="pf-i" aria-hidden />
+        Get Premium
       </button>
-      {error && <p className="text-xs text-red-400">{error}</p>}
+      {isStarting && (
+        <span role="status" className="pf-hint">
+          Opening the payment page…
+        </span>
+      )}
+      {error && (
+        <span role="alert" className="pf-hint pf-hint--error">
+          {error}
+        </span>
+      )}
     </div>
   );
 }

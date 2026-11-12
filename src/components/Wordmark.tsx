@@ -13,26 +13,30 @@ const DOTS = [
   [39, 39, 3],
 ];
 
-/** The logo: the nine-dot sound figure and the name, its second half in the brand gradient. */
-export function Wordmark({ className = "" }: { className?: string }) {
+/** The mark alone: a sound figure, small dots at the corners, the largest in the middle. */
+export function Mark({ size = 20 }: { size?: number }) {
   return (
-    <span className={`inline-flex items-center gap-2 font-semibold tracking-tight text-ink ${className}`}>
-      <svg width="20" height="20" viewBox="0 0 48 48" fill="none" aria-hidden>
-        <defs>
-          <linearGradient id="wordmark-gradient" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#8b5cf6" />
-            <stop offset="1" stopColor="#22d3ee" />
-          </linearGradient>
-        </defs>
-        {/* A sound figure: small dots at the corners, the largest in the middle. */}
-        {DOTS.map(([cx, cy, r]) => (
-          <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r={r} fill="url(#wordmark-gradient)" />
-        ))}
-      </svg>
-      <span>
-        {BRAND.first}
-        <span className="text-brand">{BRAND.second}</span>
-      </span>
+    <svg width={size} height={size} viewBox="0 0 48 48" aria-hidden>
+      {DOTS.map(([cx, cy, r]) => (
+        <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r={r} />
+      ))}
+    </svg>
+  );
+}
+
+/** The logo: the mark in the accent colour and the name in the display face. */
+export function Wordmark({
+  className = "",
+  markOnly = false,
+}: {
+  className?: string;
+  /** Only the mark, with the name left for screen readers (the editor's top bar). */
+  markOnly?: boolean;
+}) {
+  return (
+    <span className={`pf-logo ${className}`}>
+      <Mark />
+      {markOnly ? <span className="sr-only">{BRAND.name}</span> : <span>{BRAND.name}</span>}
     </span>
   );
 }

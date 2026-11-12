@@ -1,18 +1,27 @@
+import { Check, Crown } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { TIER_LIMITS, type TierName } from "@/lib/tiers";
+import { Stagger, StaggerItem } from "@/components/site/kit";
 import { RESOLUTIONS } from "../../remotion/types";
 
 function planFeatures(tier: TierName): string[] {
   const limits = TIER_LIMITS[tier];
-  return [
-    `Export up to ${RESOLUTIONS[limits.maxResolution].label}`,
-    `${limits.frameRates.join(" and ")} frames per second`,
-    limits.watermark ? "Small watermark in a corner" : "No watermark",
-    "All templates and elements",
-    "Landscape, portrait and square",
-    "Your own pictures and 3D models",
-  ];
+  const top = `Export up to ${RESOLUTIONS[limits.maxResolution].label} at ${Math.max(...limits.frameRates)} fps`;
+  return tier === "FREE"
+    ? [
+        top,
+        "All templates and elements",
+        "Landscape, portrait and square",
+        "Your own pictures and 3D models",
+        limits.watermark ? "Small watermark in the corner" : "No watermark",
+      ]
+    : [
+        top,
+        limits.watermark ? "Small watermark in the corner" : "No watermark",
+        "Everything in Free",
+        "Cancel any time in the customer portal",
+      ];
 }
 
 /**
@@ -30,90 +39,52 @@ export function PlanCards({
   premiumAction?: ReactNode;
 }) {
   return (
-    <div className="grid gap-4 md:grid-cols-2">
-      <Plan
-        name="Free"
-        price="0"
-        note="No account needed"
-        features={planFeatures("FREE")}
-        action={
-          <Link
-            href="/editor"
-            className="rounded-xl border border-line bg-surface-raised px-5 py-2.5 text-center text-sm font-semibold tracking-wide text-ink shadow-control-raised outline-none hover:border-accent-dim hover:text-accent focus-visible:border-accent"
-          >
-            Open the editor
-          </Link>
-        }
-      />
-      <Plan
-        name="Premium"
-        price={priceLabel ?? "Price to be announced"}
-        note="For finished releases"
-        features={planFeatures("PREMIUM")}
-        isHighlighted
-        action={
-          premiumAction ?? (
-            <Link
-              href="/pricing"
-              className="rounded-xl bg-brand px-5 py-2.5 text-center text-sm font-semibold tracking-wide text-canvas outline-none hover:brightness-110 focus-visible:ring-2 focus-visible:ring-ink"
-            >
+    <Stagger className="lp-grid" gap={0.1}>
+      <StaggerItem className="pf-price s6">
+        <span className="pf-price__name">Free</span>
+        <span className="pf-price__amount">
+          €0<small>no account needed</small>
+        </span>
+        <FeatureList features={planFeatures("FREE")} />
+        <Link href="/editor" className="pf-btn pf-btn--secondary pf-btn--lg pf-btn--block mt-auto">
+          Open the editor
+        </Link>
+      </StaggerItem>
+      <StaggerItem className="pf-price pf-price--featured s6">
+        <span className="pf-price__name">
+          Premium
+          <span className="pf-badge pf-badge--premium">
+            <Crown className="pf-i" aria-hidden />
+            Best quality
+          </span>
+        </span>
+        {priceLabel ? (
+          <span className="pf-price__amount">{priceLabel}</span>
+        ) : (
+          <span className="pf-price__amount price-open">Price to be announced</span>
+        )}
+        <FeatureList features={planFeatures("PREMIUM")} />
+        <div className="mt-auto">
+          {premiumAction ?? (
+            <Link href="/pricing" className="pf-btn pf-btn--cta pf-btn--lg pf-btn--block">
               See Premium
             </Link>
-          )
-        }
-      />
-    </div>
+          )}
+        </div>
+      </StaggerItem>
+    </Stagger>
   );
 }
 
-function Plan({
-  name,
-  price,
-  note,
-  features,
-  action,
-  isHighlighted = false,
-}: {
-  name: string;
-  price: string;
-  note: string;
-  features: string[];
-  action: ReactNode;
-  isHighlighted?: boolean;
-}) {
+function FeatureList({ features }: { features: string[] }) {
   return (
-    <div
-      className={`flex flex-col gap-5 glass rounded-2xl p-6 ${
-        isHighlighted ? "shadow-[0_0_50px_-12px_rgba(139,92,246,0.7)]" : ""
-      }`}
-    >
-      <div className="flex flex-col gap-1">
-        <span
-          className={`font-mono text-[11px] tracking-[0.12em] uppercase ${
-            isHighlighted ? "text-accent" : "text-muted"
-          }`}
-        >
-          {name}
-        </span>
-        <span className="text-2xl font-semibold tracking-tight text-ink">
-          {price}
-        </span>
-        <span className="text-xs text-muted">{note}</span>
-      </div>
-      <ul className="flex flex-1 flex-col gap-2 text-sm text-ink">
-        {features.map((feature) => (
-          <li key={feature} className="flex gap-2">
-            <span
-              aria-hidden
-              className={`mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full ${
-                isHighlighted ? "bg-accent" : "bg-accent-dim"
-              }`}
-            />
-            {feature}
-          </li>
-        ))}
-      </ul>
-      {action}
-    </div>
+    <ul className="pf-price__list">
+      {features.map((feature) => (
+        <li key={feature}>
+          <Check className="pf-i" aria-hidden />
+          {feature}
+        </li>
+      ))}
+    </ul>
   );
 }

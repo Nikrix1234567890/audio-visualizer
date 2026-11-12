@@ -36,13 +36,13 @@ export function ExportLength({
     return { start: round(start), end: round(start + span) };
   };
 
-  const small =
-    "min-w-0 flex-1 rounded-md border border-line px-1.5 py-1.5 font-mono text-[11px] tracking-[0.06em] text-ink uppercase outline-none hover:border-accent-dim hover:text-accent focus-visible:border-accent disabled:cursor-not-allowed disabled:opacity-40";
+  const small = "pf-btn pf-btn--secondary pf-btn--sm min-w-0 flex-1";
 
   return (
     <>
       <SegmentedSelector
         stretch
+        label="Length"
         options={[
           { value: "all", label: "Whole track" },
           { value: "section", label: "Section" },
@@ -55,9 +55,9 @@ export function ExportLength({
       />
       {range && (
         <div className="flex flex-col gap-2">
-          <p className="font-mono text-[11px] tracking-[0.06em] text-muted tabular-nums">
+          <p className="font-mono text-[11.5px] text-ink-3 tabular-nums">
             {formatTime(range.start)} - {formatTime(range.end)} ·{" "}
-            <span className="text-ink">{Math.round(range.end - range.start)} s</span>
+            <span className="text-ink-1">{Math.round(range.end - range.start)} s</span>
           </p>
           <div className="flex gap-1">
             {PRESETS.map((length) => (
@@ -105,7 +105,7 @@ export function ExportLength({
               End here
             </button>
           </div>
-          <p className="text-xs text-muted">
+          <p className="pf-note">
             The buttons start from the playhead. Drag the two lines on the
             timeline to adjust.
           </p>

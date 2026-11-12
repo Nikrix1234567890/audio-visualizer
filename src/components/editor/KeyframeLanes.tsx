@@ -35,21 +35,12 @@ export function KeyframeLanes({
   const playhead = (seconds - view.start) / view.length;
 
   return (
-    <ul className="flex max-h-28 shrink-0 flex-col overflow-y-auto rounded-md bg-canvas shadow-scope-recessed">
+    <ul className="ed__lanes" aria-label="Animated settings">
       {lanes.map((lane) => (
-        <li
-          key={`${lane.owner}:${lane.target}`}
-          className="relative h-5 shrink-0 border-b border-line/60 last:border-b-0"
-        >
-          <span className="pointer-events-none absolute top-1/2 right-1.5 z-10 -translate-y-1/2 font-mono text-[9px] tracking-[0.08em] text-muted uppercase">
-            {lane.label}
-          </span>
+        <li key={`${lane.owner}:${lane.target}`} className="ed__lane">
+          <span className="ed__lanelabel">{lane.label}</span>
           {playhead >= 0 && playhead <= 1 && (
-            <span
-              aria-hidden
-              className="pointer-events-none absolute top-0 h-full w-px bg-ink/40"
-              style={{ left: `${playhead * 100}%` }}
-            />
+            <span aria-hidden className="ed__laneline" style={{ left: `${playhead * 100}%` }} />
           )}
           {lane.keys.map((key) => (
             <TimeDiamond

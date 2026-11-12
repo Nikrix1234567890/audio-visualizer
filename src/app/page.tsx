@@ -1,277 +1,416 @@
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { HeroScene } from "@/components/landing/HeroScene";
+import { HeroWindow } from "@/components/landing/HeroWindow";
 import { PlanCards } from "@/components/PlanCards";
 import { Reveal } from "@/components/Reveal";
-import { TemplateGrid } from "@/components/TemplateGrid";
 import { SiteFooter } from "@/components/SiteFooter";
-import { ELEMENT_TYPES } from "../../remotion/scene/definitions";
-import { TEMPLATES } from "../../remotion/scene/templates";
+import {
+  ELEMENT_COUNT,
+  PLAN_QUESTIONS,
+  TEMPLATE_COUNT,
+} from "@/components/site/content";
+import {
+  CameraDemo,
+  FormatMorph,
+  KeyframeDemo,
+  LayersDemo,
+  ParityDemo,
+  ReactDemo,
+  StepBuild,
+  StepExport,
+  StepLoad,
+  TempoDemo,
+} from "@/components/site/demos";
+import { Faq } from "@/components/site/Faq";
+import { CountUp, Marquee, Rise, Stagger, StaggerItem, WordReveal } from "@/components/site/kit";
+import { NoScript } from "@/components/site/NoScript";
+import {
+  ArrowLink,
+  ClosingCall,
+  CompareTable,
+  Reassure,
+  SectionHead,
+} from "@/components/site/sections";
+import { TemplateBrowser } from "@/components/site/TemplateBrowser";
+import { TemplateMarquee } from "@/components/site/TemplateMarquee";
+import { TEMPLATE_SUMMARIES, USED_CATEGORIES } from "@/components/site/templateData";
+import { ELEMENT_DEFS, ELEMENT_TYPES } from "../../remotion/scene/definitions";
+
+/** The templates the gallery teaser shows first, in this order. */
+const FEATURED = [
+  "galaxy",
+  "nightCity",
+  "liquidGold",
+  "radialBars",
+  "terrainWave",
+  "helix",
+  "solar",
+  "aurora",
+];
+/** How many cards the teaser shows. */
+const TEASER = 8;
+
+/** The templates in the hero's small editor; the first one plays at the start. */
+const HERO_CHOICES = ["galaxy", "helix", "nova", "hyperdrive", "aurora", "liquidGold"];
+
+/** Elements whose pictures run through the "elements" card of the bento. */
+const ELEMENT_STRIP = [
+  "barRing",
+  "galaxy",
+  "tunnel",
+  "jellyfish",
+  "skyline",
+  "helix",
+  "aurora",
+  "spikeOrb",
+  "terrainLines",
+  "corona",
+  "vortex",
+  "hypercube",
+].filter((type) => (ELEMENT_TYPES as readonly string[]).includes(type)) as (keyof typeof ELEMENT_DEFS)[];
+
+const STRIP_HALF = Math.ceil(ELEMENT_STRIP.length / 2);
 
 const STEPS = [
   {
-    label: "01",
     title: "Load a track",
-    text: "Drop in any song. It is analysed once - bass, mids, highs and every beat - right in your browser.",
+    text: "Drop in any song. Bass, mids, highs and every beat are found once, right in your browser.",
+    demo: <StepLoad />,
   },
   {
-    label: "02",
     title: "Build the scene",
-    text: "Start from a template or an empty stage. Add elements, move them in the picture and wire any setting to the music.",
+    text: "Start from a template or an empty stage. Add elements and plug any setting into the music.",
+    demo: <StepBuild />,
   },
   {
-    label: "03",
-    title: "Render the video",
-    text: "Pick a format and press Render. The video is drawn by the same code as the preview, so it looks exactly like what you built.",
+    title: "Export the video",
+    text: "Pick a format and press Export. The video is drawn by the same code as the preview.",
+    demo: <StepExport />,
   },
 ];
 
-const FEATURES = [
-  {
-    title: "Every scene is yours",
-    text: `${ELEMENT_TYPES.length} elements - rings, particle clouds, tunnels, terrain, text - that you add, remove, duplicate and arrange freely. Templates are only a starting point.`,
-  },
-  {
-    title: "Anything can react",
-    text: "Plug a setting into bass, mids, highs, loudness or the beat with one click: size, glow, position, camera shake, bloom.",
-  },
-  {
-    title: "Animate over time",
-    text: "Set a value at one moment and another later on, and it travels between them. Keyframes sit on the timeline, right above the waveform.",
-  },
-  {
-    title: "Slow down, speed up",
-    text: "Give an element a tempo swing and its motion breathes: into slow motion and out again, in a wave or on the beat.",
-  },
-  {
-    title: "Bring your own",
-    text: "Your logo, your cover art, your 3D model (.glb) - placed in the scene like any other element.",
-  },
-  {
-    title: "What you see is the video",
-    text: "No separate export engine. The preview and the final render run the same code, frame for frame.",
-  },
-];
-
-/** Portrait loops shown in phone frames (rendered by `pnpm previews`). */
-const PORTRAIT = [
-  { id: "galaxy", label: "Galaxy" },
-  { id: "pulseRing", label: "Pulse Ring" },
-  { id: "jellyfish", label: "Jellyfish" },
-  { id: "helix", label: "Helix" },
-];
-
-const STATS = [
-  { value: String(TEMPLATES.length), label: "templates" },
-  { value: String(ELEMENT_TYPES.length), label: "elements" },
-  { value: "4K", label: "at 60 fps" },
-  { value: "3", label: "formats" },
-];
-
-const primaryButton =
-  "rounded-xl bg-brand px-6 py-3 text-sm font-semibold tracking-wide text-canvas outline-none hover:brightness-110 focus-visible:ring-2 focus-visible:ring-ink";
-const secondaryButton =
-  "glass rounded-xl px-6 py-3 text-sm font-semibold tracking-wide text-ink outline-none hover:text-accent focus-visible:border-accent";
-const sectionLabel =
-  "font-mono text-[11px] tracking-[0.12em] text-accent uppercase";
-const sectionTitle =
-  "max-w-2xl text-3xl leading-tight font-semibold tracking-tight text-ink sm:text-4xl";
+const byId = (id: string) => TEMPLATE_SUMMARIES.find((template) => template.id === id);
 
 /** The landing page: what the app is, what it makes, what it costs. */
 export default function LandingPage() {
-  return (
-    <div className="relative flex flex-col overflow-hidden">
-      {/* The glow behind the top of the page. */}
-      <div aria-hidden className="aurora pointer-events-none absolute inset-x-0 top-0 h-[900px]" />
+  const featured = FEATURED.map(byId).filter((template) => template !== undefined);
+  const others = TEMPLATE_SUMMARIES.filter((template) => !featured.includes(template));
+  const gallery = [...featured, ...others];
+  const heroChoices = HERO_CHOICES.map(byId)
+    .filter((template) => template !== undefined)
+    .map(({ id, label }) => ({ id, label }));
 
-      {/* Hero */}
-      <section className="relative">
-        <div className="mx-auto grid w-full max-w-6xl items-center gap-12 px-6 pt-16 pb-12 lg:grid-cols-[5fr_6fr] lg:pt-24">
-          <div className="flex flex-col gap-6">
-            <span className="glass w-fit rounded-full px-3 py-1 font-mono text-[11px] tracking-[0.12em] text-muted uppercase">
-              Audio-reactive 3D video
-            </span>
-            <h1 className="text-5xl leading-[1.02] font-semibold tracking-tight text-ink sm:text-6xl">
-              Make your music <span className="text-brand">visible</span>.
-            </h1>
-            <p className="max-w-md text-lg leading-relaxed text-muted">
-              Build a 3D scene from elements, wire it to your track and render
-              it - all in the browser. No software to install, no timeline to
-              learn.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Link href="/editor" className={primaryButton}>
-                Open the editor
-              </Link>
-              <a href="#templates" className={secondaryButton}>
-                See the templates
-              </a>
-            </div>
-            <p className="text-xs text-muted">
-              Free to use, no account needed to try it.
-            </p>
+  return (
+    <div className="lp site">
+      <NoScript />
+
+      <header className="lp-wrap lp-hero">
+        <Rise>
+          <span className="pf-badge pf-badge--lg">
+            <span className="pf-badge__dot text-accent" />
+            No install. Free to try.
+          </span>
+        </Rise>
+        <WordReveal text="Make your music impossible to scroll past." className="lp-h1" />
+        <Rise delay={0.4}>
+          <p className="lp-lead">
+            Drop in a track, pick a 3D scene and export a video that moves on
+            every beat. In your browser, in minutes.
+          </p>
+        </Rise>
+        <Rise delay={0.5} className="lp-row">
+          <Link href="/editor" className="pf-btn pf-btn--cta pf-btn--xl">
+            Start with your track
+            <ArrowRight className="pf-i" aria-hidden />
+          </Link>
+          <Link href="/templates" className="pf-btn pf-btn--secondary pf-btn--xl">
+            Browse templates
+          </Link>
+        </Rise>
+        <Rise delay={0.6} className="lp-reassure">
+          <Reassure />
+        </Rise>
+        <Rise delay={0.45} className="hero-rise">
+          <HeroWindow templates={heroChoices} />
+        </Rise>
+        <p className="lp-goes">
+          Made for <b>YouTube</b>, <b>Reels</b>, <b>TikTok</b>, <b>Shorts</b> and{" "}
+          <b>Spotify Canvas</b>.
+        </p>
+      </header>
+
+      <section id="templates" className="lp-section tpl-section">
+        <div className="lp-wrap">
+          <SectionHead
+            eyebrow="Templates"
+            title={`${TEMPLATE_COUNT} scenes to start from.`}
+            lead="Every template is a real scene you can take apart. Hover to see it move, click to open it with your track."
+          />
+          <TemplateBrowser
+            templates={gallery}
+            categories={USED_CATEGORIES}
+            limit={TEASER}
+            opens="editor"
+          />
+        </div>
+        {others.length > 0 && (
+          <Reveal className="tpl-section__more">
+            <TemplateMarquee templates={others.slice(0, 12)} />
+          </Reveal>
+        )}
+        <div className="lp-more">
+          <Link href="/templates" className="pf-btn pf-btn--secondary pf-btn--lg">
+            See all {TEMPLATE_COUNT} templates
+          </Link>
+        </div>
+      </section>
+
+      <section className="lp-rule">
+        <div className="lp-wrap lp-section">
+          <SectionHead eyebrow="How it works" title="From a song to a video in three steps." />
+          <Stagger as="ol" className="lp-grid steps" gap={0.1}>
+            {STEPS.map((step, i) => (
+              <StaggerItem as="li" key={step.title} className="pf-card s4">
+                {step.demo}
+                <span className="pf-step__num">Step {i + 1}</span>
+                <h3 className="pf-card__title">{step.title}</h3>
+                <p className="pf-card__text">{step.text}</p>
+              </StaggerItem>
+            ))}
+          </Stagger>
+        </div>
+      </section>
+
+      <section id="features" className="lp-rule">
+        <div className="lp-wrap lp-section">
+          <div className="head-split">
+            <SectionHead
+              eyebrow="What you can do"
+              title="An editor, not a preset picker."
+              lead={`${ELEMENT_COUNT} elements you add, stack and tune. Every one of them can listen to your track.`}
+            />
+            <Reveal delay={120}>
+              <dl className="stats">
+                <div>
+                  <dd>
+                    <CountUp value={TEMPLATE_COUNT} />
+                  </dd>
+                  <dt>templates</dt>
+                </div>
+                <div>
+                  <dd>
+                    <CountUp value={ELEMENT_COUNT} />
+                  </dd>
+                  <dt>elements</dt>
+                </div>
+                <div>
+                  <dd>
+                    <CountUp value={5} />
+                  </dd>
+                  <dt>signals</dt>
+                </div>
+                <div>
+                  <dd>
+                    <CountUp value={3} />
+                  </dd>
+                  <dt>formats</dt>
+                </div>
+              </dl>
+            </Reveal>
           </div>
 
-          <HeroScene />
-        </div>
-
-        <div className="mx-auto w-full max-w-6xl px-6 pb-16">
-          <dl className="glass grid grid-cols-2 gap-y-6 rounded-2xl px-6 py-6 sm:grid-cols-4">
-            {STATS.map((stat) => (
-              <div key={stat.label} className="flex flex-col items-center gap-1">
-                <dd className="text-brand text-3xl font-semibold tracking-tight">
-                  {stat.value}
-                </dd>
-                <dt className="font-mono text-[11px] tracking-[0.12em] text-muted uppercase">
-                  {stat.label}
-                </dt>
+          <Stagger className="lp-grid" gap={0.08}>
+            <StaggerItem className="pf-card s7">
+              <ReactDemo />
+              <h3 className="pf-card__title">Anything can react</h3>
+              <p className="pf-card__text">
+                Plug a setting into bass, mids, highs, loudness or the beat
+                with one click. Each signal keeps its colour, so you always
+                see what drives what.
+              </p>
+            </StaggerItem>
+            <StaggerItem className="pf-card s5">
+              <KeyframeDemo />
+              <h3 className="pf-card__title">Animate over time</h3>
+              <p className="pf-card__text">
+                Set a value now and another later. It travels between them, on
+                a timeline right under the waveform.
+              </p>
+            </StaggerItem>
+            <StaggerItem className="pf-card s5">
+              <div className="pf-card__demo strip-demo">
+                <Marquee seconds={36}>
+                  {ELEMENT_STRIP.slice(0, STRIP_HALF).map((type) => (
+                    <span key={type} className="strip-tile">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={`/thumbnails/elements/${type}.jpg`}
+                        alt=""
+                        width={160}
+                        height={120}
+                        loading="lazy"
+                      />
+                      <span>{ELEMENT_DEFS[type].label}</span>
+                    </span>
+                  ))}
+                </Marquee>
+                <Marquee seconds={36} reverse>
+                  {ELEMENT_STRIP.slice(STRIP_HALF).map((type) => (
+                    <span key={type} className="strip-tile">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={`/thumbnails/elements/${type}.jpg`}
+                        alt=""
+                        width={160}
+                        height={120}
+                        loading="lazy"
+                      />
+                      <span>{ELEMENT_DEFS[type].label}</span>
+                    </span>
+                  ))}
+                </Marquee>
               </div>
-            ))}
-          </dl>
-        </div>
-      </section>
-
-      {/* How it works */}
-      <section className="relative border-t border-line">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 py-20">
-          <Reveal className="flex flex-col gap-3">
-            <h2 className={sectionLabel}>How it works</h2>
-            <p className={sectionTitle}>From a song to a video in three steps.</p>
-          </Reveal>
-          <ol className="grid gap-4 md:grid-cols-3">
-            {STEPS.map((step, i) => (
-              <li key={step.label}>
-                <Reveal
-                  delay={i * 120}
-                  className="glass flex h-full flex-col gap-3 rounded-2xl p-6"
-                >
-                  <span className="text-brand text-4xl font-semibold tracking-tight">
-                    {step.label}
-                  </span>
-                  <h3 className="text-lg font-semibold tracking-tight text-ink">
-                    {step.title}
-                  </h3>
-                  <p className="text-sm leading-relaxed text-muted">{step.text}</p>
-                </Reveal>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-
-      {/* Templates */}
-      <section id="templates" className="relative scroll-mt-4 border-t border-line">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 py-20">
-          <Reveal className="flex flex-col gap-3">
-            <h2 className={sectionLabel}>Templates</h2>
-            <p className={sectionTitle}>
-              {TEMPLATES.length} starting points. Hover to see one move, click
-              to open it.
-            </p>
-          </Reveal>
-          <Reveal>
-            <TemplateGrid />
+              <h3 className="pf-card__title">Every scene is yours</h3>
+              <p className="pf-card__text">
+                Rings, particle clouds, tunnels, terrain, text. Add, remove,
+                duplicate and arrange them freely. A template is only a
+                starting point.
+              </p>
+            </StaggerItem>
+            <StaggerItem className="pf-card s7">
+              <CameraDemo />
+              <h3 className="pf-card__title">Move the camera</h3>
+              <p className="pf-card__text">
+                Push in, pull out, crane or punch the zoom with one button.
+                Each move is written as ordinary keyframes you can drag.
+              </p>
+            </StaggerItem>
+            <StaggerItem className="pf-card s4">
+              <LayersDemo />
+              <h3 className="pf-card__title">Bring your own</h3>
+              <p className="pf-card__text">
+                Your logo, your cover art, your 3D model. Placed in the scene
+                like any other element.
+              </p>
+            </StaggerItem>
+            <StaggerItem className="pf-card s4">
+              <TempoDemo />
+              <h3 className="pf-card__title">Slow down, speed up</h3>
+              <p className="pf-card__text">
+                Give an element a tempo swing: it surges on every beat and
+                falls into slow motion in between.
+              </p>
+            </StaggerItem>
+            <StaggerItem className="pf-card s4">
+              <ParityDemo />
+              <h3 className="pf-card__title">What you see is the video</h3>
+              <p className="pf-card__text">
+                No separate export engine. Preview and final render run the
+                same code, frame for frame.
+              </p>
+            </StaggerItem>
+          </Stagger>
+          <Reveal className="lp-more">
+            <ArrowLink href="/features">Take the full tour</ArrowLink>
           </Reveal>
         </div>
       </section>
 
-      {/* Formats */}
-      <section className="relative border-t border-line">
-        <div
-          aria-hidden
-          className="aurora pointer-events-none absolute inset-0 opacity-60"
-        />
-        <div className="relative mx-auto grid w-full max-w-6xl items-center gap-12 px-6 py-20 lg:grid-cols-[4fr_7fr]">
-          <Reveal className="flex flex-col gap-4">
-            <h2 className={sectionLabel}>Made for where it goes</h2>
-            <p className={sectionTitle}>Portrait, square or landscape.</p>
-            <p className="max-w-md text-sm leading-relaxed text-muted">
-              One scene, three formats. Switch to 9:16 for Reels, Shorts and
-              TikTok, to 1:1 for feeds or stay in 16:9 for YouTube - the
-              camera adapts so your scene stays in the picture.
-            </p>
-          </Reveal>
-          <ul className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            {PORTRAIT.map((item, i) => (
-              <li key={item.id}>
-                <Reveal delay={i * 100}>
-                  <Link
-                    href={`/editor?template=${item.id}`}
-                    className="group block overflow-hidden rounded-[22px] border border-line bg-surface p-1.5 outline-none hover:border-accent-dim focus-visible:border-accent"
-                    aria-label={`Open the ${item.label} template`}
-                  >
-                    <video
-                      className="aspect-[9/16] w-full rounded-[16px] bg-canvas object-cover"
-                      src={`/previews/portrait/${item.id}.mp4`}
-                      autoPlay
-                      muted
-                      loop
-                      playsInline
-                      preload="metadata"
-                    />
-                  </Link>
-                </Reveal>
-              </li>
-            ))}
-          </ul>
+      <section className="lp-rule">
+        <div className="lp-wrap lp-section">
+          <div className="lp-grid formats-top">
+            <SectionHead
+              className="s6"
+              eyebrow="Made for where it goes"
+              title="One scene, three formats."
+              lead="Switch format and the camera adapts, so your scene stays in the picture."
+            />
+            <Reveal className="s6" delay={120}>
+              <FormatMorph />
+            </Reveal>
+          </div>
+          <Stagger className="lp-formats" gap={0.12}>
+            <StaggerItem className="lp-format lp-format--wide">
+              <div className="media-box format-box format-box--wide">
+                <video
+                  src="/previews/galaxy.mp4"
+                  poster="/thumbnails/templates/galaxy.jpg"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                  aria-label="Galaxy in landscape"
+                />
+              </div>
+              <span className="lp-format__cap">
+                <b>16:9</b>YouTube
+              </span>
+            </StaggerItem>
+            <StaggerItem className="lp-format lp-format--phone">
+              <div className="pf-phone">
+                <div className="media-box format-box format-box--phone">
+                  <video
+                    src="/previews/portrait/galaxy.mp4"
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    preload="metadata"
+                    aria-label="Galaxy in portrait"
+                  />
+                </div>
+              </div>
+              <span className="lp-format__cap">
+                <b>9:16</b>Reels, Shorts, TikTok
+              </span>
+            </StaggerItem>
+            <StaggerItem className="lp-format lp-format--square">
+              <div className="media-box format-box format-box--square">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  className="media"
+                  src="/thumbnails/templates/galaxy.jpg"
+                  alt="Galaxy as a square"
+                  width={480}
+                  height={270}
+                  loading="lazy"
+                />
+              </div>
+              <span className="lp-format__cap">
+                <b>1:1</b>Feeds
+              </span>
+            </StaggerItem>
+          </Stagger>
         </div>
       </section>
 
-      {/* Features */}
-      <section className="relative border-t border-line">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 py-20">
-          <Reveal className="flex flex-col gap-3">
-            <h2 className={sectionLabel}>What you can do</h2>
-            <p className={sectionTitle}>An editor, not a preset picker.</p>
-          </Reveal>
-          <ul className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {FEATURES.map((feature, i) => (
-              <li key={feature.title}>
-                <Reveal
-                  delay={(i % 3) * 100}
-                  className="glass flex h-full flex-col gap-2 rounded-2xl p-6"
-                >
-                  <h3 className="text-lg font-semibold tracking-tight text-ink">
-                    {feature.title}
-                  </h3>
-                  <p className="text-sm leading-relaxed text-muted">
-                    {feature.text}
-                  </p>
-                </Reveal>
-              </li>
-            ))}
-          </ul>
+      <section id="pricing" className="lp-rule">
+        <div className="lp-wrap lp-section">
+          <SectionHead
+            eyebrow="Pricing"
+            title="Free to make videos. Premium when you want them bigger and unmarked."
+          />
+          <PlanCards priceLabel={process.env.PREMIUM_PRICE_LABEL || undefined} />
+          <CompareTable />
         </div>
       </section>
 
-      {/* Plans */}
-      <section className="relative border-t border-line">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 py-20">
-          <Reveal className="flex flex-col gap-3">
-            <h2 className={sectionLabel}>Plans</h2>
-            <p className={sectionTitle}>
-              Free to make videos. Premium when you want them bigger and
-              unmarked.
-            </p>
-          </Reveal>
-          <Reveal>
-            <PlanCards />
-          </Reveal>
+      <section className="lp-rule">
+        <div className="lp-wrap lp-section">
+          <div className="lp-grid">
+            <SectionHead className="s5 faq-head" eyebrow="Questions" title="Before you start." />
+            <Reveal className="s7" delay={100}>
+              <Faq items={PLAN_QUESTIONS} />
+              <p className="faq-more">
+                <ArrowLink href="/help#questions">More questions and answers</ArrowLink>
+              </p>
+            </Reveal>
+          </div>
         </div>
       </section>
 
-      {/* Closing call */}
-      <section className="relative border-t border-line">
-        <div aria-hidden className="aurora pointer-events-none absolute inset-0" />
-        <Reveal className="relative mx-auto flex w-full max-w-6xl flex-col items-center gap-6 px-6 py-24 text-center">
-          <p className="max-w-2xl text-4xl leading-tight font-semibold tracking-tight text-ink sm:text-5xl">
-            Your track is the only thing <span className="text-brand">missing</span>.
-          </p>
-          <Link href="/editor" className={primaryButton}>
-            Open the editor
-          </Link>
-        </Reveal>
-      </section>
-
+      <ClosingCall />
       <SiteFooter />
     </div>
   );

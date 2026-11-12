@@ -7,7 +7,7 @@ of a long session on a Windows PC. Continued on 2026-11-12 on a Mac
 
 ## What this is
 
-**Pulsefield** (a working title - nobody has checked whether the name is
+**Beatframe** (the name the owner chose - nobody has checked whether it is
 free) is a web app that turns a song into an audio-reactive 3D video. The
 user loads a track, builds a scene from elements, wires settings to the
 music, and renders an MP4 on the server. Free plan with a watermark, a paid
@@ -18,7 +18,7 @@ Read these first, in this order:
 1. `AGENTS.md` - this is Next.js 16; read the matching guide in
    `node_modules/next/dist/docs/` before writing Next code.
 2. `PRODUCT.md` - what the product does and the rules it follows.
-3. `DESIGN.md` - the look ("Night Signal") and where it lives.
+3. `DESIGN.md` - the look and where it lives; the full design system is in `design/`.
 4. `DEPLOY.md` - how to put it on a server (written, never tried).
 
 ## Working with the owner
@@ -119,7 +119,7 @@ pnpm tier you@example.com PREMIUM
 - `remotion/` - everything that draws a frame; shared by the editor
   preview and the server render, so both always look the same.
   - `scene/definitions.ts` - the scene document, every element type and its
-    parameters. The sidebar is generated from this.
+    parameters. The inspector is generated from this.
   - `scene/sanitize.ts` - cleans any scene from the client; never skip it.
   - `scene/bindings.ts`, `keyframes.ts`, `cameraMoves.ts`, `lyrics.ts` -
     audio bindings, keyframes and tempo swing, camera moves, timed lyrics.
@@ -304,8 +304,9 @@ Product:
 Also still open from before: a real name and domain, filling in the legal
 pages, and per-element timeline tracks for bindings.
 
-## Redesign (started 2026-11-12)
+## Redesign (2026-11-12)
 
-A new look for the landing page and the editor has been designed but not
-built. Everything about it - links to the two preview pages, the sources,
-the open decisions and the build order - is in `design/README.md`.
+The landing page, the editor and every other page were rebuilt in a new
+design on 2026-11-12, and the product was renamed to Beatframe. What was
+built, where the design sources are and what is still open is in
+`design/README.md`; the rules for working in the code are in `DESIGN.md`.

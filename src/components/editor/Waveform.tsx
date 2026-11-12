@@ -13,11 +13,11 @@ const BAR_GAP = 1;
 const SEEK_KEY_SECONDS = 5;
 
 // A canvas cannot read CSS variables cheaply per frame; these mirror the
-// tokens in globals.css (accent, an unlit violet, ink).
-const COLOR_PLAYED = "#a78bfa";
-const COLOR_UNPLAYED = "#3a3768";
-const COLOR_BEAT = "rgba(242, 240, 255, 0.45)";
-const COLOR_PLAYHEAD = "#f2f0ff";
+// tokens in globals.css (accent, ink-4, sig-beat, accent).
+const COLOR_PLAYED = "#3ee6c1";
+const COLOR_UNPLAYED = "#596070";
+const COLOR_BEAT = "rgba(255, 95, 196, 0.8)";
+const COLOR_PLAYHEAD = "#3ee6c1";
 
 /** Whose keyframe a timeline marker stands for. */
 export type MarkerOwner = "element" | "camera" | "look";
@@ -197,7 +197,7 @@ export function Waveform({
       aria-valuemax={Math.round(duration)}
       aria-valuenow={Math.round(seconds)}
       aria-valuetext={`${formatTime(seconds)} of ${formatTime(duration)}`}
-      className={`relative h-full min-h-12 w-full touch-none rounded-md bg-canvas shadow-scope-recessed outline-none focus-visible:ring-1 focus-visible:ring-accent ${
+      className={`ed__wave h-full w-full touch-none ${
         audioData ? "cursor-pointer" : ""
       }`}
       onPointerDown={(e) => {
@@ -240,8 +240,8 @@ export function Waveform({
         </div>
       )}
       {!audioData && (
-        <span className="absolute inset-0 flex items-center justify-center font-mono text-[11px] tracking-[0.08em] text-muted uppercase">
-          No track loaded
+        <span className="pf-note absolute inset-0 flex items-center justify-center px-4 text-center">
+          The waveform and your keyframes appear here once a track is loaded.
         </span>
       )}
     </div>

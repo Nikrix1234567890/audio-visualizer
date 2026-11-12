@@ -1,5 +1,7 @@
+import { TriangleAlert } from "lucide-react";
 import type { ReactNode } from "react";
 import { SiteFooter } from "@/components/SiteFooter";
+import { Rise } from "@/components/site/kit";
 
 /**
  * The frame of a legal page. Every legal text in this app is a DRAFT that
@@ -17,20 +19,24 @@ export function LegalPage({
   children: ReactNode;
 }) {
   return (
-    <div className="flex flex-1 flex-col">
-      <article className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-6 py-14">
-        <h1 className="text-3xl font-semibold tracking-tight text-ink">{title}</h1>
+    <div className="lp site">
+      <article className="lp-wrap legal">
+        <Rise>
+          <p className="lp-eyebrow">Legal</p>
+          <h1 className="lp-h2 legal__title">{title}</h1>
+        </Rise>
         {isDraft && (
-          <p className="rounded-2xl border border-accent-dim bg-surface px-5 py-4 text-sm leading-relaxed text-ink">
-            <strong>Draft.</strong> This page is a placeholder. The parts in
-            [square brackets] are missing, and the text has not been checked
-            by a lawyer. It must be completed before the site is opened to
-            the public.
+          <p className="pf-banner pf-banner--warning">
+            <TriangleAlert className="pf-i" aria-hidden />
+            <span>
+              <b>Draft.</b> This page is a placeholder. The parts in [square
+              brackets] are missing, and the text has not been checked by a
+              lawyer. It must be completed before the site is opened to the
+              public.
+            </span>
           </p>
         )}
-        <div className="flex flex-col gap-6 text-sm leading-relaxed text-muted [&_h2]:mb-2 [&_h2]:text-base [&_h2]:font-semibold [&_h2]:text-ink [&_li]:ml-5 [&_li]:list-disc [&_p+p]:mt-2">
-          {children}
-        </div>
+        <div className="legal__body">{children}</div>
       </article>
       <SiteFooter />
     </div>

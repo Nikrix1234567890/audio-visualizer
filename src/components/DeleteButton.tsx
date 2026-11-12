@@ -1,10 +1,20 @@
 "use client";
 
+import { Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 /** Sends a DELETE to `url` after asking once, then refreshes the page's data. */
-export function DeleteButton({ url, question }: { url: string; question: string }) {
+export function DeleteButton({
+  url,
+  question,
+  label = "Delete",
+}: {
+  url: string;
+  question: string;
+  /** What the button is called for screen readers, e.g. "Delete this video". */
+  label?: string;
+}) {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -24,9 +34,11 @@ export function DeleteButton({ url, question }: { url: string; question: string 
       type="button"
       onClick={remove}
       disabled={isDeleting}
-      className="shrink-0 rounded-md border border-line px-2.5 py-1.5 font-mono text-[11px] tracking-[0.06em] text-muted uppercase outline-none hover:border-red-400 hover:text-red-400 focus-visible:border-red-400 disabled:opacity-50"
+      aria-label={label}
+      title={label}
+      className={`pf-btn pf-btn--sm ${failed ? "pf-btn--danger" : "pf-btn--ghost pf-btn--icon del-btn"}`}
     >
-      {isDeleting ? "Deleting…" : failed ? "Failed - retry" : "Delete"}
+      {failed ? "Not deleted. Try again" : <Trash2 className="pf-i pf-i--sm" aria-hidden />}
     </button>
   );
 }

@@ -1,95 +1,116 @@
 ---
-name: Pulsefield
-description: Night-sky violet and cyan around a live 3D picture.
+name: Beatframe
+description: A dark studio in neutral graphite; the user's video is the only colourful thing on screen.
 colors:
-  canvas: "#0a0a18"
-  surface: "#121127"
-  surface-raised: "#1b1a38"
-  line: "#2b2952"
-  ink: "#f2f0ff"
-  muted: "#9794bd"
-  accent: "#a78bfa"
-  accent-dim: "#4a3d94"
-  accent-2: "#22d3ee"
+  bg-0: "#08090c"
+  bg-1: "#0c0d11"
+  bg-2: "#121419"
+  bg-3: "#1a1d24"
+  bg-4: "#232730"
+  line-1: "#1f232b"
+  line-2: "#2f3540"
+  line-3: "#4a5263"
+  ink-1: "#f4f5f7"
+  ink-2: "#b4b9c4"
+  ink-3: "#868d9c"
+  ink-4: "#596070"
+  cta: "#f4f5f7"
+  accent: "#3ee6c1"
+  sig-bass: "#ff6a3d"
+  sig-mid: "#b8e04a"
+  sig-high: "#4da6ff"
+  sig-level: "#e2e6ee"
+  sig-beat: "#ff5fc4"
+  premium: "#f2c260"
 typography:
   display:
-    fontFamily: "Sora, ui-sans-serif, system-ui, sans-serif"
-    fontWeight: 600
-    lineHeight: 1.05
+    fontFamily: "Bricolage Grotesque, Geist, ui-sans-serif, system-ui, sans-serif"
+    fontWeight: 700
+    lineHeight: 0.96
   body:
-    fontFamily: "Sora, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "0.9375rem"
-    lineHeight: 1.5
-  label:
-    fontFamily: "JetBrains Mono, ui-monospace, monospace"
-    fontSize: "0.6875rem"
-    letterSpacing: "0.08em"
+    fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "0.8125rem"
+    lineHeight: 1.54
+  data:
+    fontFamily: "Geist Mono, ui-monospace, monospace"
+    fontSize: "0.75rem"
 rounded:
-  panel: "16px"
-  button: "12px"
-  selector: "999px"
+  control: "8px"
+  card: "12px"
+  marketing-card: "20px"
 ---
 
-# Design System: Pulsefield
+# Design System: Beatframe
 
-"Pulsefield" is a working title; nobody has checked whether the name is free.
-It lives in one file, `remotion/brand.ts`.
-
-## Creative North Star: "Night Signal"
-
-A dark night sky with one signal running through it: violet that turns into
-cyan. The page stays quiet so the 3D picture is the brightest thing on it.
-This replaced the earlier "Patch Bay" look (black, graphite and amber, styled
-like synthesizer hardware), which the owner no longer wanted.
+The full system - tokens, every component with a live example and its rules,
+the brand book - lives in `design/` (start with `design/README.md` and
+`design/design-system/README.md`). This file is the short version for
+working in the code. It replaced the earlier "Night Signal" look (violet to
+cyan) on 2026-11-12.
 
 ## Where the look lives
 
-Every colour, shadow and font is a token in `src/app/globals.css`. Components
-only use the token names (`bg-canvas`, `bg-surface`, `bg-surface-raised`,
-`border-line`, `text-ink`, `text-muted`, `text-accent`, `border-accent-dim`).
-A new palette means editing that one block.
+- **Tokens**: `src/app/globals.css`. Every colour, shadow, radius and font
+  is a CSS variable there and a Tailwind colour (`bg-bg-2`, `text-ink-2`,
+  `border-line-1`). They mirror `design/design-system/tokens.json`.
+- **Components**: `src/app/components.css` holds the `pf-` classes
+  (`pf-btn`, `pf-scrub`, `pf-seg`, `pf-layer`, `pf-card` ...). It is
+  derived from `design/design-system/components/bundle.css` and loaded in
+  the CSS layer "components", so a Tailwind utility on the same element
+  wins.
+- **Layout**: `src/app/editor.css` (the editor shell, `ed-`/`ed__`) and
+  `src/app/site.css` (pages outside the editor, `lp-`, `db-`).
+- **Icons**: `lucide-react`, `className="pf-i"` (16px, stroke 1.75).
+- **Animation**: Motion (`motion/react`). `MotionProvider` in
+  `src/components/SiteChrome.tsx` makes every animation honour the
+  visitor's reduced-motion setting.
 
-Two colours are repeated outside the tokens because they are drawn on a
-canvas or inside a rendered video, where CSS variables do not reach: the
+Two things are drawn outside CSS and repeat token values by hand: the
 waveform colours in `src/components/editor/Waveform.tsx` and the watermark
 in `remotion/compositions/AudioVisualizer3D.tsx`.
 
+The names of the earlier look (`bg-canvas`, `bg-surface`, `text-muted`,
+`.glass`, `.bg-brand`, `.aurora` ...) still resolve to the new values so
+nothing breaks. Do not use them in new code; remove them where you touch a
+file.
+
 ## Rules
 
-- **Night first.** `canvas` is the page, `surface` a panel on it,
-  `surface-raised` a control on a panel, `line` every border between them.
-- **One signal.** `accent` (violet) means lit, active, selected - and nothing
-  else. Its unlit counterpart is `accent-dim`: an indicator that is off, a
-  track that is not filled. Do not use the accent as decoration.
-- **The gradient is the brand.** Violet to cyan (`.bg-brand`, `.text-brand`)
-  appears on the primary button of a page, in the wordmark and in headline
-  highlights - a few times per page, never as a panel background.
-- **Glow, not chrome.** Depth comes from soft glows (`.aurora` behind pages,
-  `.surface-texture` on panels, `shadow-glow-active` on lit controls), not
-  from bevels, rivets or textures.
-- **Glass only on pages.** `.glass` cards (translucent, blurred) belong on
-  the landing and pricing pages. Never put a blur over the editor's 3D
-  preview: blurring a WebGL canvas every frame costs frame rate.
-- **Labels are small mono caps.** Section labels, units and numeric readouts
-  use the mono font at 11px with wide tracking; everything else is Sora.
-- **Rounded, not pill-shaped.** Panels 16px, buttons 12px, small controls
-  6px; only the segmented selectors are fully round.
-- **Motion with a reason.** Sections rise in once as they scroll into view
-  (`.reveal`); controls only change colour and glow. Everything honours
-  `prefers-reduced-motion`.
+- **The picture is the colour.** Chrome is neutral graphite (`bg-0` to
+  `bg-4`). No gradient fills, no glows behind pages, no tinted panels.
+- **White means go.** The one main action of a view is the white `cta`
+  button ("Open the editor", "Export"). Never two on screen.
+- **Accent means lit.** `accent` marks what is selected, playing, focused or
+  switched on, and nothing else.
+- **Every signal has a colour.** Bass, mids, highs, level and beat each own
+  one colour (`sig-*`) everywhere they appear: the jack, the bar under a
+  scrub field, the dots on a layer, the beat ticks. Never use them for
+  anything else.
+- **Gold means Premium.** `premium` appears only where the paid plan does.
+- **Sentence case.** No all-caps labels; numbers the user can change are in
+  the mono face.
+- **Never blur or cover the stage.** It costs frame rate.
 
-## Components
+## The editor
 
-- **Fader** (`SliderRow`): thin track in `accent-dim`, filled in `accent`,
-  the value as a field you can type into. Next to the caption sit the audio
-  jack (round) and the keyframe switch (diamond); both light up in `accent`
-  when on.
-- **Segmented selector**: a round-ended row; the active segment is raised
-  and glows. A locked (Premium) segment is dimmed.
-- **Preview frame**: a `surface` panel with a recessed inner shadow around
-  the picture - no controls on it; playback lives in the transport bar.
-- **Timeline**: the waveform, played part in `accent`; beats as ticks along
-  the bottom, keyframes as diamonds along the top (the selected element's
-  filled, camera and look outlined).
-- **Primary button**: brand gradient, dark text. **Secondary button**:
-  `surface-raised` with a `line` border that turns `accent-dim` on hover.
+Its own top bar (`EditorAppBar`); the site's nav is hidden on `/editor`.
+Left is what you can add (`Library`: rail and panel), right is what is
+selected (`Inspector`: layers, then Element / Camera / Look), bottom is
+time (`Transport`: transport bar, waveform, one lane per animated setting).
+Export is a popover under the Export button (`ExportPopover`). The seams
+between the panels can be dragged; below 1024px everything stacks.
+
+A number is a scrub field (`SliderRow`): drag sideways, double-click to
+type. `BindableSlider` adds the audio jack and the keyframe diamond.
+
+## Motion
+
+Editor: short and functional - 120 to 180 ms, springs for the sliding pill
+of a segmented control and the tab line (`layoutId`), panels fold open with
+their height, popovers spring from their trigger. Nothing loops and nothing
+moves over the stage.
+
+Pages outside the editor: generous - reveals on scroll, a living picture of
+the editor in the hero, demos that react when they come into view. Animate
+`transform` and `opacity`; content is readable at rest and with reduced
+motion; looping work pauses off-screen.

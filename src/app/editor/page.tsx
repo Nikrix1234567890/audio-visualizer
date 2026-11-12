@@ -19,9 +19,9 @@ export default async function EditorPage({
   const sceneId = first(params.scene) ?? null;
 
   return (
-    // On large screens the editor fills exactly the space under the nav bar
-    // and never scrolls as a page; on small screens it stacks and scrolls.
-    <div className="flex flex-1 flex-col bg-canvas lg:min-h-0 lg:basis-0 lg:overflow-hidden">
+    // On large screens the editor fills the window and never scrolls as a
+    // page; on small screens it stacks and scrolls.
+    <div className="flex flex-1 flex-col bg-bg-1 lg:min-h-0 lg:basis-0 lg:overflow-hidden">
       <Editor
         // A different project or template is a fresh editor, not an update.
         key={`${projectId ?? ""}:${templateId ?? ""}:${sceneId ?? ""}`}

@@ -13,15 +13,9 @@ export function SelectRow({
   onChange: (value: string) => void;
 }) {
   return (
-    <label className="flex items-center justify-between gap-3">
-      <span className="font-mono text-[11px] tracking-[0.08em] text-muted uppercase">
-        {label}
-      </span>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="min-w-0 max-w-[60%] flex-1 rounded-md border border-line bg-canvas px-2 py-1.5 text-sm text-ink shadow-scope-recessed outline-none focus:border-accent"
-      >
+    <label className="pf-inlinefield">
+      <span className="pf-rowlabel">{label}</span>
+      <select value={value} onChange={(e) => onChange(e.target.value)} className="pf-select">
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}

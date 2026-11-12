@@ -1,5 +1,8 @@
 "use client";
 
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
+import { useState, type ReactNode } from "react";
 import { AUDIO_SOURCES } from "../../../remotion/scene/bindings";
 import {
   MAX_KEYFRAMES,
@@ -17,19 +20,23 @@ import { usePlayhead, usePlayheadTime } from "@/components/editor/Playhead";
 import { SegmentedSelector } from "@/components/ui/SegmentedSelector";
 import { SliderRow } from "@/components/ui/SliderRow";
 
+/** The name a signal's colour goes by in the stylesheet (`data-sig`). */
+export const signalName = (source: string) => (source === "treble" ? "high" : source);
+
 /**
- * A fader that can be patched to an audio signal and animated over time.
+ * A scrub field that can be patched to an audio signal and animated over
+ * time.
  *
- * The round jack next to the caption plugs the parameter into the audio;
- * once patched, a strip below the fader picks the signal and how far it
- * moves the value.
+ * The round jack right of the field plugs the parameter into the audio. Lit,
+ * it has the colour of its signal, and a bar under the field's fill shows
+ * how far the audio pushes the value. Clicking the jack opens a small panel
+ * to pick the signal and the amount, or to unplug it.
  *
- * The diamond next to it switches on keyframes. From then on the fader
- * shows the value at the playhead, and moving it sets a keyframe there -
- * so: go to a moment, set the value, go to another moment, set another
- * value, and the parameter travels between them. The strip below jumps
- * between keyframes, adds or removes the one at the playhead and picks how
- * the value moves on from it.
+ * The diamond switches on keyframes. From then on the field shows the value
+ * at the playhead, and changing it sets a keyframe there - so: go to a
+ * moment, set the value, go to another moment, set another value, and the
+ * parameter travels between them. The diamond is filled while a keyframe
+ * sits exactly at the playhead; clicking it adds or removes that keyframe.
  */
 export function BindableSlider({
   label,
@@ -56,64 +63,88 @@ export function BindableSlider({
   keyframes?: Keyframe[];
   /**
    * New keyframes, or null to stop animating. With `plain`, the plain
-   * setting is set in the same step (the value the fader showed when the
+   * setting is set in the same step (the value the field showed when the
    * animation was switched off).
    */
   onKeyframesChange?: (keyframes: Keyframe[] | null, plain?: number) => void;
 }) {
   const range = max - min;
-  const isPatched = Boolean(binding);
+  const [isPatchOpen, setIsPatchOpen] = useState(false);
 
-  const togglePatch = () => {
-    if (isPatched) {
-      onBindingChange(null);
+  const onJack = () => {
+    if (binding) {
+      setIsPatchOpen(!isPatchOpen);
       return;
     }
     // Start with a clearly visible swing: a quarter of the range, on a step.
     const amount = Math.max(step, Math.round((range * 0.25) / step) * step);
     onBindingChange({ source: "bass", amount: Number(amount.toFixed(4)) });
+    setIsPatchOpen(true);
   };
 
   const jack = (
     <button
       type="button"
-      aria-pressed={isPatched}
+      aria-expanded={binding ? isPatchOpen : undefined}
       aria-label={
-        isPatched ? `Stop ${label} reacting to audio` : `Make ${label} react to audio`
+        binding ? `${label} reacts to audio: change or unplug` : `Make ${label} react to audio`
       }
-      title={isPatched ? "Unplug from audio" : "React to audio"}
-      onClick={togglePatch}
-      className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border outline-none transition-colors hover:border-accent focus-visible:border-accent ${
-        isPatched ? "border-accent bg-accent-dim shadow-glow-active" : "border-line"
-      }`}
-    >
-      <span
-        className={`h-1.5 w-1.5 rounded-full ${isPatched ? "bg-accent" : "bg-line"}`}
-      />
-    </button>
+      title={binding ? "Reacts to audio" : "React to audio"}
+      data-sig={binding ? signalName(binding.source) : undefined}
+      onClick={onJack}
+      className="pf-jack"
+    />
   );
 
-  const patchStrip = binding && (
-    <div className="mt-1 flex flex-col gap-2 border-l border-accent-dim pl-3">
-      <SegmentedSelector
-        stretch
-        options={AUDIO_SOURCES.map((s) => ({ value: s.id, label: s.label }))}
-        value={binding.source}
-        onChange={(source) => onBindingChange({ ...binding, source })}
-      />
-      <SliderRow
-        label="Amount"
-        value={binding.amount}
-        min={-range}
-        max={range}
-        step={step}
-        unit={unit}
-        onChange={(amount) => onBindingChange({ ...binding, amount })}
-      />
-    </div>
+  const patch = (
+    <Fold isOpen={Boolean(binding) && isPatchOpen}>
+      {binding && (
+        <div className="pf-sub">
+          <div className="pf-sub__head">
+            {label} reacts to
+            <button
+              type="button"
+              className="pf-btn pf-btn--ghost pf-btn--sm"
+              onClick={() => {
+                onBindingChange(null);
+                setIsPatchOpen(false);
+              }}
+            >
+              Unplug
+            </button>
+          </div>
+          <div className="pf-sub__row">
+            {AUDIO_SOURCES.map((source) => (
+              <button
+                key={source.id}
+                type="button"
+                className="pf-signal"
+                data-sig={signalName(source.id)}
+                aria-pressed={binding.source === source.id}
+                onClick={() => onBindingChange({ ...binding, source: source.id })}
+              >
+                {source.label}
+              </button>
+            ))}
+          </div>
+          <SliderRow
+            label="Amount"
+            value={binding.amount}
+            min={-range}
+            max={range}
+            step={step}
+            unit={unit}
+            onChange={(amount) => onBindingChange({ ...binding, amount })}
+          />
+        </div>
+      )}
+    </Fold>
   );
 
-  // Not every fader can be animated (the Amount fader above, for one).
+  const signal = binding ? signalName(binding.source) : undefined;
+  const modulation = binding?.amount ?? 0;
+
+  // Not every field can be animated (counts and speeds, for one).
   if (!onKeyframesChange) {
     return (
       <SliderRow
@@ -125,42 +156,27 @@ export function BindableSlider({
         unit={unit}
         onChange={onChange}
         accessory={jack}
+        signal={signal}
+        modulation={modulation}
       >
-        {patchStrip}
+        {patch}
       </SliderRow>
     );
   }
 
+  const shared = { label, min, max, step, unit, jack, signal, modulation, onKeyframesChange };
+
   if (!keyframes || keyframes.length === 0) {
     return (
-      <StillSlider
-        label={label}
-        value={value}
-        min={min}
-        max={max}
-        step={step}
-        unit={unit}
-        onChange={onChange}
-        jack={jack}
-        onKeyframesChange={onKeyframesChange}
-      >
-        {patchStrip}
+      <StillSlider {...shared} value={value} onChange={onChange}>
+        {patch}
       </StillSlider>
     );
   }
 
   return (
-    <AnimatedSlider
-      label={label}
-      min={min}
-      max={max}
-      step={step}
-      unit={unit}
-      jack={jack}
-      keyframes={keyframes}
-      onKeyframesChange={onKeyframesChange}
-    >
-      {patchStrip}
+    <AnimatedSlider {...shared} keyframes={keyframes}>
+      {patch}
     </AnimatedSlider>
   );
 }
@@ -171,32 +187,35 @@ type SharedProps = {
   max: number;
   step: number;
   unit?: string;
-  jack: React.ReactNode;
+  jack: ReactNode;
+  signal: string | undefined;
+  modulation: number;
   onKeyframesChange: (keyframes: Keyframe[] | null, plain?: number) => void;
-  children: React.ReactNode;
+  children: ReactNode;
 };
 
-/** Not animated: a plain fader, plus the diamond that starts an animation. */
+/** Not animated: a plain field, plus the diamond that starts an animation. */
 function StillSlider({
   value,
   onChange,
   ...shared
 }: SharedProps & { value: number; onChange: (value: number) => void }) {
   const playhead = usePlayhead();
-  const { label, jack, onKeyframesChange, children, ...limits } = shared;
+  const { label, jack, onKeyframesChange, children, ...rest } = shared;
 
   return (
     <SliderRow
       label={label}
       value={value}
-      {...limits}
+      {...rest}
       onChange={onChange}
       accessory={
         <>
           {jack}
-          <Diamond
-            isLit={false}
-            label={`Animate ${label} over time`}
+          <button
+            type="button"
+            className="pf-key"
+            aria-label={`Animate ${label} over time`}
             title="Animate over time: sets a keyframe here"
             onClick={() =>
               onKeyframesChange([{ t: roundTime(playhead.now()), v: value, ease: "smooth" }])
@@ -210,15 +229,16 @@ function StillSlider({
   );
 }
 
-/** Animated: follows the playhead, and moving the fader sets a keyframe. */
+/** Animated: follows the playhead, and changing the field sets a keyframe. */
 function AnimatedSlider({
   keyframes,
   ...shared
 }: SharedProps & { keyframes: Keyframe[] }) {
   const playhead = usePlayhead();
-  // Subscribing keeps the fader in step with the playhead.
+  // Subscribing keeps the field in step with the playhead.
   const time = usePlayheadTime();
-  const { label, jack, onKeyframesChange, children, ...limits } = shared;
+  const [isOpen, setIsOpen] = useState(false);
+  const { label, jack, onKeyframesChange, children, ...rest } = shared;
 
   const shown = keyframeValue(keyframes, time);
   const indexHere = keyframeIndexAt(keyframes, time);
@@ -247,81 +267,86 @@ function AnimatedSlider({
     else onKeyframesChange(remaining);
   };
 
-  const stepButton =
-    "flex h-6 w-6 items-center justify-center rounded-md border border-line text-ink outline-none hover:border-accent-dim hover:text-accent focus-visible:border-accent disabled:cursor-not-allowed disabled:text-muted disabled:opacity-40 disabled:hover:border-line disabled:hover:text-muted";
-
   return (
     <SliderRow
       label={label}
       value={shown}
-      {...limits}
+      {...rest}
       onChange={setHere}
+      isActive={isOnKeyframe}
       accessory={
         <>
           {jack}
-          <Diamond
-            isLit
-            label={`Stop animating ${label}`}
-            title="Stop animating: removes every keyframe, keeps this value"
-            onClick={() => onKeyframesChange(null, shown)}
+          <button
+            type="button"
+            className="pf-key"
+            data-state={isOnKeyframe ? "at" : "on"}
+            aria-expanded={isOpen}
+            aria-label={`${label} is animated: show its keyframes`}
+            title={isOnKeyframe ? "A keyframe sits here" : "Animated over time"}
+            onClick={() => setIsOpen(!isOpen)}
           />
         </>
       }
     >
-      <div className="mt-1 flex flex-col gap-2 border-l border-accent-dim pl-3">
-        <div className="flex items-center gap-1.5">
+      <Fold isOpen={isOpen}>
+        <div className="pf-sub">
+          <div className="pf-sub__row">
+            <button
+              type="button"
+              className="pf-btn pf-btn--ghost pf-btn--icon pf-btn--sm"
+              disabled={!previous}
+              aria-label="Go to the previous keyframe"
+              title="Previous keyframe"
+              onClick={() => previous && playhead.seek(previous.t)}
+            >
+              <ChevronLeft className="pf-i pf-i--sm" aria-hidden />
+            </button>
+            <button
+              type="button"
+              className="pf-btn pf-btn--secondary pf-btn--sm"
+              aria-pressed={isOnKeyframe}
+              disabled={!isOnKeyframe && isFull}
+              title={isOnKeyframe ? "Remove the keyframe here" : "Add a keyframe here"}
+              onClick={toggleHere}
+            >
+              {isOnKeyframe ? "Remove keyframe" : "Add keyframe"}
+            </button>
+            <button
+              type="button"
+              className="pf-btn pf-btn--ghost pf-btn--icon pf-btn--sm"
+              disabled={!next}
+              aria-label="Go to the next keyframe"
+              title="Next keyframe"
+              onClick={() => next && playhead.seek(next.t)}
+            >
+              <ChevronRight className="pf-i pf-i--sm" aria-hidden />
+            </button>
+            <span className="pf-sub__count">
+              {(isOnKeyframe ? indexHere + 1 : "–") + " / " + keyframes.length}
+            </span>
+          </div>
+          <SegmentedSelector
+            stretch
+            label="How the value moves on from this keyframe"
+            options={KEYFRAME_EASES.map((e) => ({ value: e.id, label: e.label }))}
+            value={governing.ease}
+            onChange={(ease) =>
+              onKeyframesChange(
+                keyframes.map((key) => (key === governing ? { ...key, ease } : key)),
+              )
+            }
+          />
           <button
             type="button"
-            className={stepButton}
-            disabled={!previous}
-            aria-label="Go to the previous keyframe"
-            title="Previous keyframe"
-            onClick={() => previous && playhead.seek(previous.t)}
+            className="pf-btn pf-btn--ghost pf-btn--sm self-start"
+            title="Removes every keyframe and keeps the value shown"
+            onClick={() => onKeyframesChange(null, shown)}
           >
-            <Chevron direction="left" />
+            Stop animating
           </button>
-          <button
-            type="button"
-            aria-pressed={isOnKeyframe}
-            disabled={!isOnKeyframe && isFull}
-            title={isOnKeyframe ? "Remove the keyframe here" : "Add a keyframe here"}
-            onClick={toggleHere}
-            className={`flex h-6 flex-1 items-center justify-center gap-1.5 rounded-md border font-mono text-[10px] tracking-[0.06em] uppercase outline-none hover:border-accent focus-visible:border-accent disabled:opacity-40 ${
-              isOnKeyframe
-                ? "border-accent-dim text-accent"
-                : "border-line text-muted hover:text-ink"
-            }`}
-          >
-            <span
-              className={`h-1.5 w-1.5 rotate-45 ${isOnKeyframe ? "bg-accent" : "border border-muted"}`}
-            />
-            {isOnKeyframe ? "Keyframe" : "Add keyframe"}
-          </button>
-          <button
-            type="button"
-            className={stepButton}
-            disabled={!next}
-            aria-label="Go to the next keyframe"
-            title="Next keyframe"
-            onClick={() => next && playhead.seek(next.t)}
-          >
-            <Chevron direction="right" />
-          </button>
-          <span className="w-12 shrink-0 text-right font-mono text-[10px] tracking-[0.06em] text-muted tabular-nums">
-            {(isOnKeyframe ? indexHere + 1 : "–") + " / " + keyframes.length}
-          </span>
         </div>
-        <SegmentedSelector
-          stretch
-          options={KEYFRAME_EASES.map((e) => ({ value: e.id, label: e.label }))}
-          value={governing.ease}
-          onChange={(ease) =>
-            onKeyframesChange(
-              keyframes.map((key) => (key === governing ? { ...key, ease } : key)),
-            )
-          }
-        />
-      </div>
+      </Fold>
       {children}
     </SliderRow>
   );
@@ -330,45 +355,22 @@ function AnimatedSlider({
 /** Keyframe times are kept to the millisecond. */
 const roundTime = (seconds: number) => Math.round(seconds * 1000) / 1000;
 
-function Diamond({
-  isLit,
-  label,
-  title,
-  onClick,
-}: {
-  isLit: boolean;
-  label: string;
-  title: string;
-  onClick: () => void;
-}) {
+/** Opens and closes what sits under a field with a short height animation. */
+function Fold({ isOpen, children }: { isOpen: boolean; children: ReactNode }) {
   return (
-    <button
-      type="button"
-      aria-pressed={isLit}
-      aria-label={label}
-      title={title}
-      onClick={onClick}
-      className="group/diamond flex h-4 w-4 shrink-0 items-center justify-center outline-none"
-    >
-      <span
-        className={`h-2.5 w-2.5 rotate-45 border transition-colors group-hover/diamond:border-accent group-focus-visible/diamond:border-accent ${
-          isLit ? "border-accent bg-accent-dim shadow-glow-active" : "border-line"
-        }`}
-      />
-    </button>
-  );
-}
-
-function Chevron({ direction }: { direction: "left" | "right" }) {
-  return (
-    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden>
-      <path
-        d={direction === "left" ? "M6.5 2L3.5 5l3 3" : "M3.5 2l3 3-3 3"}
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+    <AnimatePresence initial={false}>
+      {isOpen && (
+        <motion.div
+          key="fold"
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: "auto", opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          transition={{ duration: 0.16, ease: [0.3, 0.7, 0.3, 1] }}
+          style={{ overflow: "hidden" }}
+        >
+          {children}
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

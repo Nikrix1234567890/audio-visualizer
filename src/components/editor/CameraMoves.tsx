@@ -27,12 +27,10 @@ export function CameraMoves({
   const [duration, setDuration] = useState(4);
 
   return (
-    <div className="flex flex-col gap-3 border-t border-line pt-3">
-      <span className="font-mono text-[10px] tracking-[0.12em] text-muted uppercase">
-        Camera moves
-      </span>
+    <>
       <SegmentedSelector
         stretch
+        label="How long the move takes"
         options={DURATIONS.map((seconds) => ({ value: seconds, label: `${seconds} s` }))}
         value={duration}
         onChange={setDuration}
@@ -46,17 +44,17 @@ export function CameraMoves({
               onClick={() =>
                 onSceneChange(applyCameraMove(scene, move, playhead.now(), duration))
               }
-              className="w-full rounded-md border border-line px-2 py-1.5 font-mono text-[11px] tracking-[0.06em] text-muted uppercase outline-none hover:border-accent-dim hover:text-accent focus-visible:border-accent"
+              className="pf-btn pf-btn--secondary pf-btn--sm pf-btn--block"
             >
               {move.label}
             </button>
           </li>
         ))}
       </ul>
-      <p className="text-xs text-muted">
+      <p className="pf-note">
         Starts at the playhead and takes the chosen time. Go to another
         moment and add the next one.
       </p>
-    </div>
+    </>
   );
 }

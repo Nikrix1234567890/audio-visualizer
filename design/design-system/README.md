@@ -69,10 +69,29 @@ Real copy to reuse:
 
 ## Motion
 
-- Controls change colour in 120ms. Things that move (switch thumb, menu opening, card lift) take 140 to 180ms with `cubic-bezier(.3,.7,.3,1)`. Nothing in the editor takes longer than 200ms.
-- Marketing pages: sections may rise 16px and fade in once, 500ms, staggered 80ms. The hero's editor window plays a real loop. That is all the motion on the page.
-- The only looping animations in the interface are the live dot on a "Rendering" badge and values moving with the music.
-- Everything honours `prefers-reduced-motion`: no movement, changes are instant, videos do not autoplay.
+Built with Motion (`motion/react`). A `MotionConfig` with `reducedMotion="user"` wraps the app, so every animation falls back to a plain fade for people who ask for less motion.
+
+In the editor, motion is short and explains what happened:
+
+- Controls change colour in 120ms. The pill of a SegmentedControl and the line under Tabs slide to the new choice (`layoutId`, spring 520 / 40).
+- Sections, the SignalPatch panel and the keyframe panel fold open with their height in 160ms.
+- Popovers, dialogs and the first-visit card spring in from their trigger (stiffness 380 to 520, damping 32 to 40) and leave faster than they came.
+- Nothing loops except the live dot on a "Rendering" badge and values moving with the music. Nothing ever animates over the stage.
+
+Outside the editor, motion is generous and shows the product:
+
+- The hero headline arrives word by word; the app window settles flat as the page scrolls; inside it the editor is alive: meter, modulation bars, playhead.
+- Sections, cards and rows rise in with a stagger when they scroll into view. Template cards lift on hover and play their loop.
+- Filter chips share one sliding pill, and the grid re-flows when the filter changes.
+- Feature demos react when they come into view or are hovered: a jack lights up, a value travels between two keyframes, the frame changes format.
+- FAQ answers open with their height.
+
+Rules for all of it:
+
+- Animate `transform` and `opacity` (and layout). Never animate blur, never blur or cover the live 3D picture.
+- Content is complete at rest. No text is hidden until an animation runs, and every page reads the same with reduced motion.
+- Looping work pauses while it is off-screen.
+- One strong moment per section. If two things compete, the second one only fades.
 
 ## States
 
@@ -139,4 +158,4 @@ Pricing page: headline, PricingCards, CompareTable, FAQ, closing call. Dashboard
 
 - The tokens map one to one to CSS variables in `src/app/globals.css` and to Tailwind theme colours (`bg-bg-2`, `text-ink-2`, `border-line-1`). Components use token names only; a raw hex value in a component is a bug.
 - Two colours are drawn on a canvas or inside the rendered video and cannot read CSS variables: the waveform (`ink-4` and `accent`) and the watermark. Keep them in one constants file next to the tokens.
-- `components/bundle.css` in this system is the reference for every measurement. Port it component by component into `src/components/ui`; do not load it in the app.
+- `components/bundle.css` in this system is the reference for every measurement. The app's `src/app/components.css` is derived from it (without the preview scaffolding); change both together.

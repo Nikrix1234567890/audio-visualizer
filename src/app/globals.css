@@ -1,174 +1,225 @@
 @import "tailwindcss";
+@import "./components.css" layer(components);
+@import "./site.css" layer(components);
+@import "./editor.css" layer(components);
 
-/* The whole look lives in these tokens (see DESIGN.md, "Night Signal").
-   Changing the palette means changing this block and nothing else. */
+/* The whole look lives in these tokens (see design/design-system/README.md).
+   Components use the token names only; a raw hex value in a component is a
+   bug. The values mirror design/design-system/tokens.json. */
 :root {
-  /* Night: the page, panels on it, raised controls, and the lines between. */
-  --canvas: #0a0a18;
-  --surface: #121127;
-  --surface-raised: #1b1a38;
-  --line: #2b2952;
-  --ink: #f2f0ff;
-  --muted: #9794bd;
+  color-scheme: dark;
 
-  /* Signal: one violet accent, its dim "unlit" version, and the cyan it
-     runs into in the brand gradient. */
-  --accent: #a78bfa;
-  --accent-dim: #4a3d94;
-  --accent-2: #22d3ee;
-  --brand-gradient: linear-gradient(100deg, #8b5cf6 0%, #6d8cff 50%, #22d3ee 100%);
+  /* Grounds, from the deepest well to a hovered control. */
+  --bg-0: #08090c;
+  --bg-1: #0c0d11;
+  --bg-2: #121419;
+  --bg-3: #1a1d24;
+  --bg-4: #232730;
+  --fill-1: rgba(255, 255, 255, 0.04);
+  --fill-2: rgba(255, 255, 255, 0.08);
 
-  --background: var(--canvas);
-  --foreground: var(--ink);
+  /* Lines: between regions, around controls, hovered. */
+  --line-1: #1f232b;
+  --line-2: #2f3540;
+  --line-3: #4a5263;
+
+  /* Text. ink-4 is for marks only, never text. */
+  --ink-1: #f4f5f7;
+  --ink-2: #b4b9c4;
+  --ink-3: #868d9c;
+  --ink-4: #596070;
+
+  /* The one primary action of a view is white. */
+  --cta: #f4f5f7;
+  --cta-hover: #ffffff;
+  --on-cta: #08090c;
+
+  /* Accent ("Phosphor"): lit, selected, playing, focused. */
+  --accent: #3ee6c1;
+  --accent-hover: #74f0d5;
+  --accent-soft: #0e2925;
+  --accent-line: #1f5e52;
+  --on-accent: #04130f;
+
+  /* One fixed colour per audio signal, everywhere. */
+  --sig-bass: #ff6a3d;
+  --sig-mid: #b8e04a;
+  --sig-high: #4da6ff;
+  --sig-level: #e2e6ee;
+  --sig-beat: #ff5fc4;
+
+  --success: #7ddc6f;
+  --warning: #f5a524;
+  --danger: #ff6b6b;
+  --danger-soft: #2b1416;
+  --danger-line: #6b2a2e;
+
+  /* Gold appears only where Premium does. */
+  --premium: #f2c260;
+  --premium-soft: #2a2112;
+  --premium-line: #6e5626;
+
+  --scrim: rgba(4, 5, 8, 0.72);
+
+  --shadow-1: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 0 0 1px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.4);
+  --shadow-3: 0 0 0 1px rgba(0, 0, 0, 0.5), 0 32px 80px rgba(0, 0, 0, 0.6), 0 8px 24px rgba(0, 0, 0, 0.45);
+  --shadow-well: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+  --glow-accent: 0 0 0 1px rgba(62, 230, 193, 0.5), 0 0 28px rgba(62, 230, 193, 0.22);
+  --focus-ring: 0 0 0 2px #0c0d11, 0 0 0 4px #3ee6c1;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-24: 96px;
+  --space-32: 128px;
+
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 20px;
+  --radius-full: 999px;
+
+  --control-sm: 24px;
+  --control-md: 32px;
+  --control-lg: 40px;
+  --control-xl: 48px;
+  --appbar-h: 48px;
+  --rail-w: 56px;
+  --content-max: 1200px;
+
+  --z-sticky: 100;
+  --z-popover: 200;
+  --z-modal: 300;
+  --z-toast: 400;
+
+  /* The three families are loaded in layout.tsx. */
+  --font-display: var(--font-bricolage), var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Names from the earlier look, kept so pages that have not been rebuilt
+     yet pick up the new colours. Do not use them in new code. */
+  --canvas: var(--bg-1);
+  --surface: var(--bg-2);
+  --surface-raised: var(--bg-3);
+  --line: var(--line-2);
+  --ink: var(--ink-1);
+  --muted: var(--ink-2);
+  --accent-dim: var(--accent-line);
+  --accent-2: var(--accent);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-bg-0: var(--bg-0);
+  --color-bg-1: var(--bg-1);
+  --color-bg-2: var(--bg-2);
+  --color-bg-3: var(--bg-3);
+  --color-bg-4: var(--bg-4);
+  --color-fill-1: var(--fill-1);
+  --color-fill-2: var(--fill-2);
+  --color-line-1: var(--line-1);
+  --color-line-2: var(--line-2);
+  --color-line-3: var(--line-3);
+  --color-ink-1: var(--ink-1);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-ink-4: var(--ink-4);
+  --color-cta: var(--cta);
+  --color-on-cta: var(--on-cta);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-line: var(--accent-line);
+  --color-on-accent: var(--on-accent);
+  --color-sig-bass: var(--sig-bass);
+  --color-sig-mid: var(--sig-mid);
+  --color-sig-high: var(--sig-high);
+  --color-sig-level: var(--sig-level);
+  --color-sig-beat: var(--sig-beat);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-premium: var(--premium);
+  --color-premium-soft: var(--premium-soft);
+  --color-premium-line: var(--premium-line);
 
+  /* Earlier names (see above). */
+  --color-background: var(--bg-1);
+  --color-foreground: var(--ink-1);
   --color-canvas: var(--canvas);
   --color-surface: var(--surface);
   --color-surface-raised: var(--surface-raised);
   --color-line: var(--line);
   --color-ink: var(--ink);
   --color-muted: var(--muted);
-  --color-accent: var(--accent);
   --color-accent-dim: var(--accent-dim);
   --color-accent-2: var(--accent-2);
 
-  --font-sans: var(--font-display);
-  --font-mono: var(--font-code);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --font-display: var(--font-display);
 
-  --shadow-control-raised: 0 1px 0 rgba(255, 255, 255, 0.06) inset, 0 4px 14px rgba(4, 3, 20, 0.5);
-  --shadow-scope-recessed: inset 0 2px 14px rgba(3, 2, 16, 0.65);
-  --shadow-glow-active: 0 0 18px rgba(139, 92, 246, 0.55);
+  --shadow-control-raised: var(--shadow-1);
+  --shadow-scope-recessed: var(--shadow-well);
+  --shadow-glow-active: var(--glow-accent);
+  --shadow-float: var(--shadow-2);
+  --shadow-window: var(--shadow-3);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  background: var(--bg-1);
+  color: var(--ink-1);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-/* The brand gradient as a fill (primary buttons) and as text. */
-.bg-brand {
-  background-image: var(--brand-gradient);
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]) {
+  cursor: pointer;
 }
 
-.text-brand {
-  background-image: var(--brand-gradient);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-/* Panel background: a faint glow from the top left instead of a flat fill. */
-.surface-texture {
-  background-image:
-    radial-gradient(120% 80% at 0% 0%, rgba(139, 92, 246, 0.09), transparent 60%),
-    radial-gradient(90% 70% at 100% 100%, rgba(34, 211, 238, 0.05), transparent 60%);
-}
-
-/* Glass: for cards that sit on the glowing page background (never over the
-   3D preview - blurring a WebGL canvas every frame is expensive). */
-.glass {
-  background: rgba(255, 255, 255, 0.035);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
-}
-
-/* The page-wide glow behind the landing and pricing pages. */
-.aurora {
-  background-image:
-    radial-gradient(60% 50% at 15% 0%, rgba(139, 92, 246, 0.28), transparent 70%),
-    radial-gradient(50% 45% at 90% 10%, rgba(34, 211, 238, 0.16), transparent 70%),
-    radial-gradient(70% 60% at 50% 100%, rgba(109, 140, 255, 0.12), transparent 70%);
-}
-
-/* Sections that rise into place as they scroll into view (see Reveal.tsx). */
-.reveal {
-  opacity: 0;
-  transform: translateY(24px);
-  transition:
-    opacity 700ms ease,
-    transform 700ms cubic-bezier(0.2, 0.7, 0.2, 1);
-}
-
-.reveal.is-visible {
-  opacity: 1;
-  transform: none;
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .reveal {
-    opacity: 1;
-    transform: none;
-    transition: none;
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
-/* Editor shell. Small screens: preview, transport and settings stacked in
-   that order. Large screens: settings left, preview right, transport along
-   the bottom, with draggable seams between them (sizes come from the
-   --sidebar-w / --transport-h variables set by the Editor component). */
-.editor-grid {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  min-height: 0;
+/* Helpers of the earlier look, redefined in the new one so pages that have
+   not been rebuilt yet still fit in. Do not use them in new code. */
+.bg-brand {
+  background-color: var(--cta);
 }
 
-.editor-area-preview {
-  order: 1;
+.text-brand {
+  color: var(--accent);
 }
 
-.editor-area-transport {
-  order: 2;
+.surface-texture,
+.aurora {
+  background-image: none;
 }
 
-.editor-area-side {
-  order: 3;
-  scrollbar-color: var(--line) transparent;
-  scrollbar-width: thin;
-}
-
-.editor-handle {
-  display: none;
-}
-
-@media (min-width: 1024px) {
-  .editor-grid {
-    display: grid;
-    grid-template-columns: var(--sidebar-w) 7px minmax(0, 1fr);
-    grid-template-rows: minmax(0, 1fr) 7px var(--transport-h);
-    grid-template-areas:
-      "side vh prev"
-      "hh hh hh"
-      "trans trans trans";
-  }
-
-  .editor-area-side {
-    grid-area: side;
-  }
-
-  .editor-area-preview {
-    grid-area: prev;
-  }
-
-  .editor-area-transport {
-    grid-area: trans;
-  }
-
-  .editor-handle {
-    display: block;
-  }
-
-  .editor-handle-v {
-    grid-area: vh;
-  }
-
-  .editor-handle-h {
-    grid-area: hh;
-  }
+.glass {
+  background: var(--bg-2);
+  border: 1px solid var(--line-1);
 }

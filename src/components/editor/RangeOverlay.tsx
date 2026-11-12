@@ -85,9 +85,9 @@ export function RangeOverlay({
   };
 
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-md">
-      <div className="absolute inset-y-0 left-0 bg-canvas/70" style={{ width: `${from * 100}%` }} />
-      <div className="absolute inset-y-0 right-0 bg-canvas/70" style={{ width: `${(1 - to) * 100}%` }} />
+    <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[6px]">
+      <div className="absolute inset-y-0 left-0 bg-bg-0/70" style={{ width: `${from * 100}%` }} />
+      <div className="absolute inset-y-0 right-0 bg-bg-0/70" style={{ width: `${(1 - to) * 100}%` }} />
       {edge("start")}
       {edge("end")}
     </div>

@@ -1,9 +1,9 @@
-# Pulsefield
+# Beatframe
 
 Turn a song into an audio-reactive 3D video, in the browser. Build a scene
 from elements, wire it to the music, animate it over time and render an MP4.
 
-"Pulsefield" is a working title.
+The owner chose the name "Beatframe" on 2026-11-12; trademark and domain are not checked yet.
 
 - **Picking this project up?** Start with [HANDOVER.md](HANDOVER.md): setup,
   commands, where things are, what is and is not verified.
