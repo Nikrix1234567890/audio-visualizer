@@ -3,7 +3,9 @@
 import type { MediaUtilsAudioData } from "@remotion/media-utils";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getTrackAnalysis } from "../../../remotion/audio/analysis";
+import { RangeOverlay } from "@/components/editor/RangeOverlay";
 import { TimeDiamond, type TimelineView } from "@/components/editor/TimeDiamond";
+import type { ExportRange } from "@/lib/visualizerSettings";
 
 const PEAK_BUCKETS = 8000;
 const BAR_WIDTH = 2;
@@ -80,6 +82,8 @@ export function Waveform({
   onSeek,
   markers,
   onMoveMarker,
+  range,
+  onRangeChange,
 }: {
   audioData: MediaUtilsAudioData | null;
   frame: number;
@@ -89,6 +93,9 @@ export function Waveform({
   onSeek: (frame: number) => void;
   markers: TimelineMarker[];
   onMoveMarker: (owner: MarkerOwner, from: number, to: number) => void;
+  /** The section that will be exported, or null for the whole track. */
+  range: ExportRange | null;
+  onRangeChange: (range: ExportRange) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -210,6 +217,9 @@ export function Waveform({
       }}
     >
       <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
+      {audioData && range && (
+        <RangeOverlay range={range} view={view} duration={duration} onChange={onRangeChange} />
+      )}
       {audioData && (
         // The combined row: one diamond per moment at which the selected
         // element, the camera or the look has a keyframe.

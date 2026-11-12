@@ -4,14 +4,15 @@ import path from "node:path";
 import { renderStill, selectComposition } from "@remotion/renderer";
 import { createFileToken } from "@/lib/fileAccess";
 import { getFreePort } from "@/lib/freePort";
-import { enqueueRender } from "@/lib/renderQueue";
 import { renderGl } from "@/lib/renderSettings";
+import { inRenderTurn } from "@/lib/renderWorker";
 import { getAbsolutePath } from "@/lib/storage";
 import type { SceneDocument } from "../../remotion/scene/definitions";
 
 // A small still of every saved project, shown in the dashboard. It is
 // drawn by the same composition as the videos, after the project was
-// saved, in the render queue - so it never competes with a running render.
+// saved, when this process is not drawing anything else - so it never
+// competes with a running render here.
 
 const BUNDLE_DIR = path.resolve(process.cwd(), ".remotion-bundle");
 /** The moment of the track the picture shows (or its last frame, if shorter). */
@@ -36,7 +37,7 @@ export function queueProjectThumbnail({
 }) {
   if (!fs.existsSync(BUNDLE_DIR)) return;
 
-  enqueueRender(async () => {
+  void inRenderTurn(async () => {
     try {
       // The render browser has no login cookie; the token lets it read
       // the files of the project's owner.

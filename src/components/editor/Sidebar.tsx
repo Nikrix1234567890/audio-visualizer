@@ -43,6 +43,7 @@ import {
 import { BindableSlider } from "@/components/editor/BindableSlider";
 import { CameraMoves } from "@/components/editor/CameraMoves";
 import { ElementList } from "@/components/editor/ElementList";
+import { ExportLength } from "@/components/editor/ExportLength";
 import { MyTemplates } from "@/components/editor/MyTemplates";
 import { Thumbnail } from "@/components/ui/Thumbnail";
 import { ParamControls } from "@/components/editor/ParamControls";
@@ -54,6 +55,7 @@ import {
   isResolutionAllowed,
   type TierName,
 } from "@/lib/tiers";
+import type { ExportRange } from "@/lib/visualizerSettings";
 
 export type CollapsedSections = Record<string, boolean>;
 
@@ -109,6 +111,9 @@ export function Sidebar({
   onAspectChange,
   tier,
   frameRate,
+  exportRange,
+  onExportRangeChange,
+  trackSeconds,
   onFrameRateChange,
   collapsed,
   onToggleSection,
@@ -132,6 +137,11 @@ export function Sidebar({
   /** The visitor's plan: decides which output options are locked. */
   tier: TierName;
   frameRate: FrameRate;
+  /** The section of the track to export, or null for all of it. */
+  exportRange: ExportRange | null;
+  onExportRangeChange: (range: ExportRange | null) => void;
+  /** Length of the loaded track in seconds; 0 without one. */
+  trackSeconds: number;
   onFrameRateChange: (value: FrameRate) => void;
   collapsed: CollapsedSections;
   onToggleSection: (id: string) => void;
@@ -445,6 +455,11 @@ export function Sidebar({
             value={frameRate}
             onChange={onFrameRateChange}
             onLocked={() => setShowUpgrade(true)}
+          />
+          <ExportLength
+            range={exportRange}
+            duration={trackSeconds}
+            onChange={onExportRangeChange}
           />
           <p className="font-mono text-[11px] tracking-[0.06em] text-muted tabular-nums">
             {outputSize(aspect, resolution).width} x{" "}

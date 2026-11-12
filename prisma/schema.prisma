@@ -115,4 +115,18 @@ model RenderJob {
   errorMessage String?
   createdAt    DateTime     @default(now())
   completedAt  DateTime?
+
+  // The queue (see src/lib/renderQueue.ts). A worker takes the oldest
+  // QUEUED job by writing its own id here, and keeps `heartbeatAt` fresh
+  // while it draws. A job whose worker went silent is handed out again.
+  workerId    String?
+  heartbeatAt DateTime?
+  startedAt   DateTime?
+  // How often a worker has started on this job.
+  attempts    Int       @default(0)
+  // Where the render browser reaches the app, as seen when the job was
+  // created (a worker's INTERNAL_URL wins over it).
+  appOrigin   String?
+
+  @@index([status, createdAt])
 }

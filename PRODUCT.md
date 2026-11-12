@@ -39,7 +39,8 @@ Single-session workflow: open the site, drag/select an audio file, watch the liv
 - Camera moves (push in, pull out, crane, zoom punch, dolly zoom, impact) are buttons that write ordinary camera keyframes starting at the playhead.
 - The timeline can be zoomed (up to 16x) and shows one row of keyframes per animated setting under the waveform; a keyframe can be clicked, dragged, and Alt-dragged to copy.
 - A Lyrics element shows timed lines ("0:12 text", one per row; .lrc times work too) that fade in and out.
-- Renders run one after another in a queue (three unfinished per account, twenty waiting overall); the editor and the dashboard show the position and progress.
+- Renders run one after another in a queue (three unfinished per account, twenty waiting overall); the editor and the dashboard show the position and progress. The queue is kept in the database: it survives a restart of the server, and a render that was interrupted starts over by itself.
+- Under "Output" the export can be a section instead of the whole track: 15, 30 or 60 seconds from the playhead, or any start and end (at least one second). The section is shown on the timeline, where its two edges can be dragged. The video and its sound are exactly that part of the song. The choice belongs to the editing session, not to the saved project.
 - `/account` shows the plan, changes the password and deletes the account with all its files; with a subscription it opens the Stripe customer portal.
 - Template cards play a short silent loop on hover (`public/previews`, made by `pnpm previews`); the landing page shows a live 3D scene in its hero.
 - `pnpm test` runs the automated checks of the scene logic and the server rules.

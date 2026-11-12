@@ -65,6 +65,7 @@ import {
   sanitizeAspect,
   sanitizeFrameRate,
   sanitizeResolution,
+  type ExportRange,
 } from "@/lib/visualizerSettings";
 
 // The preview always runs at 60 frames per second: at 30 fast-moving
@@ -176,6 +177,19 @@ export function Editor({
   // Renders ahead of ours in the queue; null while ours is being drawn.
   const [rendersAhead, setRendersAhead] = useState<number | null>(null);
   const [renderedUrl, setRenderedUrl] = useState<string | null>(null);
+  // The section of the track to export. Remembered together with the track
+  // it was chosen for, so loading another track starts with all of it.
+  const [chosenRange, setChosenRange] = useState<{
+    trackUrl: string;
+    range: ExportRange;
+  } | null>(null);
+  const exportRange =
+    track && chosenRange?.trackUrl === track.url ? chosenRange.range : null;
+  const setExportRange = useCallback(
+    (range: ExportRange | null) =>
+      setChosenRange(range && track ? { trackUrl: track.url, range } : null),
+    [track],
+  );
   const [error, setError] = useState<string | null>(null);
 
   // Saved-project state.
@@ -776,6 +790,7 @@ export function Editor({
           resolution,
           aspect,
           fps: frameRate,
+          range: exportRange,
         }),
       });
       if (!renderResponse.ok) {
@@ -790,7 +805,7 @@ export function Editor({
     } finally {
       setIsRendering(false);
     }
-  }, [track, scene, resolution, aspect, frameRate, ensureAudioKey, pollJobStatus]);
+  }, [track, scene, resolution, aspect, frameRate, exportRange, ensureAudioKey, pollJobStatus]);
 
   const handleSave = useCallback(async () => {
     if (!track) return;
@@ -902,6 +917,9 @@ export function Editor({
           setFrameRate(next);
           markUnsaved();
         }}
+        exportRange={exportRange}
+        onExportRangeChange={setExportRange}
+        trackSeconds={track ? track.durationInFrames / FPS : 0}
         collapsed={collapsed}
         onToggleSection={toggleSection}
         render={{
@@ -978,6 +996,8 @@ export function Editor({
         onMoveMarker={moveMarker}
         lanes={lanes}
         onMoveKey={moveKey}
+        range={exportRange}
+        onRangeChange={setExportRange}
       />
     </div>
     {showShortcuts && <ShortcutsDialog onClose={() => setShowShortcuts(false)} />}

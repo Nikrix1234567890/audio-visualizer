@@ -11,7 +11,13 @@ import {
   isFrameRateAllowed,
   isResolutionAllowed,
 } from "../src/lib/tiers";
-import { sanitizeAspect, sanitizeFrameRate, sanitizeResolution } from "../src/lib/visualizerSettings";
+import {
+  frameRangeFor,
+  sanitizeAspect,
+  sanitizeFrameRate,
+  sanitizeRange,
+  sanitizeResolution,
+} from "../src/lib/visualizerSettings";
 
 test("free plan: 720p and 30 fps only, with a watermark", () => {
   assert.ok(isResolutionAllowed("FREE", "720p"));
@@ -41,6 +47,26 @@ test("settings from the client fall back to defaults when unknown", () => {
   assert.equal(sanitizeAspect("9:16"), "9:16");
   assert.equal(sanitizeFrameRate(24), 60);
   assert.equal(sanitizeFrameRate(30), 30);
+});
+
+test("export section: anything that is not a proper section means the whole track", () => {
+  assert.deepEqual(sanitizeRange({ start: 3, end: 18 }), { start: 3, end: 18 });
+  assert.deepEqual(sanitizeRange({ start: -5, end: 10 }), { start: 0, end: 10 });
+  assert.equal(sanitizeRange(null), null);
+  assert.equal(sanitizeRange({ start: 3 }), null);
+  assert.equal(sanitizeRange({ start: "3", end: 18 }), null);
+  assert.equal(sanitizeRange({ start: 10, end: 10.5 }), null);
+  assert.equal(sanitizeRange({ start: 10, end: 3 }), null);
+  assert.equal(sanitizeRange({ start: 0, end: Infinity }), null);
+});
+
+test("export section: frames are cut to the track's length", () => {
+  // 15 seconds from second 3, at 30 fps, in a 60-second track.
+  assert.deepEqual(frameRangeFor({ start: 3, end: 18 }, 30, 1800), [90, 539]);
+  // Reaching past the end stops at the last frame.
+  assert.deepEqual(frameRangeFor({ start: 50, end: 80 }, 30, 1800), [1500, 1799]);
+  // Starting after the end is not a section at all.
+  assert.equal(frameRangeFor({ start: 61, end: 70 }, 30, 1800), null);
 });
 
 test("payment webhook: only a correctly signed, fresh message is accepted", () => {

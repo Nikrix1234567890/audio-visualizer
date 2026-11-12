@@ -119,8 +119,9 @@ pnpm build
 sudo systemctl restart pulsefield
 ```
 
-A restart ends renders that are running; they are marked failed and have to
-be started again.
+The render queue is in the database, so a restart loses no video: renders
+that were waiting continue right away, and the one that was being drawn
+starts over about a minute later (a job is started twice at most).
 
 ## Backups
 
@@ -146,9 +147,16 @@ the secrets and should be kept safe too.
 - **Files:** all reading and writing goes through `src/lib/storage.ts`;
   swapping the disk for object storage (S3, R2) means rewriting that one
   file.
-- **Several servers:** the render queue (`src/lib/renderQueue.ts`) and the
-  request limits (`src/lib/rateLimit.ts`) live in one process's memory and
-  would need a shared store.
+- **Several servers:** the request limits (`src/lib/rateLimit.ts`) live in
+  one process's memory and would need a shared store. The render queue is
+  already shared: it is the database (`src/lib/renderQueue.ts`).
+- **Render workers:** `pnpm worker` on another machine takes jobs from the
+  same queue without serving the website. It needs the same database and
+  the same storage folder as the web server (today both are local files,
+  so this only works once they are swapped or shared), the render bundle,
+  the same `AUTH_SECRET`, and `INTERNAL_URL` set to where it reaches the
+  app. Set `RENDER_WORKER="off"` on the web server if it should not render
+  itself. Tried on one machine only, never across two.
 
 ## With Docker instead
 

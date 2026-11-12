@@ -2,7 +2,8 @@
 
 For the agent (or person) picking this project up on another machine.
 Written on 2026-11-11 and extended in the night to 2026-11-12, at the end
-of a long session on a Windows PC; the next session is on a Mac.
+of a long session on a Windows PC. Continued on 2026-11-12 on a Mac
+(MacBook Air, M4), where the project was set up from a fresh checkout.
 
 ## What this is
 
@@ -102,7 +103,7 @@ pnpm tier you@example.com PREMIUM
 | --- | --- |
 | `pnpm dev` | Development server on port 3000 |
 | `pnpm build` / `pnpm start` | Production build and server |
-| `pnpm test` | 22 checks of scene logic, server rules and account helpers |
+| `pnpm test` | 29 checks of scene logic, server rules, account helpers and the render queue (the queue checks use a throw-away database) |
 | `pnpm lint` | ESLint |
 | `pnpm exec tsc --noEmit` | Type check |
 | `pnpm remotion:bundle` | Rebuild the render bundle - **needed after every change under `remotion/`**, or server renders show the old code |
@@ -110,6 +111,8 @@ pnpm tier you@example.com PREMIUM
 | `pnpm previews [ids]` | Re-render the hover loops of templates (rebuilds the bundle) |
 | `pnpm tier <email> FREE\|PREMIUM` | Set an account's plan by hand |
 | `pnpm cleanup [--dry-run]` | Delete files of anonymous visitors older than three days |
+| `pnpm measure` | Render ten seconds and print the frames per second - see the top of `scripts/measure-render.ts` for the options |
+| `pnpm worker` | A render worker without the website, for a machine that only renders (see `DEPLOY.md`) |
 
 ## Where things are
 
@@ -130,8 +133,10 @@ pnpm tier you@example.com PREMIUM
 - `src/components/editor/` - the editor: `Sidebar`, `Preview`, `Transport`
   (timeline), `BindableSlider` (fader with audio jack and keyframes).
 - `src/lib/` - server rules: `fileAccess.ts` (who may read a file),
-  `tiers.ts` (plan limits), `stripe.ts` (payments), `renderQueue.ts`,
-  `cleanup.ts`, `projects.ts`, `tokens.ts` and `mail.ts` (signed mail
+  `tiers.ts` (plan limits), `stripe.ts` (payments), `renderQueue.ts`
+  (the queue's bookkeeping in the database), `renderJob.ts` (draws one
+  job), `renderWorker.ts` (takes one job after another; started by
+  `src/instrumentation.ts` when the server starts), `cleanup.ts`, `projects.ts`, `tokens.ts` and `mail.ts` (signed mail
   links), `rateLimit.ts`, `origin.ts` and `renderSettings.ts` (values that
   differ between development and a server).
 - `scripts/` - the commands above. `tests/` - the automated tests.
@@ -139,7 +144,26 @@ pnpm tier you@example.com PREMIUM
 
 ## State at handover
 
-Everything is committed and pushed. Types, lint and tests pass.
+Everything is committed and pushed. Types, lint, tests and a production
+build pass.
+
+Built on 2026-11-12 on the Mac: `pnpm measure`; the render queue in the
+database, with `pnpm worker`; exporting a section of the track.
+
+Render speed measured with `pnpm measure` (ten seconds, 30 fps, MacBook
+Air M4, 10 threads), in frames per second:
+
+| | 1080p | 720p |
+| --- | --- | --- |
+| Graphics card (`angle`) | about 63 | not measured |
+| Software (`swangle`) | about 5 | about 12 |
+
+So a three-minute song at 1080p / 30 fps takes about a minute and a half
+with the graphics card and 16 to 18 minutes in software. Radial Bars and
+Galaxy were equally fast, and `RENDER_CONCURRENCY=4` changed nothing in
+software. This is a Mac: it says that software drawing costs roughly a
+factor of twelve, not what the old i7 or a rented server will do - run
+`pnpm measure` there.
 
 Built in the night to 2026-11-12, newest first: server instructions and a
 Dockerfile; four more elements and templates (Oscilloscope, Halo,
@@ -158,10 +182,19 @@ square formats; files tied to accounts; template gallery.
 
 ## Not verified - check before relying on it
 
-- **Nothing was ever run on macOS.** The render uses Chromium with
-  `gl: "angle"` (`src/app/api/render/route.ts`, `scripts/thumbnails.ts`,
-  `scripts/previews.ts`). If a render fails or comes out black on the Mac,
-  that option is the first thing to look at.
+- **macOS:** setup, the development server, tests, a production build and
+  server renders (720p through the app, 1080p through `pnpm measure`) ran
+  on the Mac. Nobody looked at a rendered video by eye there; length, size
+  and sound were checked with tools. `pnpm thumbnails` and `pnpm previews`
+  were not run. The Mac has pnpm 10, which skips the build scripts of
+  prisma, esbuild and sharp; nothing failed because of it so far.
+- **The queue with two workers** was only checked by the automated tests
+  (several claims at once against one database), never with two real
+  processes or machines. Surviving a restart was tried for real: the
+  waiting render continued at once, the interrupted one a minute later.
+- **The section export** was clicked through once in the editor (buttons,
+  dragging an edge, a render). Not tried: with the timeline zoomed in, on
+  a long track, the arrow keys on an edge.
 - **No mail was ever sent.** Password reset and address confirmation were
   tested with the links printed to the server log; sending through Resend
   needs a key and a verified sender domain.
@@ -186,9 +219,12 @@ square formats; files tied to accounts; template gallery.
 ## Known gaps
 
 - No mobile layout for the editor (the owner said it is not needed yet).
-- The render queue lives in one server process; two servers on the same
-  database would not share it, and starting one marks the unfinished jobs
-  of the other as failed.
+- The picture of a saved project (dashboard) is drawn by the process that
+  saved it and is not a job in the queue; a restart at that moment loses
+  the picture until the project is saved again.
+- A render that fails (as opposed to one that is interrupted) is not
+  tried again.
+- The chosen export section is not saved with the project.
 - A shared template shows no private pictures or models to other people.
 - Only `.glb` models, no Draco compression, no model animations.
 - Counts and speeds cannot be keyframed or bound to audio (the picture
@@ -228,19 +264,17 @@ The final MP4 is rendered on the server (`src/app/api/render/route.ts`).
 
 ## Next steps
 
-Proposed to the owner on 2026-11-12. **None of these is started, and the
-owner has not yet picked which to do** - ask before starting. The
-suggestion was to begin with 1, 2 and 10.
+Proposed to the owner on 2026-11-12. The owner picked 1, 2 and 10, which
+are done. **The others are not started and not picked** - ask before
+starting.
 
 Before moving to the mini machine:
 
-1. **Measure software rendering locally.** Render with
-   `RENDER_GL="swangle"` and note the frames per second, to know roughly
-   what a server without graphics will do. (On the Windows PC, with a
-   graphics card, 1080p ran at about 33 frames per second.)
-2. **Move the render queue into the database.** It lives in one process's
-   memory (`src/lib/renderQueue.ts`). In the database it survives a restart
-   and several machines could later take jobs from it as render workers.
+1. ~~Measure software rendering locally.~~ Done on 2026-11-12, numbers
+   under "State at handover". (On the Windows PC, with a graphics card,
+   1080p ran at about 33 frames per second.) Still to do: the same
+   measurement on the machine that will be the server.
+2. ~~Move the render queue into the database.~~ Done on 2026-11-12.
 3. **A backup command.** `pnpm backup` that packs the database and
    `storage/` into a dated archive.
 4. **A status page for the owner.** Accounts, running and failed renders,
@@ -262,9 +296,7 @@ Product:
    load off the server. Open: whether Remotion's in-browser rendering works
    with the 3D scenes and the sound, and how to keep the free-plan limits
    and watermark, which the server enforces today.
-10. **Export a section instead of the whole song.** Pick start and end and
-    render 15 to 60 seconds, for Reels, Shorts and TikTok. Also saves a lot
-    of render time.
+10. ~~Export a section instead of the whole song.~~ Done on 2026-11-12.
 11. **A mail when the video is ready**, and a remaining-time display while
     it renders.
 12. **More elements** from the owner's inspiration screenshots.

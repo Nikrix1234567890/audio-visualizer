@@ -3,6 +3,7 @@
 import type { MediaUtilsAudioData } from "@remotion/media-utils";
 import type { PlayerRef } from "@remotion/player";
 import { useEffect, useRef, useState } from "react";
+import type { ExportRange } from "@/lib/visualizerSettings";
 import { KeyframeLanes, type TimelineLane } from "./KeyframeLanes";
 import type { TimelineView } from "./TimeDiamond";
 import {
@@ -40,6 +41,8 @@ export function Transport({
   onMoveMarker,
   lanes,
   onMoveKey,
+  range,
+  onRangeChange,
 }: {
   player: PlayerRef | null;
   audioData: MediaUtilsAudioData | null;
@@ -55,6 +58,9 @@ export function Transport({
   /** One row per animated setting, shown under the waveform. */
   lanes: TimelineLane[];
   onMoveKey: (lane: TimelineLane, from: number, to: number, copy: boolean) => void;
+  /** The section that will be exported, or null for the whole track. */
+  range: ExportRange | null;
+  onRangeChange: (range: ExportRange) => void;
 }) {
   const [zoom, setZoom] = useState(1);
   const [frame, setFrame] = useState(0);
@@ -228,6 +234,8 @@ export function Transport({
           onSeek={(target) => player?.seekTo(target)}
           markers={markers}
           onMoveMarker={onMoveMarker}
+          range={range}
+          onRangeChange={onRangeChange}
         />
         </div>
         {audioData && lanes.length > 0 && (
