@@ -211,9 +211,63 @@ server (about 4 cores, 8 GB) is the smallest thing that can run it; the
 domain can stay where it is. Whether helloly sells such servers was not
 checked on their own site.
 
-## Ideas the owner liked or might want next
+The owner also has small former CI worker machines (an old i7, 16 GB
+memory, no separate graphics card) and asked whether one can be the server.
+Answer given: yes, and the likely plan for the start. An old i7 usually has
+built-in Intel graphics the render browser may be able to use, which a
+rented virtual server lacks - untested. The hurdle is the home connection,
+not the machine: put it behind a Cloudflare Tunnel (no open ports, HTTPS
+included, the domain must run through Cloudflare), mind the upload speed
+(every video goes out through it), back up the database and `storage/`
+elsewhere, and check that the internet contract allows it. A rented
+alternative is a virtual server with 4 cores and 8 GB; cheap plans share
+their cores and throttle under render load. Prices were not looked up.
 
-Trying `DEPLOY.md` on a real server and measuring render speed there, a
-real name and domain, filling in the legal pages, a Stripe test run,
-sending mail for real, per-element timeline tracks for bindings, and more
-elements from the owner's inspiration screenshots.
+Note for clarity: only the editor preview runs in the visitor's browser.
+The final MP4 is rendered on the server (`src/app/api/render/route.ts`).
+
+## Next steps
+
+Proposed to the owner on 2026-11-12. **None of these is started, and the
+owner has not yet picked which to do** - ask before starting. The
+suggestion was to begin with 1, 2 and 10.
+
+Before moving to the mini machine:
+
+1. **Measure software rendering locally.** Render with
+   `RENDER_GL="swangle"` and note the frames per second, to know roughly
+   what a server without graphics will do. (On the Windows PC, with a
+   graphics card, 1080p ran at about 33 frames per second.)
+2. **Move the render queue into the database.** It lives in one process's
+   memory (`src/lib/renderQueue.ts`). In the database it survives a restart
+   and several machines could later take jobs from it as render workers.
+3. **A backup command.** `pnpm backup` that packs the database and
+   `storage/` into a dated archive.
+4. **A status page for the owner.** Accounts, running and failed renders,
+   disk use; plus a health address for monitoring.
+5. **Build and start the Docker image once**, to find out whether the
+   `Dockerfile` works at all.
+
+Money and accounts:
+
+6. **Run Stripe in test mode end to end** - purchase, cancellation,
+   webhook. Needs test keys from the owner.
+7. **Send one real mail.** Needs a Resend key and a sender domain.
+8. **Enforce address confirmation**, e.g. renders only for confirmed
+   accounts, against throwaway accounts.
+
+Product:
+
+9. **Prototype rendering in the visitor's browser.** Would take the render
+   load off the server. Open: whether Remotion's in-browser rendering works
+   with the 3D scenes and the sound, and how to keep the free-plan limits
+   and watermark, which the server enforces today.
+10. **Export a section instead of the whole song.** Pick start and end and
+    render 15 to 60 seconds, for Reels, Shorts and TikTok. Also saves a lot
+    of render time.
+11. **A mail when the video is ready**, and a remaining-time display while
+    it renders.
+12. **More elements** from the owner's inspiration screenshots.
+
+Also still open from before: a real name and domain, filling in the legal
+pages, and per-element timeline tracks for bindings.
